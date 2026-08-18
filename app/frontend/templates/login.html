@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Anmelden – SIM-Admin</title>
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260818-5">
+    <script src="/static/login.js" defer></script>
+  </head>
+  <body class="login-page">
+    <main class="login-shell">
+      <section class="login-card" aria-labelledby="login-title">
+        <div class="brand-mark" aria-hidden="true">S</div>
+        <p class="eyebrow">Standalone-System</p>
+        <h1 id="login-title">Bei SIM-Admin anmelden</h1>
+        <p class="login-intro">Geschützter Zugriff auf Kartenleser und SIM-Verwaltung.</p>
+
+        <form id="login-form">
+          <label for="username">Benutzername</label>
+          <input id="username" name="username" autocomplete="username" required autofocus>
+
+          <label for="password">Passwort</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" required>
+
+          <p id="login-error" class="form-error" role="alert" hidden></p>
+          <button type="submit">Anmelden</button>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>

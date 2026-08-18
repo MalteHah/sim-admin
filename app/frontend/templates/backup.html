@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Datensicherung – SIM-Admin</title>
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260818-5">
+    <script src="/static/backup.js" defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand-mark" aria-hidden="true">S</div>
+      <div><p class="eyebrow">SIM-Admin</p><h1>Datensicherung</h1></div>
+      <a class="button-link nav-push" href="/">Zurück zur Übersicht</a>
+    </header>
+    <main>
+      <section class="settings-card" aria-labelledby="backup-title">
+        <p class="eyebrow">USB-Backup</p>
+        <h2 id="backup-title">Backup erstellen</h2>
+        <p>Die Sicherung wird mit AES-256 verschlüsselt und nach dem Schreiben geprüft.</p>
+        <form id="backup-form">
+          <label for="backup-target">Wechseldatenträger</label>
+          <select id="backup-target" required disabled><option>Datenträger werden gesucht …</option></select>
+          <label for="backup-password">Backup-Passwort</label>
+          <input id="backup-password" type="password" minlength="12" autocomplete="new-password" required>
+          <label for="backup-confirm">Backup-Passwort wiederholen</label>
+          <input id="backup-confirm" type="password" minlength="12" autocomplete="new-password" required>
+          <p id="backup-message" class="form-error" role="status" hidden></p>
+          <button id="backup-submit" type="submit" disabled>Verschlüsseltes Backup erstellen</button>
+        </form>
+      </section>
+      <section class="settings-card restore-card" aria-labelledby="restore-title">
+        <p class="eyebrow">Wiederherstellung</p><h2 id="restore-title">Backup prüfen</h2>
+        <p>Das Backup wird zunächst nur entschlüsselt und geprüft.</p>
+        <form id="restore-form">
+          <label for="restore-file">Backup-Datei</label><select id="restore-file" required disabled><option>Backups werden gesucht …</option></select>
+          <label for="restore-password">Backup-Passwort</label><input id="restore-password" type="password" minlength="12" required>
+          <p id="restore-message" class="form-error" role="status" hidden></p>
+          <button id="inspect-submit" type="submit" disabled>Backup prüfen</button>
+          <button id="restore-submit" type="button" class="danger-button" hidden>WIEDERHERSTELLEN</button>
+        </form>
+      </section>
+      <aside class="notice"><strong>Wichtig</strong><span>Ohne dieses Passwort kann die Sicherung nicht wiederhergestellt werden. Eine Wiederherstellung ersetzt das aktuelle Aktivitätsprotokoll.</span></aside>
+    </main>
+  </body>
+</html>

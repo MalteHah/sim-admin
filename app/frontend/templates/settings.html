@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Einstellungen – SIM-Admin</title>
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260818-5">
+    <script src="/static/settings.js" defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand-mark" aria-hidden="true">S</div>
+      <div><p class="eyebrow">SIM-Admin</p><h1>Einstellungen</h1></div>
+      <a class="button-link" href="/">Zurück zur Übersicht</a>
+    </header>
+    <main>
+      <section class="settings-card" aria-labelledby="password-title">
+        <p class="eyebrow">Sicherheit</p>
+        <h2 id="password-title">Passwort ändern</h2>
+        <p>Das neue Passwort muss mindestens 12 Zeichen lang sein.</p>
+        <form id="password-form">
+          <label for="current-password">Aktuelles Passwort</label>
+          <input id="current-password" name="currentPassword" type="password" autocomplete="current-password" required>
+          <label for="new-password">Neues Passwort</label>
+          <input id="new-password" name="newPassword" type="password" minlength="12" autocomplete="new-password" required>
+          <label for="confirm-password">Neues Passwort wiederholen</label>
+          <input id="confirm-password" name="confirmPassword" type="password" minlength="12" autocomplete="new-password" required>
+          <p id="password-message" class="form-error" role="status" hidden></p>
+          <button type="submit">Passwort speichern</button>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>

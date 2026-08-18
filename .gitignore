@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+config/*.local.*
+
+# Runtime data (directory placeholders remain tracked)
+data/backups/*
+data/database/*
+data/exports/*
+data/imports/*
+!data/**/.gitkeep
+
+# Logs
+*.log
+
+# Local deployment scratch files
+work/
+outputs/
+
+# Certificates, keys, databases and encrypted backup archives
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+*.db
+*.sqlite*
+*.sab

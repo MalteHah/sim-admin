@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Einzelkarte – SIM-Admin</title>
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260818-19">
+    <script src="/static/provisioning.js?v=20260818-19" defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand-mark" aria-hidden="true">S</div>
+      <div><p class="eyebrow">SIM-Admin</p><h1>Einzelkarte</h1></div>
+      <a class="button-link" href="/">Zurück zur Übersicht</a>
+    </header>
+    <main>
+      <div class="provisioning-layout">
+        <section class="settings-card" aria-labelledby="draft-title">
+          <p class="eyebrow">Einzelerfassung</p>
+          <h2 id="draft-title">Karte in den Profiltresor aufnehmen</h2>
+          <p>Zuerst wird die eingelegte Karte gelesen und auf einen vorhandenen Tresoreintrag geprüft.</p>
+          <fieldset class="capture-mode"><legend>Arbeitsweise</legend><label><input type="radio" name="capture-mode" value="card" checked>Karte zuerst</label><label><input type="radio" name="capture-mode" value="data">Daten zuerst</label></fieldset>
+          <button id="read-single-card" type="button">Eingelegte Karte lesen</button>
+          <p id="single-card-status" class="pending-change-note" hidden aria-live="polite"></p>
+          <form id="provisioning-form" autocomplete="off">
+            <div class="form-grid">
+              <label><span id="iccid-label">ICCID – von Karte</span><input name="iccid" inputmode="numeric" minlength="18" maxlength="22" readonly required></label>
+              <label><span id="imsi-label">IMSI – von Karte</span><input name="imsi" inputmode="numeric" minlength="5" maxlength="15" readonly required></label>
+              <label>MSISDN (optional)<input name="msisdn" inputmode="tel"></label>
+              <label>ACC<input name="acc" value="0001" maxlength="4" required></label>
+              <label>Ki (32 Hex-Zeichen)<input name="ki" type="password" minlength="32" maxlength="32" required></label>
+              <label>OPc (32 Hex-Zeichen)<input name="opc" type="password" minlength="32" maxlength="32" required></label>
+              <label>ADM<input name="adm" type="password" minlength="4" maxlength="32" required></label>
+              <label>Anmeldepasswort<input name="password" type="password" autocomplete="current-password" required></label>
+            </div>
+            <p id="preview-error" class="form-error" role="alert" hidden></p>
+            <div class="single-card-actions"><button type="submit">Dry Run erstellen</button><button id="save-single-profile" type="button" disabled>Verschlüsselt speichern</button></div>
+          </form>
+        </section>
+
+        <section id="preview-panel" class="preview-panel" aria-labelledby="preview-title">
+          <p class="eyebrow">Vorschau</p>
+          <h2 id="preview-title">Noch keine Karte eingelesen</h2>
+          <p>Das Speichern verändert die SIM nicht. Ein späterer Zielzustand wird anschließend als Änderungsentwurf angelegt.</p>
+        </section>
+        <section id="comparison-panel" class="preview-panel comparison-panel" aria-live="polite" hidden></section>
+      </div>
+    </main>
+  </body>
+</html>

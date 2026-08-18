@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Profiltresor – SIM-Admin</title>
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260818-22">
+    <script src="/static/table-pagination.js" defer></script>
+    <script src="/static/profiles.js?v=20260818-22" defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand-mark" aria-hidden="true">S</div>
+      <div><p class="eyebrow">SIM-Admin</p><h1>Profiltresor</h1></div>
+      <a class="button-link nav-push" href="/import">CSV-Import</a>
+      <a class="button-link" href="/">Zurück zur Übersicht</a>
+    </header>
+    <main>
+      <section class="intro" aria-labelledby="profiles-title">
+        <div><p class="eyebrow">Gerätegebunden verschlüsselt</p><h2 id="profiles-title">Gespeicherte Profile</h2><p id="profile-summary">Tresor wird geöffnet …</p></div>
+        <div class="profile-tools">
+          <label class="profile-search" for="profile-search">Suche
+            <input id="profile-search" type="search" inputmode="numeric" placeholder="ICCID oder IMSI" autocomplete="off">
+          </label>
+          <label for="profile-sort">Sortierung</label>
+          <select id="profile-sort">
+            <option value="iccid-asc">ICCID aufsteigend</option>
+            <option value="iccid-desc">ICCID absteigend</option>
+            <option value="imsi-asc">IMSI aufsteigend</option>
+            <option value="imsi-desc">IMSI absteigend</option>
+          </select>
+          <label for="profile-status">Status</label>
+          <select id="profile-status">
+            <option value="all">Alle Profile</option>
+            <option value="verified">Karte geprüft</option>
+            <option value="pending-card">Kartenabgleich ausstehend</option>
+            <option value="pending-change">Änderung vorgemerkt</option>
+          </select>
+          <button id="profile-refresh" type="button">Neu laden</button>
+          <a class="button-link" href="/api/v1/profiles/export" download>Inventar exportieren</a>
+        </div>
+      </section>
+      <section id="profile-preview" class="preview-panel profile-feedback" hidden aria-live="polite"></section>
+      <section class="activity-card" aria-live="polite">
+        <div class="activity-table-wrap">
+          <table class="activity-table profile-table">
+            <thead><tr><th>Importiert</th><th>ICCID</th><th>IMSI</th><th>Ki</th><th>OPc</th><th>ADM1</th><th>Aktion</th></tr></thead>
+            <tbody id="profile-list"><tr><td colspan="7">Profile werden entschlüsselt …</td></tr></tbody>
+          </table>
+        </div>
+        <nav id="profile-pagination" class="table-pagination" aria-label="Seitennavigation" hidden></nav>
+      </section>
+      <aside class="notice"><strong>Geschützte Ansicht</strong><span>Schlüssel und Zugangsdaten werden weder angezeigt noch an den Browser übertragen.</span></aside>
+    </main>
+    <dialog id="secrets-dialog" class="secrets-dialog">
+      <form id="secrets-form">
+        <p class="eyebrow">Erneute Bestätigung</p><h2>Geheimnisse anzeigen</h2>
+        <p id="secrets-prompt-text">Gib dein aktuelles Anmeldepasswort ein. Angezeigte Werte werden nach 30 Sekunden wieder verborgen.</p>
+        <label id="secrets-password-label" for="reveal-password">Passwort</label><input id="reveal-password" type="password" autocomplete="current-password" required>
+        <p id="secrets-error" class="form-error" hidden></p>
+        <div id="secrets-values" class="secret-values" hidden></div>
+        <div class="dialog-actions"><button type="button" id="secrets-close">Schließen</button><button type="submit" id="secrets-submit">Bestätigen</button></div>
+      </form>
+    </dialog>
+    <dialog id="history-dialog" class="secrets-dialog history-dialog">
+      <div>
+        <p class="eyebrow">Profiltresor</p><h2>Revisionshistorie</h2>
+        <p>Die Historie zeigt nur Revisionsnummer und Zeitpunkt. Inhalte bleiben verschlüsselt.</p>
+        <div id="history-values" class="history-values" aria-live="polite">Historie wird geladen …</div>
+        <div class="dialog-actions"><button type="button" id="history-close">Schließen</button></div>
+      </div>
+    </dialog>
+    <dialog id="change-dialog" class="secrets-dialog change-dialog">
+      <form id="change-form">
+        <p class="eyebrow">Verschlüsselter Entwurf</p><h2>Profiländerung vorbereiten</h2>
+        <p>Der Entwurf verändert weder das aktive Profil noch die SIM-Karte. Er wird erst bei einem späteren, erfolgreichen Schreibvorgang übernommen.</p>
+        <p id="change-status" class="pending-change-note" hidden></p>
+        <div class="change-grid">
+          <label>ICCID – gesperrt<input id="change-iccid" readonly aria-readonly="true"></label>
+          <label>Revision – gesperrt<input id="change-revision" readonly aria-readonly="true"></label>
+          <label>IMSI<input id="change-imsi" inputmode="numeric" pattern="[0-9]{5,15}" required></label>
+          <label>MSISDN<input id="change-msisdn" inputmode="tel" pattern="\+?[0-9]{3,15}" placeholder="optional"></label>
+          <label>ACC<input id="change-acc" maxlength="4" pattern="[0-9A-Fa-f]{4}" required></label>
+          <label>Ki<input id="change-ki" type="password" minlength="32" maxlength="32" pattern="[0-9A-Fa-f]{32}" placeholder="leer = unverändert" autocomplete="off"></label>
+          <label>OPc<input id="change-opc" type="password" minlength="32" maxlength="32" pattern="[0-9A-Fa-f]{32}" placeholder="leer = unverändert" autocomplete="off"></label>
+          <label>Aktuelles Anmeldepasswort<input id="change-password" type="password" autocomplete="current-password" required></label>
+          <label id="write-confirmation-label" hidden>Schreibfreigabe: SIM SCHREIBEN<input id="write-confirmation" autocomplete="off" placeholder="SIM SCHREIBEN"></label>
+        </div>
+        <p class="immutable-note"><strong>Unveränderbar:</strong> ICCID und ADM1. ADM1 wird in diesem Dialog nicht übertragen oder angezeigt.</p>
+        <p id="change-error" class="form-error" hidden></p>
+        <div class="dialog-actions change-actions"><button type="button" id="change-discard" class="danger-button" hidden>Entwurf verwerfen</button><button type="button" id="change-preview" hidden>Entwurf prüfen</button><button type="button" id="change-compare" hidden>Mit Karte abgleichen</button><button type="button" id="change-write" class="danger-button" hidden>Auf SIM schreiben</button><button type="button" id="change-close">Abbrechen</button><button type="submit">Entwurf speichern</button></div>
+      </form>
+    </dialog>
+    <dialog id="delete-dialog" class="secrets-dialog delete-dialog">
+      <form id="delete-form">
+        <p class="eyebrow">Profiltresor</p><h2>Profil endgültig löschen</h2>
+        <p class="delete-warning">Das aktive Profil, alle Revisionen und ein möglicher Änderungsentwurf werden gelöscht. Eine Wiederherstellung ist nur aus einem Backup möglich.</p>
+        <label for="delete-iccid">Zur Bestätigung die ICCID eingeben</label><input id="delete-iccid" inputmode="numeric" required>
+        <label for="delete-password">Aktuelles Anmeldepasswort</label><input id="delete-password" type="password" autocomplete="current-password" required>
+        <p id="delete-error" class="form-error" hidden></p>
+        <div class="dialog-actions"><button type="button" id="delete-close">Abbrechen</button><button type="submit" class="danger-button">Profil löschen</button></div>
+      </form>
+    </dialog>
+  </body>
+</html>

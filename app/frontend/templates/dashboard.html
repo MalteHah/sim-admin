@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SIM-Admin</title>
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260818-5">
+    <script src="/static/dashboard.js" defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand-mark" aria-hidden="true">S</div>
+      <div>
+        <p class="eyebrow">Standalone-System</p>
+        <h1>SIM-Admin</h1>
+      </div>
+      <span id="service-status" class="status status-loading">Wird geprüft …</span>
+      <a class="button-link" href="/provisioning">Einzelkarte</a>
+      <a class="button-link" href="/activity">Aktivitäten</a>
+      <a class="button-link" href="/backup">Backup</a>
+      <a class="button-link" href="/import">CSV-Import</a>
+      <a class="button-link" href="/profiles">Profiltresor</a>
+      <a class="button-link" href="/settings">Einstellungen</a>
+      <button id="logout-button" class="button-quiet" type="button">Abmelden</button>
+    </header>
+
+    <main>
+      <section class="intro" aria-labelledby="overview-title">
+        <div>
+          <p class="eyebrow">Übersicht</p>
+          <h2 id="overview-title">Kartenleser</h2>
+          <p>Angeschlossene PC/SC-Leser und aktueller Kartenstatus.</p>
+        </div>
+        <button id="refresh-button" type="button">Neu laden</button>
+      </section>
+
+      <section id="reader-list" class="reader-grid" aria-live="polite">
+        <article class="reader-card skeleton">
+          <div class="reader-icon" aria-hidden="true"></div>
+          <div>
+            <p class="eyebrow">Reader</p>
+            <h3>Geräte werden gesucht …</h3>
+          </div>
+        </article>
+      </section>
+
+      <section class="sim-panel" aria-labelledby="sim-title">
+        <div>
+          <p class="eyebrow">SIM-Karte</p>
+          <h2 id="sim-title">Kartenidentität lesen</h2>
+          <p>ICCID und IMSI werden ausschließlich gelesen und nicht gespeichert.</p>
+        </div>
+        <button id="read-sim-button" type="button" disabled>SIM lesen</button>
+      </section>
+      <section id="sim-result" class="sim-result" aria-live="polite" hidden></section>
+
+      <aside class="notice">
+        <strong>Sicherer Startmodus</strong>
+        <span>Es werden nur Kartentyp, ATR, ICCID und IMSI gelesen. Die Anwendung führt keine Schreib- oder PIN-Befehle aus.</span>
+      </aside>
+    </main>
+
+    <footer>
+      <span>SIM-Admin 0.1.0</span>
+      <a href="/docs">API-Dokumentation</a>
+    </footer>
+  </body>
+</html>

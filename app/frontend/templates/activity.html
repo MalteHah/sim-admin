@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Aktivitäten – SIM-Admin</title>
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260818-22">
+    <script src="/static/table-pagination.js" defer></script>
+    <script src="/static/activity.js?v=20260818-22" defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand-mark" aria-hidden="true">S</div>
+      <div><p class="eyebrow">SIM-Admin</p><h1>Aktivitäten</h1></div>
+      <a class="button-link nav-push" href="/">Zurück zur Übersicht</a>
+    </header>
+    <main>
+      <section class="intro" aria-labelledby="activity-title">
+        <div>
+          <p class="eyebrow">Sicherheitsprotokoll</p>
+          <h2 id="activity-title">Letzte Aktivitäten</h2>
+          <p>Enthält nur Vorgang, Ergebnis und Zeitpunkt – keine SIM-Daten oder Passwörter.</p>
+        </div>
+        <button id="activity-refresh" type="button">Neu laden</button>
+      </section>
+      <section class="activity-card" aria-live="polite">
+        <div class="activity-table-wrap">
+          <table class="activity-table">
+            <thead><tr><th>Zeitpunkt</th><th>Benutzer</th><th>Vorgang</th><th>Ergebnis</th><th>Hinweis</th></tr></thead>
+            <tbody id="activity-list"><tr><td colspan="5">Aktivitäten werden geladen …</td></tr></tbody>
+          </table>
+        </div>
+        <nav id="activity-pagination" class="table-pagination" aria-label="Seitennavigation" hidden></nav>
+      </section>
+    </main>
+  </body>
+</html>
