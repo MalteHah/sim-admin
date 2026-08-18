@@ -77,4 +77,5 @@ vorgesehenen Testkarten und einem vorhandenen Backup erfolgen.
 
 ## Lizenz
 
-MIT – siehe [LICENSE](LICENSE).
+GNU General Public License v3.0 oder später (`GPL-3.0-or-later`) – siehe
+[LICENSE](LICENSE).

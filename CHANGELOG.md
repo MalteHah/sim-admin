@@ -4,6 +4,10 @@ Alle wesentlichen Änderungen an diesem Projekt werden hier dokumentiert.
 
 ## Unreleased
 
+### Changed
+
+- Projektlizenz auf GPL-3.0-or-later festgelegt
+
 ### Added
 
 - Initiales Python- und FastAPI-Projektgrundgerüst
