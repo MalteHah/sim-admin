@@ -61,3 +61,4 @@ Alle wesentlichen Änderungen an diesem Projekt werden hier dokumentiert.
 - Geschützte Neuinstallation mit Vorschau, eigenem Dienstkonto, TLS, Zugangsdaten, Tests und systemd-Diensten
 - Reproduzierbarer Release-Bau mit Versionsdatei, Dateimanifest, SHA-256-Prüfsumme und taggesteuertem GitHub-Release
 - Optionale Ed25519-Signatur und eigenständige Offline-Prüfung gegen einen bereits vertrauenswürdig hinterlegten öffentlichen Release-Schlüssel
+- Interaktive, AES-256-geschützte Erstellung und fingerabdruckgesicherte Installation des Release-Vertrauensankers

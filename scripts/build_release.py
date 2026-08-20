@@ -36,6 +36,7 @@ def main() -> None:
     parser.add_argument("--output", type=Path, default=ROOT / "dist")
     parser.add_argument("--allow-dirty", action="store_true")
     parser.add_argument("--signing-key", type=Path)
+    parser.add_argument("--signing-key-password-file", type=Path)
     args = parser.parse_args()
 
     version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
@@ -91,14 +92,20 @@ def main() -> None:
             raise SystemExit("Privater Signierschlüssel wurde nicht gefunden")
         signature = archive.with_suffix(archive.suffix + ".sig")
         public_key = archive.with_suffix(archive.suffix + ".pub.pem")
+        password_arguments: list[str] = []
+        if args.signing_key_password_file:
+            password_file = args.signing_key_password_file.expanduser().resolve()
+            if not password_file.is_file():
+                raise SystemExit("Passwortdatei für den Signierschlüssel wurde nicht gefunden")
+            password_arguments = ["-passin", f"file:{password_file}"]
         subprocess.run(
-            ["openssl", "pkeyutl", "-sign", "-rawin", "-inkey", str(signing_key),
+            ["openssl", "pkeyutl", "-sign", "-rawin", *password_arguments, "-inkey", str(signing_key),
              "-in", str(archive), "-out", str(signature)],
             check=True,
         )
         with public_key.open("wb") as handle:
             subprocess.run(
-                ["openssl", "pkey", "-in", str(signing_key), "-pubout"],
+                ["openssl", "pkey", "-in", str(signing_key), *password_arguments, "-pubout"],
                 stdout=handle,
                 check=True,
             )

@@ -27,11 +27,15 @@ jobs:
       - name: Release-Paket signieren
         env:
           RELEASE_SIGNING_KEY_BASE64: ${{ secrets.RELEASE_SIGNING_KEY_BASE64 }}
+          RELEASE_SIGNING_KEY_PASSWORD: ${{ secrets.RELEASE_SIGNING_KEY_PASSWORD }}
         run: |
           test -n "$RELEASE_SIGNING_KEY_BASE64"
+          test -n "$RELEASE_SIGNING_KEY_PASSWORD"
           printf '%s' "$RELEASE_SIGNING_KEY_BASE64" | base64 --decode > "$RUNNER_TEMP/release-signing-key.pem"
+          printf '%s' "$RELEASE_SIGNING_KEY_PASSWORD" > "$RUNNER_TEMP/release-signing-key-password"
           chmod 600 "$RUNNER_TEMP/release-signing-key.pem"
-          ./scripts/build-release.sh --signing-key "$RUNNER_TEMP/release-signing-key.pem"
+          chmod 600 "$RUNNER_TEMP/release-signing-key-password"
+          ./scripts/build-release.sh --signing-key "$RUNNER_TEMP/release-signing-key.pem" --signing-key-password-file "$RUNNER_TEMP/release-signing-key-password"
       - name: GitHub-Release veröffentlichen
         env:
           GH_TOKEN: ${{ github.token }}

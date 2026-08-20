@@ -90,9 +90,21 @@ bereits als vertrauenswürdiger Release-Schlüssel hinterlegt sein:
 
 Die dem Download beiliegende öffentliche Schlüsseldatei dient nur zur Verteilung
 und darf einen bereits hinterlegten Vertrauensanker nicht unbemerkt ersetzen.
-Der automatische GitHub-Release setzt denselben privaten Schlüssel Base64-kodiert
-als geschütztes Repository-Secret `RELEASE_SIGNING_KEY_BASE64` voraus und bricht
-ohne dieses Secret ab. Der Schlüssel wird niemals in einen Build übernommen.
+Der automatische GitHub-Release setzt den verschlüsselten privaten Schlüssel
+Base64-kodiert als Repository-Secret `RELEASE_SIGNING_KEY_BASE64` und das separat
+gespeicherte Passwort als `RELEASE_SIGNING_KEY_PASSWORD` voraus. Ohne beide
+Secrets bricht er ab. Der Schlüssel wird niemals in einen Build übernommen.
+
+Ein neuer, direkt am gewählten Sicherungsort verschlüsselter Release-Schlüssel
+wird interaktiv erzeugt mit:
+
+```bash
+./scripts/create-release-key.sh /pfad/zum/usb-stick
+```
+
+Das Skript überschreibt keine vorhandenen Schlüsseldateien. Auf einem
+Standalone-Rechner wird ausschließlich der öffentliche Schlüssel nach manuellem
+Abgleich des angezeigten Fingerabdrucks installiert.
 
 ## Wichtiger Sicherheitshinweis
 
