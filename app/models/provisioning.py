@@ -1,6 +1,6 @@
 """Models for provisioning drafts and non-writing previews."""
 
-from pydantic import Field, SecretStr, field_validator
+from pydantic import Field, SecretStr, field_validator, model_validator
 
 from app.models.common import DomainModel
 
@@ -20,7 +20,7 @@ class ProvisioningDraft(DomainModel):
     ims_domain: str | None = Field(default=None, min_length=1, max_length=253, pattern=r"^[A-Za-z0-9](?:[A-Za-z0-9.-]{0,251}[A-Za-z0-9])?$")
     ist: str | None = Field(default=None, pattern=r"^(?:[0-9A-Fa-f]{2})+$")
     routing_indicator: str | None = Field(default=None, pattern=r"^\d{1,4}$")
-    protection_scheme: int | None = Field(default=None, ge=0, le=15)
+    protection_scheme: int | None = Field(default=None, ge=0, le=2)
     hn_public_key_id: int | None = Field(default=None, ge=0, le=255)
     hn_public_key: str | None = Field(default=None, pattern=r"^(?:[0-9A-Fa-f]{2})+$")
 
@@ -32,6 +32,25 @@ class ProvisioningDraft(DomainModel):
         except ValueError as exc:
             raise ValueError("must contain hexadecimal characters") from exc
         return value
+
+    @model_validator(mode="after")
+    def validate_suci_configuration(self):
+        if self.protection_scheme is None:
+            if self.hn_public_key_id is not None or self.hn_public_key:
+                raise ValueError("protection_scheme is required for a home-network public key")
+            return self
+        if self.protection_scheme == 0:
+            if self.hn_public_key_id is not None or self.hn_public_key:
+                raise ValueError("null protection scheme cannot use a home-network public key")
+            return self
+        if self.hn_public_key_id is None or not self.hn_public_key:
+            raise ValueError("home-network public key and identifier are required")
+        key_bytes = len(self.hn_public_key) // 2
+        if self.protection_scheme == 1 and key_bytes != 32:
+            raise ValueError("protection scheme A requires a 32-byte key")
+        if self.protection_scheme == 2 and key_bytes not in {33, 65}:
+            raise ValueError("protection scheme B requires a 33- or 65-byte key")
+        return self
 
 
 class ProvisioningStep(DomainModel):

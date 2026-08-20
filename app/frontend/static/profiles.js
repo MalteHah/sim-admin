@@ -231,7 +231,7 @@ async function openChange(id) {
   document.querySelector("#change-hn-public-key").value = profile.hn_public_key || "";
   if (draftResponse.ok) {
     const draft = await draftResponse.json();
-    if (draft) { const hasFiveGs = draft.changed_fields.some((field) => ["routing_indicator", "protection_scheme", "hn_public_key_id", "hn_public_key"].includes(field)); changeStatus.textContent = `Vorgemerkt seit ${new Date(draft.created_at).toLocaleString("de-DE")}: ${draft.changed_fields.join(", ").toUpperCase()}. Aktive Revision: ${draft.base_revision}.${hasFiveGs ? " 5GS-/SUCI-Daten können derzeit nicht auf die SIM geschrieben werden." : ""}`; changeStatus.hidden = false; changeDiscard.hidden = false; changePreview.hidden = false; changeCompare.hidden = false; changeWrite.hidden = hasFiveGs; writeConfirmationLabel.hidden = hasFiveGs; }
+    if (draft) { changeStatus.textContent = `Vorgemerkt seit ${new Date(draft.created_at).toLocaleString("de-DE")}: ${draft.changed_fields.join(", ").toUpperCase()}. Aktive Revision: ${draft.base_revision}.`; changeStatus.hidden = false; changeDiscard.hidden = false; changePreview.hidden = false; changeCompare.hidden = false; changeWrite.hidden = false; writeConfirmationLabel.hidden = false; }
   }
   changeDialog.showModal(); document.querySelector("#change-imsi").focus();
 }

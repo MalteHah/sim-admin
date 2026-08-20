@@ -19,7 +19,8 @@ def main() -> None:
         emit_error("invalid_request", "Schreibauftrag oder pySim ist nicht verfügbar", 3)
 
     fields = set(payload.get("fields", []))
-    if not fields or not fields <= {"imsi", "msisdn", "acc", "ki", "opc", "impi", "impu", "ims_domain", "ist"}:
+    fivegs_fields = {"routing_indicator", "protection_scheme", "hn_public_key_id", "hn_public_key"}
+    if not fields or not fields <= {"imsi", "msisdn", "acc", "ki", "opc", "impi", "impu", "ims_domain", "ist"} | fivegs_fields:
         emit_error("unsupported_fields", "Der Entwurf enthält noch nicht unterstützte Schreibfelder", 4)
     transport = None
     try:
@@ -34,11 +35,22 @@ def main() -> None:
         pin_adm = sanitize_pin_adm(payload["adm"])
         _response, sw = channel.scc.verify_chv(card._adm_chv_num, h2b(pin_adm))
         if sw != "9000": emit_error("adm_verification_failed", "ADM1 wurde von der Karte abgelehnt", 6)
-        if fields & {"ki", "opc", "impi", "impu", "ims_domain", "ist"}:
+        if fields & ({"ki", "opc", "impi", "impu", "ims_domain", "ist"} | fivegs_fields):
             from pySim.sysmocom_sja2 import SysmocomSJA5
             if transport.get_atr().lower() not in SysmocomSJA5._atrs:
-                code = "unsupported_card_for_ims" if fields & {"impi", "impu", "ims_domain", "ist"} else "unsupported_card_for_auth_keys"
+                code = "unsupported_card_for_ims" if fields & ({"impi", "impu", "ims_domain", "ist"} | fivegs_fields) else "unsupported_card_for_auth_keys"
                 emit_error(code, "Diese Felder werden nur für erkannte SysmocomSJA5-Karten unterstützt", 11)
+
+        # Resolve and read every affected 5GS file before the first mutation.
+        # This prevents a missing or inaccessible file from causing a partial write.
+        current_routing = None
+        if "routing_indicator" in fields:
+            channel.select("MF/ADF.USIM/DF.5GS/EF.Routing_Indicator")
+            current_routing, _ = channel.read_binary_dec()
+        suci_fields = {"protection_scheme", "hn_public_key_id", "hn_public_key"}
+        if fields & suci_fields:
+            channel.select("MF/ADF.USIM/DF.SAIP/EF.SUCI_Calc_Info")
+            channel.read_binary_dec()
 
         verified = []
         if "imsi" in fields:
@@ -90,6 +102,25 @@ def main() -> None:
                 channel.update_binary(target); value, _ = channel.read_binary()
                 if value.lower() != target: emit_error("verification_failed", "IST konnte nicht bestätigt werden", 7)
                 verified.append("ist")
+        if "routing_indicator" in fields:
+            channel.select("MF/ADF.USIM/DF.5GS/EF.Routing_Indicator")
+            target = {"routing_indicator": payload["routing_indicator"], "rfu": current_routing.get("rfu", b"\xff\xff")}
+            channel.update_binary_dec(target); value, _ = channel.read_binary_dec()
+            if value.get("routing_indicator") != payload["routing_indicator"]:
+                emit_error("verification_failed", "Routing Indicator konnte nicht bestätigt werden", 7)
+            verified.append("routing_indicator")
+        if fields & suci_fields:
+            scheme = payload.get("protection_scheme")
+            key_id = payload.get("hn_public_key_id")
+            key_hex = payload.get("hn_public_key")
+            target = {
+                "prot_scheme_id_list": [{"priority": 0, "identifier": scheme, "key_index": key_id or 0}],
+                "hnet_pubkey_list": [] if scheme == 0 else [{"hnet_pubkey_identifier": key_id, "hnet_pubkey": h2b(key_hex)}],
+            }
+            channel.select("MF/ADF.USIM/DF.SAIP/EF.SUCI_Calc_Info")
+            channel.update_binary_dec(target); value, _ = channel.read_binary_dec()
+            if value != target: emit_error("verification_failed", "SUCI-Konfiguration konnte nicht bestätigt werden", 7)
+            for field in sorted(fields & suci_fields): verified.append(field)
         print(json.dumps({"verified_fields": verified}))
     except NoCardError: emit_error("no_card", "Keine SIM-Karte eingelegt", 2)
     except ReaderError: emit_error("reader_error", "Kartenleser ist nicht verfügbar", 8)

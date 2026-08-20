@@ -131,7 +131,7 @@ nicht in dieses Dokument.
 
 - Unterstützung weiterer Kartentypen für Ki und OPc.
 - Übernahme vorbereiteter Änderungen nach einem erfolgreichen SIM-Schreibvorgang.
-- SUCI- und weitere 5G-Profildaten sowie ein späterer IMS-SIM-Schreibpfad.
+- Unterstützung weiterer SUCI-Schlüssel und mehrerer Protection-Scheme-Prioritäten.
 - Feldweiser Kartenvergleich mit selektiver Übernahme aller technisch auslesbaren
   Werte; ICCID bleibt Zuordnungsmerkmal und nicht auslesbare Geheimnisse wie Ki,
   OPc und ADM1 werden nicht angeboten.
@@ -143,5 +143,8 @@ nicht in dieses Dokument.
   `hn_public_key_id` und `hn_public_key` mit strikter Formatprüfung ergänzt.
 - Die Werte werden beim Import wie alle Profildaten ausschließlich im
   verschlüsselten Datensatz abgelegt.
-- Ein Schreibpfad für EF.Routing_Indicator oder EF.SUCI_Calc_Info ist bewusst
-  noch nicht freigegeben.
+- Auf eindeutig erkannten SysmocomSJA5-Karten werden EF.Routing_Indicator unter
+  DF.5GS und die für die Kartenberechnung verwendete EF.SUCI_Calc_Info unter
+  DF.SAIP vor jedem Schreibvorgang lesend geprüft. Erst danach werden die Werte
+  geschrieben und unmittelbar zurückgelesen. Eine neue Tresorrevision entsteht
+  nur nach vollständiger Bestätigung.

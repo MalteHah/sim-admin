@@ -66,7 +66,7 @@ def test_single_card_preview_includes_optional_ims_and_fivegs_steps() -> None:
         "routing_indicator": "1234",
         "protection_scheme": 1,
         "hn_public_key_id": 7,
-        "hn_public_key": "A1B2C3D4",
+        "hn_public_key": "A1" * 32,
     }
 
     response = client.post("/api/v1/provisioning/preview", json=draft)

@@ -66,4 +66,5 @@ Alle wesentlichen Änderungen an diesem Projekt werden hier dokumentiert.
 - Linux-Wheelpaket mit sämtlichen Python-Abhängigkeiten für netzwerkfreie Installation und spätere USB-Updates
 - Optionale IMS-Felder IMPI, IMPU, IMS-Domain und IST in CSV-Import, verschlüsseltem Profiltresor und Änderungsentwürfen
 - Kontrollierter, zurückgelesener IMS-Schreibpfad für eindeutig erkannte SysmocomSJA5-Karten
-- Validierte optionale 5GS-/SUCI-Importfelder für Routing Indicator, Protection Scheme und Home-Network-Public-Key-Metadaten; noch ohne SIM-Schreibzugriff
+- Validierte optionale 5GS-/SUCI-Felder für Routing Indicator, Protection Scheme und Home-Network-Public-Key-Metadaten
+- Kontrollierter, vorab lesend geprüfter und unmittelbar zurückgelesener 5GS-/SUCI-Schreibpfad für eindeutig erkannte SysmocomSJA5-Karten
