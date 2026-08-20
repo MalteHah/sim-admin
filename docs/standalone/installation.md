@@ -42,6 +42,20 @@ ein. Vor deren Aktivierung wird die komplette Testsuite ausgeführt.
 Eine vorhandene Installation wird ausdrücklich nicht überschrieben. Dafür ist
 später ausschließlich der gesicherte Offline-Updatepfad vorgesehen.
 
+## Offline-Update prüfen
+
+Ein signiertes Release-Paket wird zunächst ausschließlich geprüft:
+
+```bash
+./scripts/offline-update.sh /pfad/zum/sim-admin-0.1.0.tar.gz
+```
+
+Neben dem Archiv müssen dessen `.sha256`- und `.sig`-Dateien liegen. Der Prüfer
+verwendet ausschließlich den bereits unter `/etc/sim-admin` hinterlegten
+öffentlichen Vertrauensanker. Er kontrolliert Signatur, Prüfsumme, jede Datei des
+internen Manifests, Versionsfolge, sichere Archivpfade und freien Speicher. In
+dieser Stufe werden weder Dateien ersetzt noch Dienste angehalten.
+
 ## Voraussetzungen
 
 - Debian-basiertes Linux
