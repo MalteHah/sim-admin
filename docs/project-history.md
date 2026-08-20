@@ -104,11 +104,11 @@ nicht in dieses Dokument.
   Zuordnung. Neue Sicherheitsvorgänge werden im Aktivitätsprotokoll verständlich
   bezeichnet.
 
-## Spätere Bereitstellung und Wartung
+## Bereitstellung und Wartung
 
-- GitHub-Repository mit versionierten Releases und Dokumentation vorsehen.
-- Reproduzierbares Installationsskript erstellen.
-- Signierte Offline-Updatepakete für USB-Datenträger entwickeln.
+- GitHub-Repository, Releasebau und vorläufige Dokumentation sind vorhanden.
+- Das reproduzierbare Neuinstallationsskript ist implementiert; der VM-Test ist offen.
+- Signierte Offline-Pakete und deren rein lesende USB-Prüfung sind implementiert.
 - Vor Updates automatisch sichern, Version und Schema prüfen und bei Fehlern zur
   vorherigen Version zurückkehren.
 - Benutzer-, Administrator-, Entwicklungs-, Architektur- und API-Dokumentation
@@ -130,12 +130,11 @@ nicht in dieses Dokument.
 ## Noch nicht umgesetzt
 
 - Unterstützung weiterer Kartentypen für Ki und OPc.
-- Übernahme vorbereiteter Änderungen nach einem erfolgreichen SIM-Schreibvorgang.
 - Unterstützung weiterer SUCI-Schlüssel und mehrerer Protection-Scheme-Prioritäten.
 - Feldweiser Kartenvergleich mit selektiver Übernahme aller technisch auslesbaren
   Werte; ICCID bleibt Zuordnungsmerkmal und nicht auslesbare Geheimnisse wie Ki,
   OPc und ADM1 werden nicht angeboten.
-- GitHub-Releaseprozess, Installationsskript und signierte Offline-Updates.
+- Produktive Updateausführung mit Vorab-Backup und Rollback.
 
 ## 2026-08-20 – Beginn der 5GS-/SUCI-Erweiterung
 

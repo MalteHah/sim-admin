@@ -22,5 +22,6 @@ Vor jeder Veröffentlichung sind Änderungen auf solche Inhalte zu prüfen.
 
 Die Anwendung ist für einen lokalen Offline-Standalone-Rechner vorgesehen.
 Schreibzugriffe auf SIM-Karten erfordern Kartenabgleich, ADM1, erneute
-Passwortbestätigung und explizite Freigabe. Ki/OPc-Schreibzugriffe sind derzeit
-nur für eindeutig erkannte SysmocomSJA5-Karten vorgesehen.
+Passwortbestätigung und explizite Freigabe. Ki/OPc-, IMS- und
+5GS-/SUCI-Schreibzugriffe sind derzeit nur für eindeutig erkannte
+SysmocomSJA5-Karten vorgesehen.

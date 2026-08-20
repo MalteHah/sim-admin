@@ -1,8 +1,10 @@
 # Installation auf einem Standalone-System
 
-Die Installation wird schrittweise automatisiert. Der erste, nicht verändernde
-Prüfmodus kontrolliert die Systemvoraussetzungen. Die eigentliche Installation
-und signierte Offline-Updates folgen in den nächsten Bereitstellungsstufen.
+Das Installationsskript unterstützt Prüfung, Vorschau und eine geschützte
+Neuinstallation. Die Neuinstallation ist implementiert, muss aber vor dem ersten
+stabilen Release noch auf der vorbereiteten Test-VM abgenommen werden. Für
+bestehende Installationen ist derzeit nur die signierte, nicht verändernde
+Offline-Updateprüfung freigegeben.
 
 ## Installationsprüfung
 
@@ -53,14 +55,27 @@ Paketquelle zurückgreifen.
 Ein signiertes Release-Paket wird zunächst ausschließlich geprüft:
 
 ```bash
-./scripts/offline-update.sh /pfad/zum/sim-admin-0.1.0.tar.gz
+./scripts/offline-update.sh /pfad/zum/sim-admin-0.2.0.tar.gz
 ```
 
 Neben dem Archiv müssen dessen `.sha256`- und `.sig`-Dateien liegen. Der Prüfer
 verwendet ausschließlich den bereits unter `/etc/sim-admin` hinterlegten
 öffentlichen Vertrauensanker. Er kontrolliert Signatur, Prüfsumme, jede Datei des
 internen Manifests, Versionsfolge, sichere Archivpfade und freien Speicher. In
-dieser Stufe werden weder Dateien ersetzt noch Dienste angehalten.
+dieser Stufe werden weder Dateien ersetzt noch Dienste angehalten. Ein
+produktiver Updateaustausch mit automatischem Backup und Rollback ist noch offen
+und darf nicht durch manuelles Überschreiben der Installation ersetzt werden.
+
+## Nach einer Neuinstallation prüfen
+
+```bash
+sudo systemctl status sim-admin sim-admin-redirect pcscd.socket
+curl -k https://127.0.0.1:8443/health
+```
+
+Danach im Browser anmelden, Kartenleserstatus prüfen, ein Testbackup erstellen
+und ausschließlich mit einer vorgesehenen Testkarte einen Read-only-Abgleich
+durchführen. Schreibtests sind ein separater Abnahmeschritt.
 
 ## Voraussetzungen
 

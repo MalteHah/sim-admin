@@ -2,7 +2,10 @@
 
 Alle wesentlichen Änderungen an diesem Projekt werden hier dokumentiert.
 
-## Unreleased
+## Unreleased – Zielversion 0.2.0
+
+Der aktuelle Stand ist noch nicht als stabiles Release freigegeben. Offene
+Hardware- und Bereitstellungstests stehen in `docs/testing-and-roadmap.md`.
 
 ### Changed
 

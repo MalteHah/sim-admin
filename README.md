@@ -17,6 +17,8 @@ entwickelt.
 - Dry Run und read-only Kartenabgleich
 - kontrolliertes Schreiben von IMSI, ACC und MSISDN
 - kartentypspezifisches Ki-/OPc-Schreiben für SysmocomSJA5
+- optionale IMS- und 5GS-/SUCI-Profildaten in Import und Einzelkartenerfassung
+- vorab lesend geprüfte und zurückgelesene IMS-/5GS-Schreibpfade für SysmocomSJA5
 - metadatenbasiertes Aktivitätsprotokoll ohne SIM-Geheimnisse
 - AES-256-GCM-verschlüsselte USB-Backups und Wiederherstellung
 
@@ -61,7 +63,12 @@ uvicorn app.main:app --reload
 
 ## Dokumentation
 
+- [Vorläufige Bedienungsanleitung](docs/user-guide.md)
+- [Vorläufige Administrationsanleitung](docs/administration.md)
 - [Standalone-Installation](docs/standalone/installation.md)
+- [Backup und Wiederherstellung](docs/standalone/backup-restore.md)
+- [Offene Punkte und Abnahmetests](docs/testing-and-roadmap.md)
+- [Vorläufige Release Notes 0.2.0](docs/release-notes-0.2.0.md)
 - [Architektur](docs/architecture/overview.md)
 - [Projektchronik](docs/project-history.md)
 - [Änderungsprotokoll](CHANGELOG.md)
@@ -71,7 +78,7 @@ uvicorn app.main:app --reload
 ## Releases
 
 Die Datei `VERSION` bestimmt die Anwendungsversion. Ein Tag mit derselben Version
-(`v0.1.0`) startet nach erfolgreichen Tests den GitHub-Releaseprozess. Lokal kann
+(`v0.2.0`) startet nach erfolgreichen Tests den GitHub-Releaseprozess. Lokal kann
 das reproduzierbare Archiv samt SHA-256-Prüfsumme so gebaut werden:
 
 ```bash
@@ -84,7 +91,7 @@ bereits als vertrauenswürdiger Release-Schlüssel hinterlegt sein:
 
 ```bash
 ./scripts/build-release.sh --signing-key /sicherer/ort/release-signing-key.pem
-./scripts/verify-release.sh dist/sim-admin-0.1.0.tar.gz \
+./scripts/verify-release.sh dist/sim-admin-0.2.0.tar.gz \
   --public-key /etc/sim-admin/release-signing-key.pub.pem
 ```
 
@@ -112,6 +119,12 @@ Dieses Projekt verarbeitet hochsensible Mobilfunk-Zugangsdaten. Reale Ki-,
 OPc-, ADM-, PIN-, PUK- oder Teilnehmerdaten dürfen niemals in Git, Issues oder
 Testdateien gelangen. Hardware-Schreibtests dürfen ausschließlich mit dafür
 vorgesehenen Testkarten und einem vorhandenen Backup erfolgen.
+
+## Projektstatus
+
+`0.2.0` ist ein dokumentierter Vorabstand. Ein stabiler GitHub-Release-Tag wird
+erst nach Hardware-, Neuinstallations-, Offline-Update- und Restore-Abnahme
+erstellt. Kamailio-IMS wird als eigener Integrationsblock separat bearbeitet.
 
 ## Lizenz
 

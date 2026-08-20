@@ -66,8 +66,9 @@ validiert, aber niemals in einer API-Antwort zurückgegeben.
 Ein davon getrennter `CardComparisonService` verwendet ausschließlich den
 read-only SIM-Adapter. Der `ProfileWriteService` ist die einzige Orchestrierung
 für Kartenänderungen: ICCID-Prüfung, ADM1, explizite Freigabe, Schreiben,
-Zurücklesen und anschließender Revisions-Commit. Ki und OPc werden nur für
-eindeutig erkannte SysmocomSJA5-Karten freigegeben.
+Zurücklesen und anschließender Revisions-Commit. Ki, OPc, IMS- und
+5GS-/SUCI-Felder werden nur für eindeutig erkannte SysmocomSJA5-Karten
+freigegeben.
 
 ## Fachmodelle
 
@@ -83,6 +84,12 @@ Die IMS-Felder IMPI, IMPU, IMS-Domain und IST sind optional in den verschlüssel
 Profilrecords enthalten. Fehlende Schlüssel werden beim Lesen älterer Records als
 „nicht gesetzt“ behandelt. Auf eindeutig erkannten SysmocomSJA5-Karten können sie
 nach ICCID- und ADM1-Prüfung geschrieben und unmittelbar zurückgelesen werden.
+
+Routing Indicator, Protection Scheme, Home-Network Public Key ID und Public Key
+sind ebenfalls optionale Bestandteile derselben verschlüsselten Profilrecords.
+Bei SJA5-Karten verwendet der Schreibadapter `DF.5GS/EF.Routing_Indicator` und
+die kartenseitig verwendete `DF.SAIP/EF.SUCI_Calc_Info`. Beide Ziele werden vor
+der ersten Mutation gelesen; ein Revisions-Commit folgt erst nach Readback.
 
 Geheime Werte werden mit Pydantics `SecretStr` gekapselt, damit sie nicht
 versehentlich in Standarddarstellungen und Logs im Klartext erscheinen. Das

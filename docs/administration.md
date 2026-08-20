@@ -1,0 +1,72 @@
+# Vorläufige Administrationsanleitung
+
+## Betriebsmodell
+
+SIM-Admin ist für einen dedizierten, offline betriebenen Debian-Rechner gedacht.
+Die Webanwendung läuft als systemd-Dienst ohne interaktives Benutzerkonto.
+pySim und PC/SC werden nur über getrennte Bridge-Prozesse angesprochen.
+
+Standardpfade einer Installation:
+
+| Zweck | Pfad |
+| --- | --- |
+| Anwendung | `/opt/sim-admin/application` |
+| Anwendungsumgebung | `/opt/sim-admin/application/.venv` |
+| pySim-Quellen | `/opt/sim-admin/pysim` |
+| pySim-Python | `/opt/sim-admin/venv/bin/python` |
+| Laufzeitkonfiguration | `/etc/sim-admin.env` |
+| TLS-Schlüssel/Zertifikat | `/etc/sim-admin/tls/` |
+| Release-Vertrauensanker | `/etc/sim-admin/release-signing-key.pub.pem` |
+
+## Dienste kontrollieren
+
+```bash
+sudo systemctl status sim-admin sim-admin-redirect pcscd.socket
+sudo journalctl -u sim-admin -n 100 --no-pager
+```
+
+Nach einer Konfigurationsänderung:
+
+```bash
+sudo systemctl restart sim-admin
+```
+
+## Sicherheitsregeln
+
+- `/etc/sim-admin.env`, Zugangsdaten, Geräteschlüssel und TLS-Schlüssel dürfen
+  nicht in Git oder Supportausgaben gelangen.
+- Der Profiltresor ist gerätegebunden: `profiles.db` und `profile.key` gehören
+  zusammen. Der Schlüssel wird deshalb im verschlüsselten USB-Backup gesichert.
+- Das Backup-Passwort wird nicht gespeichert und kann nicht zurückgesetzt
+  werden.
+- Der private Release-Schlüssel gehört nicht auf den Standalone-Rechner. Dort
+  wird nur der vorher abgeglichene öffentliche Schlüssel installiert.
+- Hardware-Schreibtests ausschließlich mit Testkarten und aktuellem Backup.
+
+## Benutzerpasswort
+
+Das Anmeldepasswort wird in der Anwendung unter **Einstellungen** geändert. Die
+Änderung wirkt auf neue Anmeldungen; das Passwort soll mindestens zwölf Zeichen
+lang und unabhängig vom Backup-Passwort sein.
+
+## Datenpflege
+
+Regelmäßig sollten ein verschlüsseltes USB-Backup erstellt, dessen Integrität
+über **Backup prüfen** kontrolliert und der Datenträger anschließend sicher
+ausgeworfen werden. Inventarexporte enthalten keine Schlüssel oder ADM-Daten und
+ersetzen kein vollständiges Backup.
+
+## Versions- und Updatebetrieb
+
+Nur signierte Pakete verwenden. Die Offline-Prüfung verändert keine Dateien und
+ist vor jedem späteren Update verpflichtend. Der eigentliche Austausch einer
+bestehenden Installation ist im Vorabstand noch nicht freigegeben und muss erst
+auf der Test-VM abgenommen werden.
+
+## Störungsfall
+
+Bei einem Fehler keine wiederholten Schreibversuche auf derselben Karte starten.
+Zuerst Aktivitätsprotokoll und Dienststatus prüfen, Kartenleser neu verbinden und
+den Kartenstand erneut ausschließlich lesen. Fehlermeldungen und Metadaten dürfen
+dokumentiert werden; Geheimwerte gehören niemals in Issues oder Chatverläufe.
+
