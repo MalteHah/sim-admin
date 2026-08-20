@@ -19,6 +19,10 @@ class ProvisioningDraft(DomainModel):
     impu: str | None = Field(default=None, min_length=5, max_length=255, pattern=r"^(sip:|sips:|tel:)[^\s]+$")
     ims_domain: str | None = Field(default=None, min_length=1, max_length=253, pattern=r"^[A-Za-z0-9](?:[A-Za-z0-9.-]{0,251}[A-Za-z0-9])?$")
     ist: str | None = Field(default=None, pattern=r"^(?:[0-9A-Fa-f]{2})+$")
+    routing_indicator: str | None = Field(default=None, pattern=r"^\d{1,4}$")
+    protection_scheme: int | None = Field(default=None, ge=0, le=15)
+    hn_public_key_id: int | None = Field(default=None, ge=0, le=255)
+    hn_public_key: str | None = Field(default=None, pattern=r"^(?:[0-9A-Fa-f]{2})+$")
 
     @field_validator("ki", "opc")
     @classmethod

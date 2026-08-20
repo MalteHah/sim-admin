@@ -136,3 +136,12 @@ nicht in dieses Dokument.
   Werte; ICCID bleibt Zuordnungsmerkmal und nicht auslesbare Geheimnisse wie Ki,
   OPc und ADM1 werden nicht angeboten.
 - GitHub-Releaseprozess, Installationsskript und signierte Offline-Updates.
+
+## 2026-08-20 – Beginn der 5GS-/SUCI-Erweiterung
+
+- Optionale CSV-Felder `routing_indicator`, `protection_scheme`,
+  `hn_public_key_id` und `hn_public_key` mit strikter Formatprüfung ergänzt.
+- Die Werte werden beim Import wie alle Profildaten ausschließlich im
+  verschlüsselten Datensatz abgelegt.
+- Ein Schreibpfad für EF.Routing_Indicator oder EF.SUCI_Calc_Info ist bewusst
+  noch nicht freigegeben.

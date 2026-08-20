@@ -12,7 +12,8 @@ SYSMOCOM_COLUMNS = {"pin1", "puk1", "pin2", "puk2", "adm1"} | {
     f"{prefix}{index}" for prefix in ("kic", "kid", "kik") for index in range(1, 4)
 }
 IMS_COLUMNS = {"impi", "impu", "ims_domain", "domain", "ist"}
-ALLOWED_COLUMNS = REQUIRED_COLUMNS | {"msisdn", "acc"} | SYSMOCOM_COLUMNS | IMS_COLUMNS
+FIVE_GS_COLUMNS = {"routing_indicator", "protection_scheme", "hn_public_key_id", "hn_public_key"}
+ALLOWED_COLUMNS = REQUIRED_COLUMNS | {"msisdn", "acc"} | SYSMOCOM_COLUMNS | IMS_COLUMNS | FIVE_GS_COLUMNS
 
 
 class CSVImportError(Exception):
@@ -96,9 +97,13 @@ class CSVImportPreviewService:
                     "ki": normalized.get("ki", ""), "opc": normalized.get("opc", ""), "adm": normalized.get("adm", ""),
                     "impi": normalized.get("impi") or None, "impu": normalized.get("impu") or None,
                     "ims_domain": normalized.get("ims_domain") or None, "ist": normalized.get("ist") or None,
+                    "routing_indicator": normalized.get("routing_indicator") or None,
+                    "protection_scheme": int(normalized["protection_scheme"]) if normalized.get("protection_scheme", "").isdigit() else normalized.get("protection_scheme") or None,
+                    "hn_public_key_id": int(normalized["hn_public_key_id"]) if normalized.get("hn_public_key_id", "").isdigit() else normalized.get("hn_public_key_id") or None,
+                    "hn_public_key": normalized.get("hn_public_key") or None,
                 })
             except ValidationError as exc:
-                labels = {"iccid": "ICCID", "imsi": "IMSI", "msisdn": "MSISDN", "acc": "ACC", "ki": "Ki", "opc": "OPc", "adm": "ADM1", "impi": "IMPI", "impu": "IMPU", "ims_domain": "IMS-Domain", "ist": "IST"}
+                labels = {"iccid": "ICCID", "imsi": "IMSI", "msisdn": "MSISDN", "acc": "ACC", "ki": "Ki", "opc": "OPc", "adm": "ADM1", "impi": "IMPI", "impu": "IMPU", "ims_domain": "IMS-Domain", "ist": "IST", "routing_indicator": "Routing Indicator", "protection_scheme": "Protection Scheme", "hn_public_key_id": "HN Public Key ID", "hn_public_key": "HN Public Key"}
                 seen_fields: set[str] = set()
                 for issue in exc.errors():
                     field = str(issue["loc"][0]) if issue.get("loc") else "Datensatz"

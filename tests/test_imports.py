@@ -98,3 +98,28 @@ def test_csv_import_rejects_invalid_ims_field_without_echoing_value() -> None:
     assert preview.invalid_rows == 1
     assert preview.rows[0].errors == ["IMPI: ungültiges Format"]
     assert "invalid identity" not in preview.model_dump_json()
+
+
+def test_csv_import_accepts_optional_fivegs_fields() -> None:
+    content = CSV.replace(
+        "iccid;imsi;msisdn;acc;ki;opc;adm",
+        "iccid;imsi;msisdn;acc;ki;opc;adm;routing_indicator;protection_scheme;hn_public_key_id;hn_public_key",
+    ).replace(";DEADBEEF\n", ";DEADBEEF;1234;1;7;A1B2C3D4\n")
+
+    preview, records = CSVImportPreviewService().parse(content)
+
+    assert preview.valid_rows == 1
+    assert records[0]["routing_indicator"] == "1234"
+    assert records[0]["protection_scheme"] == "1"
+    assert records[0]["hn_public_key_id"] == "7"
+    assert records[0]["hn_public_key"] == "A1B2C3D4"
+
+
+def test_csv_import_rejects_invalid_fivegs_field_without_echoing_value() -> None:
+    content = CSV.replace(";adm\n", ";adm;routing_indicator\n").replace(";DEADBEEF\n", ";DEADBEEF;secret-invalid-value\n")
+
+    preview = CSVImportPreviewService().create_preview(content)
+
+    assert preview.invalid_rows == 1
+    assert preview.rows[0].errors == ["Routing Indicator: ungültiges Format"]
+    assert "secret-invalid-value" not in preview.model_dump_json()
