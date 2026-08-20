@@ -123,8 +123,9 @@ nicht in dieses Dokument.
   gerätegebunden verschlüsselt und niemals im Klartext in SQLite abgelegt.
 - Bestehende Profile ohne IMS-Daten bleiben ohne Datenmigration les- und
   bearbeitbar.
-- Änderungsentwürfe können IMS-Daten vormerken; der bestehende SIM-Schreibpfad
-  lehnt diese Felder weiterhin ausdrücklich als nicht unterstützt ab.
+- Änderungsentwürfe können IMS-Daten vormerken. Auf eindeutig erkannten
+  SysmocomSJA5-Karten werden EF.IMPI, EF.IMPU, EF.DOMAIN und EF.IST erst nach
+  ICCID-/ADM1-Prüfung geschrieben, zurückgelesen und anschließend revisioniert.
 
 ## Noch nicht umgesetzt
 

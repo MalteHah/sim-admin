@@ -27,5 +27,6 @@ class SIMCardAdapter(Protocol):
     def read_identity(self, reader_index: int = 0) -> SIMReadResult:
         """Read non-secret card identifiers without changing the card."""
 
-    def write_standard_fields(self, reader_index: int, expected_iccid: str, imsi: str, acc: str, msisdn: str | None, adm: str, fields: list[str], ki: str | None = None, opc: str | None = None) -> list[str]:
+    def write_standard_fields(self, reader_index: int, expected_iccid: str, imsi: str, acc: str, msisdn: str | None, adm: str, fields: list[str], ki: str | None = None, opc: str | None = None,
+        impi: str | None = None, impu: str | None = None, ims_domain: str | None = None, ist: str | None = None) -> list[str]:
         """Write and verify supported fields after an ICCID and card-model check."""

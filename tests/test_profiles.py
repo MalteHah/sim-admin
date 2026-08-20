@@ -117,7 +117,7 @@ def test_unchanged_profile_cannot_create_change_draft(tmp_path) -> None:
 
 def test_verified_write_commits_new_revision(tmp_path) -> None:
     class FakeWriteAdapter:
-        def write_standard_fields(self, reader_index, expected_iccid, imsi, acc, msisdn, adm, fields, ki, opc):
+        def write_standard_fields(self, reader_index, expected_iccid, imsi, acc, msisdn, adm, fields, ki, opc, impi=None, impu=None, ims_domain=None, ist=None):
             assert reader_index == 0
             assert expected_iccid == "8949012345678901234"
             assert imsi == "001010987654321"
@@ -142,7 +142,7 @@ def test_verified_write_commits_new_revision(tmp_path) -> None:
 
 def test_verified_auth_key_write_commits_new_revision(tmp_path) -> None:
     class FakeSja5Adapter:
-        def write_standard_fields(self, reader_index, expected_iccid, imsi, acc, msisdn, adm, fields, ki, opc):
+        def write_standard_fields(self, reader_index, expected_iccid, imsi, acc, msisdn, adm, fields, ki, opc, impi=None, impu=None, ims_domain=None, ist=None):
             assert fields == ["ki", "opc"]
             assert ki == "11223344556677889900AABBCCDDEEFF"
             assert opc == "AABBCCDDEEFF00112233445566778899"
@@ -275,3 +275,25 @@ def test_optional_ims_fields_are_encrypted_and_backward_compatible(tmp_path) -> 
     legacy_profile = legacy.list_profiles()[0]
     assert legacy_profile.ims_configured is False
     assert legacy.get_editable(legacy_profile.id).impi is None
+
+
+def test_verified_ims_write_commits_new_revision(tmp_path) -> None:
+    class FakeImsAdapter:
+        def write_standard_fields(self, reader_index, expected_iccid, imsi, acc, msisdn, adm, fields, ki, opc, impi=None, impu=None, ims_domain=None, ist=None):
+            assert fields == ["impi", "impu", "ims_domain", "ist"]
+            assert impi == "001010123456789@ims.example"
+            assert impu == "sip:30006@ims.example"
+            assert ims_domain == "ims.example"
+            assert ist == "03FF"
+            return fields
+
+    vault = ProfileVaultService(str(tmp_path / "profiles.db"), str(tmp_path / "profile.key")); vault.import_csv(CSV)
+    profile = vault.list_profiles()[0]
+    vault.prepare_change(profile.id, profile.imsi, None, "0001", None, None,
+        "001010123456789@ims.example", "sip:30006@ims.example", "ims.example", "03FF")
+
+    revision, verified = ProfileWriteService(FakeImsAdapter(), vault).execute(profile.id)
+
+    assert revision == 2
+    assert verified == ["impi", "impu", "ims_domain", "ist"]
+    assert vault.get_draft(profile.id).impi == "001010123456789@ims.example"

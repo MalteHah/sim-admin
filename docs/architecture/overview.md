@@ -81,8 +81,8 @@ FastAPI, pySim und einer späteren Datenbank:
 
 Die IMS-Felder IMPI, IMPU, IMS-Domain und IST sind optional in den verschlüsselten
 Profilrecords enthalten. Fehlende Schlüssel werden beim Lesen älterer Records als
-„nicht gesetzt“ behandelt. Diese Felder sind derzeit reine Tresordaten: Sie werden
-weder durch den Kartenadapter gelesen noch auf eine SIM geschrieben.
+„nicht gesetzt“ behandelt. Auf eindeutig erkannten SysmocomSJA5-Karten können sie
+nach ICCID- und ADM1-Prüfung geschrieben und unmittelbar zurückgelesen werden.
 
 Geheime Werte werden mit Pydantics `SecretStr` gekapselt, damit sie nicht
 versehentlich in Standarddarstellungen und Logs im Klartext erscheinen. Das

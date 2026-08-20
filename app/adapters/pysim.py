@@ -79,9 +79,11 @@ class PySimCardAdapter:
                 "invalid_response", "pySim lieferte unvollständige Kartendaten"
             ) from exc
 
-    def write_standard_fields(self, reader_index: int, expected_iccid: str, imsi: str, acc: str, msisdn: str | None, adm: str, fields: list[str], ki: str | None = None, opc: str | None = None) -> list[str]:
+    def write_standard_fields(self, reader_index: int, expected_iccid: str, imsi: str, acc: str, msisdn: str | None, adm: str, fields: list[str], ki: str | None = None, opc: str | None = None,
+        impi: str | None = None, impu: str | None = None, ims_domain: str | None = None, ist: str | None = None) -> list[str]:
         environment = os.environ.copy(); environment["PYTHONPATH"] = self._pysim_source
-        payload = json.dumps({"expected_iccid": expected_iccid, "imsi": imsi, "acc": acc, "msisdn": msisdn, "adm": adm, "fields": fields, "ki": ki, "opc": opc})
+        payload = json.dumps({"expected_iccid": expected_iccid, "imsi": imsi, "acc": acc, "msisdn": msisdn, "adm": adm, "fields": fields, "ki": ki, "opc": opc,
+            "impi": impi, "impu": impu, "ims_domain": ims_domain, "ist": ist})
         try:
             with self._lock:
                 result = subprocess.run([self._python, str(WRITE_BRIDGE_SCRIPT), "--reader", str(reader_index)], input=payload, capture_output=True, check=False, env=environment, text=True, timeout=self._timeout_seconds)

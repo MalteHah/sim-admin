@@ -19,7 +19,7 @@ def main() -> None:
         emit_error("invalid_request", "Schreibauftrag oder pySim ist nicht verfügbar", 3)
 
     fields = set(payload.get("fields", []))
-    if not fields or not fields <= {"imsi", "msisdn", "acc", "ki", "opc"}:
+    if not fields or not fields <= {"imsi", "msisdn", "acc", "ki", "opc", "impi", "impu", "ims_domain", "ist"}:
         emit_error("unsupported_fields", "Der Entwurf enthält noch nicht unterstützte Schreibfelder", 4)
     transport = None
     try:
@@ -34,6 +34,11 @@ def main() -> None:
         pin_adm = sanitize_pin_adm(payload["adm"])
         _response, sw = channel.scc.verify_chv(card._adm_chv_num, h2b(pin_adm))
         if sw != "9000": emit_error("adm_verification_failed", "ADM1 wurde von der Karte abgelehnt", 6)
+        if fields & {"ki", "opc", "impi", "impu", "ims_domain", "ist"}:
+            from pySim.sysmocom_sja2 import SysmocomSJA5
+            if transport.get_atr().lower() not in SysmocomSJA5._atrs:
+                code = "unsupported_card_for_ims" if fields & {"impi", "impu", "ims_domain", "ist"} else "unsupported_card_for_auth_keys"
+                emit_error(code, "Diese Felder werden nur für erkannte SysmocomSJA5-Karten unterstützt", 11)
 
         verified = []
         if "imsi" in fields:
@@ -53,9 +58,6 @@ def main() -> None:
             if value.get("dialing_nr", "").rstrip("f") != number: emit_error("verification_failed", "MSISDN konnte nicht bestätigt werden", 7)
             verified.append("msisdn")
         if fields & {"ki", "opc"}:
-            from pySim.sysmocom_sja2 import SysmocomSJA5
-            if transport.get_atr().lower() not in SysmocomSJA5._atrs:
-                emit_error("unsupported_card_for_auth_keys", "Ki und OPc werden nur für erkannte SysmocomSJA5-Karten unterstützt", 11)
             key = h2b(payload["ki"]); opc = h2b(payload["opc"])
             auth_3g = {"cfg": {"only_4bytes_res_in_3g": False, "sres_deriv_func_in_2g": 1, "use_opc_instead_of_op": True, "algorithm": "milenage"}, "key": key, "op_opc": opc}
             auth_2g = {"cfg": {"only_4bytes_res_in_3g": False, "sres_deriv_func_in_2g": 1, "use_opc_instead_of_op": True, "algorithm": "milenage"}, "key": key, "op_opc": opc}
@@ -65,6 +67,29 @@ def main() -> None:
                     emit_error("verification_failed", "Authentisierungsparameter konnten nicht bestätigt werden", 7)
             if "ki" in fields: verified.append("ki")
             if "opc" in fields: verified.append("opc")
+        if fields & {"impi", "impu", "ims_domain", "ist"}:
+            if "impi" in fields:
+                channel.select("MF/ADF.ISIM/EF.IMPI"); channel.update_binary_dec({"nai": payload["impi"]})
+                value, _ = channel.read_binary_dec()
+                if value.get("nai") != payload["impi"]: emit_error("verification_failed", "IMPI konnte nicht bestätigt werden", 7)
+                verified.append("impi")
+            if "ims_domain" in fields:
+                channel.select("MF/ADF.ISIM/EF.DOMAIN"); channel.update_binary_dec({"domain": payload["ims_domain"]})
+                value, _ = channel.read_binary_dec()
+                if value.get("domain") != payload["ims_domain"]: emit_error("verification_failed", "IMS-Domain konnte nicht bestätigt werden", 7)
+                verified.append("ims_domain")
+            if "impu" in fields:
+                channel.select("MF/ADF.ISIM/EF.IMPU"); channel.update_record_dec(1, {"impu": payload["impu"]})
+                value, _ = channel.read_record_dec(1)
+                if value.get("impu") != payload["impu"]: emit_error("verification_failed", "IMPU konnte nicht bestätigt werden", 7)
+                verified.append("impu")
+            if "ist" in fields:
+                channel.select("MF/ADF.ISIM/EF.IST"); current, _ = channel.read_binary()
+                target = payload["ist"].lower()
+                if len(target) != len(current): emit_error("invalid_ist_length", "IST muss exakt der Dateigröße der Karte entsprechen", 13)
+                channel.update_binary(target); value, _ = channel.read_binary()
+                if value.lower() != target: emit_error("verification_failed", "IST konnte nicht bestätigt werden", 7)
+                verified.append("ist")
         print(json.dumps({"verified_fields": verified}))
     except NoCardError: emit_error("no_card", "Keine SIM-Karte eingelegt", 2)
     except ReaderError: emit_error("reader_error", "Kartenleser ist nicht verfügbar", 8)
