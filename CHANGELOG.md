@@ -59,3 +59,4 @@ Alle wesentlichen Änderungen an diesem Projekt werden hier dokumentiert.
 - Passwortgeschützte Übernahme einer abweichenden Karten-IMSI als neue Tresorrevision ohne SIM-Schreibzugriff
 - Nicht verändernder Installations-Prüfmodus für Debian-, Python-, systemd-, OpenSSL- und PC/SC-Voraussetzungen
 - Geschützte Neuinstallation mit Vorschau, eigenem Dienstkonto, TLS, Zugangsdaten, Tests und systemd-Diensten
+- Reproduzierbarer Release-Bau mit Versionsdatei, Dateimanifest, SHA-256-Prüfsumme und taggesteuertem GitHub-Release

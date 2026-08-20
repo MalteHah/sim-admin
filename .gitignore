@@ -36,6 +36,7 @@ data/imports/*
 # Local deployment scratch files
 work/
 outputs/
+dist/
 
 # Certificates, keys, databases and encrypted backup archives
 *.key

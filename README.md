@@ -68,6 +68,16 @@ uvicorn app.main:app --reload
 - [Sicherheitsrichtlinie](SECURITY.md)
 - [Mitwirken](CONTRIBUTING.md)
 
+## Releases
+
+Die Datei `VERSION` bestimmt die Anwendungsversion. Ein Tag mit derselben Version
+(`v0.1.0`) startet nach erfolgreichen Tests den GitHub-Releaseprozess. Lokal kann
+das reproduzierbare Archiv samt SHA-256-Prüfsumme so gebaut werden:
+
+```bash
+./scripts/build-release.sh
+```
+
 ## Wichtiger Sicherheitshinweis
 
 Dieses Projekt verarbeitet hochsensible Mobilfunk-Zugangsdaten. Reale Ki-,
