@@ -13,6 +13,10 @@ from app.services.imports import CSVImportError, CSVImportPreviewService
 AAD = b"sim-admin-profile-v1"
 
 
+def _optional_int(value: object) -> object | None:
+    return None if value in (None, "") else value
+
+
 class ProfileVaultService:
     def __init__(self, database: str | None = None, key_file: str | None = None) -> None:
         self._database = database or os.getenv("SIM_ADMIN_PROFILE_DB", "/opt/sim-admin/application/data/database/profiles.db")
@@ -176,8 +180,8 @@ class ProfileVaultService:
             changed_fields = json.loads(pending["changed_fields"])
         return ProfileEditableView(iccid=record["iccid"], imsi=record["imsi"], msisdn=record.get("msisdn") or None, acc=record.get("acc") or "0001", revision=row["revision"], pending_change=pending is not None, changed_fields=changed_fields,
             impi=record.get("impi") or None, impu=record.get("impu") or None, ims_domain=record.get("ims_domain") or None, ist=record.get("ist") or None,
-            routing_indicator=record.get("routing_indicator") or None, protection_scheme=record.get("protection_scheme"),
-            hn_public_key_id=record.get("hn_public_key_id"), hn_public_key=record.get("hn_public_key") or None)
+            routing_indicator=record.get("routing_indicator") or None, protection_scheme=_optional_int(record.get("protection_scheme")),
+            hn_public_key_id=_optional_int(record.get("hn_public_key_id")), hn_public_key=record.get("hn_public_key") or None)
 
     def prepare_change(self, profile_id: int, imsi: str, msisdn: str | None, acc: str, ki: str | None, opc: str | None,
         impi: str | None = None, impu: str | None = None, ims_domain: str | None = None, ist: str | None = None,
@@ -187,15 +191,15 @@ class ProfileVaultService:
         current = self._get_record(profile_id)
         updated = dict(current)
         proposed = {"imsi": imsi, "msisdn": msisdn or "", "acc": acc.upper(), "impi": impi or "", "impu": impu or "", "ims_domain": ims_domain or "", "ist": (ist or "").upper()}
-        proposed.update({"routing_indicator": routing_indicator or "", "protection_scheme": protection_scheme,
-            "hn_public_key_id": hn_public_key_id, "hn_public_key": (hn_public_key or "").upper()})
+        proposed.update({"routing_indicator": routing_indicator or "", "protection_scheme": protection_scheme if protection_scheme is not None else "",
+            "hn_public_key_id": hn_public_key_id if hn_public_key_id is not None else "", "hn_public_key": (hn_public_key or "").upper()})
         if ki: proposed["ki"] = ki.upper()
         if opc: proposed["opc"] = opc.upper()
         updated.update(proposed)
         ProvisioningDraft(iccid=current["iccid"], imsi=updated["imsi"], msisdn=updated["msisdn"] or None, acc=updated["acc"], ki=updated["ki"], opc=updated["opc"], adm=current["adm"],
             impi=updated.get("impi") or None, impu=updated.get("impu") or None, ims_domain=updated.get("ims_domain") or None, ist=updated.get("ist") or None,
-            routing_indicator=updated.get("routing_indicator") or None, protection_scheme=updated.get("protection_scheme"),
-            hn_public_key_id=updated.get("hn_public_key_id"), hn_public_key=updated.get("hn_public_key") or None)
+            routing_indicator=updated.get("routing_indicator") or None, protection_scheme=_optional_int(updated.get("protection_scheme")),
+            hn_public_key_id=_optional_int(updated.get("hn_public_key_id")), hn_public_key=updated.get("hn_public_key") or None)
         changed = sorted(field for field, value in proposed.items() if value != current.get(field, ""))
         if not changed: raise ValueError("no_changes")
         created_at = datetime.now(UTC).isoformat(); nonce = os.urandom(12)
@@ -224,8 +228,8 @@ class ProfileVaultService:
         return ProvisioningDraft(iccid=record["iccid"], imsi=record["imsi"], msisdn=record.get("msisdn") or None,
             acc=record.get("acc") or "0001", ki=record["ki"], opc=record["opc"], adm=record["adm"], impi=record.get("impi") or None,
             impu=record.get("impu") or None, ims_domain=record.get("ims_domain") or None, ist=record.get("ist") or None,
-            routing_indicator=record.get("routing_indicator") or None, protection_scheme=record.get("protection_scheme"),
-            hn_public_key_id=record.get("hn_public_key_id"), hn_public_key=record.get("hn_public_key") or None)
+            routing_indicator=record.get("routing_indicator") or None, protection_scheme=_optional_int(record.get("protection_scheme")),
+            hn_public_key_id=_optional_int(record.get("hn_public_key_id")), hn_public_key=record.get("hn_public_key") or None)
 
     def discard_change(self, profile_id: int) -> bool:
         with self._lock:
@@ -254,8 +258,8 @@ class ProfileVaultService:
         return ProvisioningDraft(iccid=record["iccid"], imsi=record["imsi"], msisdn=record.get("msisdn") or None,
             acc=record.get("acc") or "0001", ki=record["ki"], opc=record["opc"], adm=record["adm"], impi=record.get("impi") or None,
             impu=record.get("impu") or None, ims_domain=record.get("ims_domain") or None, ist=record.get("ist") or None,
-            routing_indicator=record.get("routing_indicator") or None, protection_scheme=record.get("protection_scheme"),
-            hn_public_key_id=record.get("hn_public_key_id"), hn_public_key=record.get("hn_public_key") or None)
+            routing_indicator=record.get("routing_indicator") or None, protection_scheme=_optional_int(record.get("protection_scheme")),
+            hn_public_key_id=_optional_int(record.get("hn_public_key_id")), hn_public_key=record.get("hn_public_key") or None)
 
     def get_secrets(self, profile_id: int) -> dict[str, str]:
         record = self._get_record(profile_id)
