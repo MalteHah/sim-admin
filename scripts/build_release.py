@@ -37,6 +37,7 @@ def main() -> None:
     parser.add_argument("--allow-dirty", action="store_true")
     parser.add_argument("--signing-key", type=Path)
     parser.add_argument("--signing-key-password-file", type=Path)
+    parser.add_argument("--wheelhouse", type=Path)
     args = parser.parse_args()
 
     version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
@@ -49,13 +50,20 @@ def main() -> None:
         if status:
             raise SystemExit("Release-Bau abgebrochen: Arbeitsverzeichnis ist nicht sauber")
 
-    files = git_files()
+    files = [(path, ROOT / path) for path in git_files()]
+    if args.wheelhouse:
+        wheelhouse = args.wheelhouse.resolve()
+        wheels = sorted(wheelhouse.glob("*.whl"))
+        if not wheels:
+            raise SystemExit("Das angegebene Wheel-Verzeichnis enthält keine .whl-Dateien")
+        files.extend((Path("wheelhouse") / wheel.name, wheel) for wheel in wheels)
     manifest = {
         "application": "sim-admin",
         "format": 1,
         "version": version,
         "files": [
-            {"path": str(path), "sha256": sha256(ROOT / path)} for path in files
+            {"path": str(relative), "sha256": sha256(source)}
+            for relative, source in files
         ],
     }
     manifest_bytes = (json.dumps(manifest, indent=2, sort_keys=True) + "\n").encode()
@@ -66,8 +74,7 @@ def main() -> None:
     with archive.open("wb") as raw:
         with gzip.GzipFile(filename="", mode="wb", fileobj=raw, mtime=0) as compressed:
             with tarfile.open(fileobj=compressed, mode="w", format=tarfile.PAX_FORMAT) as tar:
-                for relative in files:
-                    source = ROOT / relative
+                for relative, source in files:
                     info = tar.gettarinfo(str(source), arcname=f"{prefix}/{relative}")
                     info.uid = info.gid = 0
                     info.uname = info.gname = "root"

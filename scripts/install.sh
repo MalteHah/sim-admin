@@ -83,8 +83,13 @@ install_application() {
     (cd "$SOURCE_ROOT" && tar --exclude=.git --exclude=.venv --exclude=work --exclude=outputs --exclude='data/database/*' --exclude='config/*.key' -cf - .) | (cd "$APP_ROOT" && tar -xf -)
     chown -R "$SERVICE_USER:$SERVICE_GROUP" "$APP_ROOT"
     python3 -m venv "$APP_ROOT/.venv"
-    "$APP_ROOT/.venv/bin/python" -m pip install --upgrade pip
-    "$APP_ROOT/.venv/bin/python" -m pip install -r "$APP_ROOT/requirements.txt"
+    if [ -d "$APP_ROOT/wheelhouse" ]; then
+        "$APP_ROOT/.venv/bin/python" -m pip install --no-index --find-links="$APP_ROOT/wheelhouse" -r "$APP_ROOT/requirements.txt"
+    else
+        warn "Kein Offline-Wheelpaket enthalten; Abhängigkeiten werden aus der konfigurierten Paketquelle geladen"
+        "$APP_ROOT/.venv/bin/python" -m pip install --upgrade pip
+        "$APP_ROOT/.venv/bin/python" -m pip install -r "$APP_ROOT/requirements.txt"
+    fi
 
     install -d -m 0750 -o root -g "$SERVICE_GROUP" /etc/sim-admin/tls
     CREDENTIAL_FILE=/etc/sim-admin/credentials.json

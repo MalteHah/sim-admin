@@ -42,6 +42,12 @@ ein. Vor deren Aktivierung wird die komplette Testsuite ausgeführt.
 Eine vorhandene Installation wird ausdrücklich nicht überschrieben. Dafür ist
 später ausschließlich der gesicherte Offline-Updatepfad vorgesehen.
 
+Offizielle Release-Pakete enthalten ein unter Linux gebautes Wheel-Verzeichnis
+mit allen Python-Abhängigkeiten. Die Installation verwendet dieses ohne Zugriff
+auf eine externe Paketquelle. Fehlt es in einem lokalen Entwicklungsarchiv, wird
+dies deutlich gemeldet und nur die Erstinstallation darf auf die konfigurierte
+Paketquelle zurückgreifen.
+
 ## Offline-Update prüfen
 
 Ein signiertes Release-Paket wird zunächst ausschließlich geprüft:
