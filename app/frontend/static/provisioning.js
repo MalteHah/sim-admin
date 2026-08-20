@@ -27,6 +27,24 @@ function escapeHtml(value) {
   return element.innerHTML;
 }
 
+function optionalNumber(values, name) {
+  const value = values.get(name);
+  return value === "" ? null : Number(value);
+}
+
+function profileFields(values) {
+  return {
+    iccid: values.get("iccid"), imsi: values.get("imsi"), msisdn: values.get("msisdn") || null,
+    acc: values.get("acc"), ki: values.get("ki"), opc: values.get("opc"), adm: values.get("adm"),
+    impi: values.get("impi") || null, impu: values.get("impu") || null,
+    ims_domain: values.get("ims_domain") || null, ist: values.get("ist") || null,
+    routing_indicator: values.get("routing_indicator") || null,
+    protection_scheme: optionalNumber(values, "protection_scheme"),
+    hn_public_key_id: optionalNumber(values, "hn_public_key_id"),
+    hn_public_key: values.get("hn_public_key") || null,
+  };
+}
+
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
   errorMessage.hidden = true;
@@ -36,15 +54,7 @@ form.addEventListener("submit", async (event) => {
     const response = await fetch("/api/v1/provisioning/preview", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        iccid: values.get("iccid"),
-        imsi: values.get("imsi"),
-        msisdn: values.get("msisdn") || null,
-        acc: values.get("acc"),
-        ki: values.get("ki"),
-        opc: values.get("opc"),
-        adm: values.get("adm"),
-      }),
+      body: JSON.stringify(profileFields(values)),
     });
     const preview = await response.json();
     if (!response.ok) throw new Error("Eingaben sind unvollständig oder ungültig.");
@@ -107,8 +117,7 @@ saveButton.addEventListener("click", async () => {
   if (!form.reportValidity()) return;
   saveButton.disabled = true;
   const values = new FormData(form);
-  const payload = {reader_index: 0, verify_card: captureMode === "card", iccid: values.get("iccid"), imsi: values.get("imsi"), msisdn: values.get("msisdn") || null,
-    acc: values.get("acc"), ki: values.get("ki"), opc: values.get("opc"), adm: values.get("adm"), password: values.get("password")};
+  const payload = {...profileFields(values), reader_index: 0, verify_card: captureMode === "card", password: values.get("password")};
   try {
     const response = await fetch("/api/v1/profiles/single", {method: "POST", headers: {"Content-Type": "application/json", "Cache-Control": "no-store"}, body: JSON.stringify(payload), cache: "no-store"});
     const result = await response.json();

@@ -56,6 +56,27 @@ def test_preview_rejects_invalid_hex_key() -> None:
     assert response.status_code == 422
 
 
+def test_single_card_preview_includes_optional_ims_and_fivegs_steps() -> None:
+    login()
+    draft = valid_draft() | {
+        "impi": "001010123456789@ims.example",
+        "impu": "sip:900002@ims.example",
+        "ims_domain": "ims.example",
+        "ist": "03FF",
+        "routing_indicator": "1234",
+        "protection_scheme": 1,
+        "hn_public_key_id": 7,
+        "hn_public_key": "A1B2C3D4",
+    }
+
+    response = client.post("/api/v1/provisioning/preview", json=draft)
+
+    assert response.status_code == 200
+    actions = [step["action"] for step in response.json()["steps"]]
+    assert "IMS-Profildaten vormerken" in actions
+    assert "5GS-/SUCI-Profildaten vormerken" in actions
+
+
 class FakeCardAdapter:
     def read_identity(self, reader_index: int = 0) -> SIMReadResult:
         return SIMReadResult(
