@@ -225,9 +225,13 @@ async function openChange(id) {
   document.querySelector("#change-impu").value = profile.impu || "";
   document.querySelector("#change-ims-domain").value = profile.ims_domain || "";
   document.querySelector("#change-ist").value = profile.ist || "";
+  document.querySelector("#change-routing-indicator").value = profile.routing_indicator || "";
+  document.querySelector("#change-protection-scheme").value = profile.protection_scheme ?? "";
+  document.querySelector("#change-hn-public-key-id").value = profile.hn_public_key_id ?? "";
+  document.querySelector("#change-hn-public-key").value = profile.hn_public_key || "";
   if (draftResponse.ok) {
     const draft = await draftResponse.json();
-    if (draft) { changeStatus.textContent = `Vorgemerkt seit ${new Date(draft.created_at).toLocaleString("de-DE")}: ${draft.changed_fields.join(", ").toUpperCase()}. Aktive Revision: ${draft.base_revision}.`; changeStatus.hidden = false; changeDiscard.hidden = false; changePreview.hidden = false; changeCompare.hidden = false; changeWrite.hidden = false; writeConfirmationLabel.hidden = false; }
+    if (draft) { const hasFiveGs = draft.changed_fields.some((field) => ["routing_indicator", "protection_scheme", "hn_public_key_id", "hn_public_key"].includes(field)); changeStatus.textContent = `Vorgemerkt seit ${new Date(draft.created_at).toLocaleString("de-DE")}: ${draft.changed_fields.join(", ").toUpperCase()}. Aktive Revision: ${draft.base_revision}.${hasFiveGs ? " 5GS-/SUCI-Daten können derzeit nicht auf die SIM geschrieben werden." : ""}`; changeStatus.hidden = false; changeDiscard.hidden = false; changePreview.hidden = false; changeCompare.hidden = false; changeWrite.hidden = hasFiveGs; writeConfirmationLabel.hidden = hasFiveGs; }
   }
   changeDialog.showModal(); document.querySelector("#change-imsi").focus();
 }
@@ -247,6 +251,10 @@ changeForm.addEventListener("submit", async (event) => {
     impu: document.querySelector("#change-impu").value || null,
     ims_domain: document.querySelector("#change-ims-domain").value || null,
     ist: document.querySelector("#change-ist").value || null,
+    routing_indicator: document.querySelector("#change-routing-indicator").value || null,
+    protection_scheme: document.querySelector("#change-protection-scheme").value === "" ? null : Number(document.querySelector("#change-protection-scheme").value),
+    hn_public_key_id: document.querySelector("#change-hn-public-key-id").value === "" ? null : Number(document.querySelector("#change-hn-public-key-id").value),
+    hn_public_key: document.querySelector("#change-hn-public-key").value || null,
     password: document.querySelector("#change-password").value,
   };
   try {

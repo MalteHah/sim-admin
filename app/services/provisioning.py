@@ -66,6 +66,14 @@ class ProvisioningPreviewService:
                 fields=[field for field, value in (("IMPI", draft.impi), ("IMPU", draft.impu), ("DOMAIN", draft.ims_domain), ("IST", draft.ist)) if value],
                 risk="Nur verschlüsselte Profilspeicherung; kein SIM-Schreibpfad",
             ))
+        if draft.routing_indicator or draft.protection_scheme is not None or draft.hn_public_key_id is not None or draft.hn_public_key:
+            steps.append(ProvisioningStep(
+                order=len(steps) + 1,
+                target="ADF.USIM/5GS",
+                action="5GS-/SUCI-Profildaten vormerken",
+                fields=[field for field, value in (("Routing Indicator", draft.routing_indicator), ("Protection Scheme", draft.protection_scheme), ("HN Public Key ID", draft.hn_public_key_id), ("HN Public Key", draft.hn_public_key)) if value is not None and value != ""],
+                risk="Nur verschlüsselte Profilspeicherung; kein SIM-Schreibpfad",
+            ))
 
         return ProvisioningPreview(
             iccid=draft.iccid,

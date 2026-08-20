@@ -297,3 +297,26 @@ def test_verified_ims_write_commits_new_revision(tmp_path) -> None:
     assert revision == 2
     assert verified == ["impi", "impu", "ims_domain", "ist"]
     assert vault.get_draft(profile.id).impi == "001010123456789@ims.example"
+
+
+def test_optional_fivegs_fields_are_encrypted_and_not_writable_yet(tmp_path) -> None:
+    database = tmp_path / "profiles.db"
+    vault = ProfileVaultService(str(database), str(tmp_path / "profile.key")); vault.import_csv(CSV)
+    profile = vault.list_profiles()[0]
+    vault.prepare_change(profile.id, profile.imsi, None, "0001", None, None,
+        routing_indicator="1234", protection_scheme=1, hn_public_key_id=7, hn_public_key="A1B2C3D4")
+
+    editable = vault.get_editable(profile.id)
+    assert editable.routing_indicator == "1234"
+    assert editable.protection_scheme == 1
+    assert editable.hn_public_key_id == 7
+    assert editable.hn_public_key == "A1B2C3D4"
+    for value in (b"1234", b"A1B2C3D4"):
+        assert value not in database.read_bytes()
+
+    try:
+        ProfileWriteService(None, vault).execute(profile.id)
+    except ValueError as exc:
+        assert str(exc) == "unsupported_fields"
+    else:
+        raise AssertionError("5GS draft unexpectedly reached the SIM write adapter")

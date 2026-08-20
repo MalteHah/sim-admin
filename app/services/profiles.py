@@ -80,6 +80,8 @@ class ProfileVaultService:
         record = {"iccid": draft.iccid, "imsi": draft.imsi, "msisdn": draft.msisdn or "", "acc": draft.acc.upper(),
             "ki": draft.ki.get_secret_value().upper(), "opc": draft.opc.get_secret_value().upper(), "adm": draft.adm.get_secret_value(),
             "impi": draft.impi or "", "impu": draft.impu or "", "ims_domain": draft.ims_domain or "", "ist": (draft.ist or "").upper()}
+        record.update({"routing_indicator": draft.routing_indicator or "", "protection_scheme": draft.protection_scheme,
+            "hn_public_key_id": draft.hn_public_key_id, "hn_public_key": (draft.hn_public_key or "").upper()})
         with self._lock:
             if any(item.iccid == draft.iccid for item in self._list_unlocked()): raise ValueError("duplicate_iccid")
             created_at = datetime.now(UTC).isoformat(); nonce = os.urandom(12)
@@ -89,7 +91,8 @@ class ProfileVaultService:
             self._connection.commit(); profile_id = int(cursor.lastrowid)
         return ProfileSummary(id=profile_id, created_at=created_at, iccid=draft.iccid, imsi=draft.imsi,
             ki_configured=True, opc_configured=True, adm_configured=True, revision=1, card_verified=card_verified,
-            ims_configured=bool(draft.impi or draft.impu or draft.ims_domain or draft.ist))
+            ims_configured=bool(draft.impi or draft.impu or draft.ims_domain or draft.ist),
+            fivegs_configured=bool(draft.routing_indicator or draft.protection_scheme is not None or draft.hn_public_key_id is not None or draft.hn_public_key))
 
     def find_by_iccid(self, iccid: str) -> ProfileSummary | None:
         return next((profile for profile in self.list_profiles() if profile.iccid == iccid), None)
@@ -172,19 +175,27 @@ class ProfileVaultService:
             record = json.loads(AESGCM(self._key).decrypt(pending["nonce"], pending["ciphertext"], AAD))
             changed_fields = json.loads(pending["changed_fields"])
         return ProfileEditableView(iccid=record["iccid"], imsi=record["imsi"], msisdn=record.get("msisdn") or None, acc=record.get("acc") or "0001", revision=row["revision"], pending_change=pending is not None, changed_fields=changed_fields,
-            impi=record.get("impi") or None, impu=record.get("impu") or None, ims_domain=record.get("ims_domain") or None, ist=record.get("ist") or None)
+            impi=record.get("impi") or None, impu=record.get("impu") or None, ims_domain=record.get("ims_domain") or None, ist=record.get("ist") or None,
+            routing_indicator=record.get("routing_indicator") or None, protection_scheme=record.get("protection_scheme"),
+            hn_public_key_id=record.get("hn_public_key_id"), hn_public_key=record.get("hn_public_key") or None)
 
     def prepare_change(self, profile_id: int, imsi: str, msisdn: str | None, acc: str, ki: str | None, opc: str | None,
-        impi: str | None = None, impu: str | None = None, ims_domain: str | None = None, ist: str | None = None) -> ProfileChangeSummary:
+        impi: str | None = None, impu: str | None = None, ims_domain: str | None = None, ist: str | None = None,
+        routing_indicator: str | None = None, protection_scheme: int | None = None,
+        hn_public_key_id: int | None = None, hn_public_key: str | None = None) -> ProfileChangeSummary:
         from cryptography.hazmat.primitives.ciphers.aead import AESGCM
         current = self._get_record(profile_id)
         updated = dict(current)
         proposed = {"imsi": imsi, "msisdn": msisdn or "", "acc": acc.upper(), "impi": impi or "", "impu": impu or "", "ims_domain": ims_domain or "", "ist": (ist or "").upper()}
+        proposed.update({"routing_indicator": routing_indicator or "", "protection_scheme": protection_scheme,
+            "hn_public_key_id": hn_public_key_id, "hn_public_key": (hn_public_key or "").upper()})
         if ki: proposed["ki"] = ki.upper()
         if opc: proposed["opc"] = opc.upper()
         updated.update(proposed)
         ProvisioningDraft(iccid=current["iccid"], imsi=updated["imsi"], msisdn=updated["msisdn"] or None, acc=updated["acc"], ki=updated["ki"], opc=updated["opc"], adm=current["adm"],
-            impi=updated.get("impi") or None, impu=updated.get("impu") or None, ims_domain=updated.get("ims_domain") or None, ist=updated.get("ist") or None)
+            impi=updated.get("impi") or None, impu=updated.get("impu") or None, ims_domain=updated.get("ims_domain") or None, ist=updated.get("ist") or None,
+            routing_indicator=updated.get("routing_indicator") or None, protection_scheme=updated.get("protection_scheme"),
+            hn_public_key_id=updated.get("hn_public_key_id"), hn_public_key=updated.get("hn_public_key") or None)
         changed = sorted(field for field, value in proposed.items() if value != current.get(field, ""))
         if not changed: raise ValueError("no_changes")
         created_at = datetime.now(UTC).isoformat(); nonce = os.urandom(12)
@@ -212,7 +223,9 @@ class ProfileVaultService:
         record = json.loads(AESGCM(self._key).decrypt(row["nonce"], row["ciphertext"], AAD))
         return ProvisioningDraft(iccid=record["iccid"], imsi=record["imsi"], msisdn=record.get("msisdn") or None,
             acc=record.get("acc") or "0001", ki=record["ki"], opc=record["opc"], adm=record["adm"], impi=record.get("impi") or None,
-            impu=record.get("impu") or None, ims_domain=record.get("ims_domain") or None, ist=record.get("ist") or None)
+            impu=record.get("impu") or None, ims_domain=record.get("ims_domain") or None, ist=record.get("ist") or None,
+            routing_indicator=record.get("routing_indicator") or None, protection_scheme=record.get("protection_scheme"),
+            hn_public_key_id=record.get("hn_public_key_id"), hn_public_key=record.get("hn_public_key") or None)
 
     def discard_change(self, profile_id: int) -> bool:
         with self._lock:
@@ -240,11 +253,13 @@ class ProfileVaultService:
         record = self._get_record(profile_id)
         return ProvisioningDraft(iccid=record["iccid"], imsi=record["imsi"], msisdn=record.get("msisdn") or None,
             acc=record.get("acc") or "0001", ki=record["ki"], opc=record["opc"], adm=record["adm"], impi=record.get("impi") or None,
-            impu=record.get("impu") or None, ims_domain=record.get("ims_domain") or None, ist=record.get("ist") or None)
+            impu=record.get("impu") or None, ims_domain=record.get("ims_domain") or None, ist=record.get("ist") or None,
+            routing_indicator=record.get("routing_indicator") or None, protection_scheme=record.get("protection_scheme"),
+            hn_public_key_id=record.get("hn_public_key_id"), hn_public_key=record.get("hn_public_key") or None)
 
     def get_secrets(self, profile_id: int) -> dict[str, str]:
         record = self._get_record(profile_id)
-        public = {"iccid", "imsi", "msisdn", "acc", "impi", "impu", "ims_domain", "ist"}
+        public = {"iccid", "imsi", "msisdn", "acc", "impi", "impu", "ims_domain", "ist", "routing_indicator", "protection_scheme", "hn_public_key_id", "hn_public_key"}
         secrets: dict[str, str] = {}
         for key, value in record.items():
             if key in public or not value:
@@ -269,7 +284,7 @@ class ProfileVaultService:
                 FROM profiles LEFT JOIN profile_change_drafts ON profile_change_drafts.profile_id = profiles.id
                 ORDER BY profiles.id DESC"""):
             record = json.loads(AESGCM(self._key).decrypt(row["nonce"], row["ciphertext"], AAD))
-            result.append(ProfileSummary(id=row["id"], created_at=row["created_at"], iccid=record["iccid"], imsi=record["imsi"], ki_configured=bool(record["ki"]), opc_configured=bool(record["opc"]), adm_configured=bool(record["adm"]), revision=row["revision"], pending_change=bool(row["pending_change"]), card_verified=bool(row["card_verified"]), ims_configured=bool(record.get("impi") or record.get("impu") or record.get("ims_domain") or record.get("ist"))))
+            result.append(ProfileSummary(id=row["id"], created_at=row["created_at"], iccid=record["iccid"], imsi=record["imsi"], ki_configured=bool(record["ki"]), opc_configured=bool(record["opc"]), adm_configured=bool(record["adm"]), revision=row["revision"], pending_change=bool(row["pending_change"]), card_verified=bool(row["card_verified"]), ims_configured=bool(record.get("impi") or record.get("impu") or record.get("ims_domain") or record.get("ist")), fivegs_configured=bool(record.get("routing_indicator") or record.get("protection_scheme") is not None or record.get("hn_public_key_id") is not None or record.get("hn_public_key"))))
         return result
 
     def snapshot(self, database: Path, key_file: Path) -> None:

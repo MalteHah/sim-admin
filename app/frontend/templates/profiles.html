@@ -87,10 +87,14 @@
           <label>IMPU<input id="change-impu" maxlength="255" placeholder="sip:Nebenstelle@ims.mnc098.mcc262.3gppnetwork.org"></label>
           <label>IMS-Domain<input id="change-ims-domain" maxlength="253" placeholder="ims.mnc098.mcc262.3gppnetwork.org"></label>
           <label>IST<input id="change-ist" pattern="(?:[0-9A-Fa-f]{2})+" placeholder="optional, Hex-Bytes"></label>
+          <label>Routing Indicator<input id="change-routing-indicator" inputmode="numeric" maxlength="4" pattern="[0-9]{1,4}" placeholder="optional, 1–4 Ziffern"></label>
+          <label>Protection Scheme<input id="change-protection-scheme" type="number" min="0" max="15" placeholder="optional, 0–15"></label>
+          <label>HN Public Key ID<input id="change-hn-public-key-id" type="number" min="0" max="255" placeholder="optional, 0–255"></label>
+          <label>HN Public Key<input id="change-hn-public-key" pattern="(?:[0-9A-Fa-f]{2})+" placeholder="optional, Hex-Bytes"></label>
           <label>Aktuelles Anmeldepasswort<input id="change-password" type="password" autocomplete="current-password" required></label>
           <label id="write-confirmation-label" hidden>Schreibfreigabe: SIM SCHREIBEN<input id="write-confirmation" autocomplete="off" placeholder="SIM SCHREIBEN"></label>
         </div>
-        <p class="immutable-note"><strong>Unveränderbar:</strong> ICCID und ADM1. IMS-Felder werden nur auf einer eindeutig erkannten SysmocomSJA5 geschrieben und anschließend zurückgelesen.</p>
+        <p class="immutable-note"><strong>Unveränderbar:</strong> ICCID und ADM1. IMS-Felder werden nur auf einer eindeutig erkannten SysmocomSJA5 geschrieben. 5GS-/SUCI-Felder werden derzeit ausschließlich verschlüsselt vorgemerkt und nicht auf die SIM geschrieben.</p>
         <p id="change-error" class="form-error" hidden></p>
         <div class="dialog-actions change-actions"><button type="button" id="change-discard" class="danger-button" hidden>Entwurf verwerfen</button><button type="button" id="change-preview" hidden>Entwurf prüfen</button><button type="button" id="change-compare" hidden>Mit Karte abgleichen</button><button type="button" id="change-write" class="danger-button" hidden>Auf SIM schreiben</button><button type="button" id="change-close">Abbrechen</button><button type="submit">Entwurf speichern</button></div>
       </form>

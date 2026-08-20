@@ -273,7 +273,9 @@ def create_single_profile(payload: SingleProfileCreateRequest, request: Request,
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Die eingelegte Karte hat sich seit dem Einlesen geändert")
     draft = ProvisioningDraft(iccid=payload.iccid, imsi=payload.imsi, msisdn=payload.msisdn, acc=payload.acc,
         ki=payload.ki, opc=payload.opc, adm=payload.adm, impi=payload.impi, impu=payload.impu,
-        ims_domain=payload.ims_domain, ist=payload.ist)
+        ims_domain=payload.ims_domain, ist=payload.ist, routing_indicator=payload.routing_indicator,
+        protection_scheme=payload.protection_scheme, hn_public_key_id=payload.hn_public_key_id,
+        hn_public_key=payload.hn_public_key)
     try: result = vault.add_profile(draft, card_verified=payload.verify_card)
     except ValueError as exc:
         if str(exc) == "duplicate_iccid":
@@ -326,7 +328,8 @@ def prepare_profile_change(profile_id: int, payload: ProfileChangeRequest, reque
     try:
         result = vault.prepare_change(profile_id, payload.imsi, payload.msisdn, payload.acc,
             payload.ki.get_secret_value() if payload.ki else None, payload.opc.get_secret_value() if payload.opc else None,
-            payload.impi, payload.impu, payload.ims_domain, payload.ist)
+            payload.impi, payload.impu, payload.ims_domain, payload.ist, payload.routing_indicator,
+            payload.protection_scheme, payload.hn_public_key_id, payload.hn_public_key)
     except KeyError as exc: raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profil nicht gefunden") from exc
     except ValueError as exc:
         if str(exc) == "no_changes": raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Es wurden keine Änderungen eingegeben") from exc
