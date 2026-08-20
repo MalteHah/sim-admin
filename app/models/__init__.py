@@ -20,7 +20,7 @@ from app.models.provisioning import (
     ProfileWriteResult,
 )
 from app.models.profiles import (
-    ProfileChangeRequest, ProfileChangeSummary, ProfileEditableView, ProfileImportResult,
+    ProfileAdoptCardRequest, ProfileAdoptCardResult, ProfileChangeRequest, ProfileChangeSummary, ProfileEditableView, ProfileImportResult,
     ProfileDeleteRequest, ProfileRevealRequest, ProfileRevisionSummary, ProfileSecrets, ProfileSummary,
     SingleProfileCreateRequest,
 )
@@ -50,6 +50,8 @@ __all__ = [
     "ProvisioningStep",
     "ProfileWriteRequest",
     "ProfileWriteResult",
+    "ProfileAdoptCardRequest",
+    "ProfileAdoptCardResult",
     "ProfileImportResult",
     "ProfileSummary",
     "ProfileRevealRequest",

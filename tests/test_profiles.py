@@ -209,3 +209,38 @@ def test_profile_delete_removes_revisions_and_pending_draft(tmp_path) -> None:
         pass
     else:
         raise AssertionError("deleted profile revisions remained")
+
+
+def test_card_imsi_adoption_creates_encrypted_revision(tmp_path) -> None:
+    database = tmp_path / "profiles.db"
+    vault = ProfileVaultService(str(database), str(tmp_path / "profile.key")); vault.import_csv(CSV)
+    profile = vault.list_profiles()[0]
+    new_imsi = "001010987654321"
+
+    revision = vault.adopt_card_imsi(profile.id, profile.iccid, new_imsi)
+
+    updated = vault.list_profiles()[0]
+    assert revision == 2
+    assert updated.imsi == new_imsi
+    assert updated.card_verified is True
+    assert [item.revision for item in vault.list_revisions(profile.id)] == [2, 1]
+    assert new_imsi.encode() not in database.read_bytes()
+
+
+def test_card_imsi_adoption_rejects_wrong_card_and_pending_change(tmp_path) -> None:
+    vault = ProfileVaultService(str(tmp_path / "profiles.db"), str(tmp_path / "profile.key")); vault.import_csv(CSV)
+    profile = vault.list_profiles()[0]
+    try:
+        vault.adopt_card_imsi(profile.id, "8949000000000000000", "001010987654321")
+    except ValueError as exc:
+        assert str(exc) == "iccid_mismatch"
+    else:
+        raise AssertionError("IMSI from wrong card was adopted")
+
+    vault.prepare_change(profile.id, "001010111111111", None, "0001", None, None)
+    try:
+        vault.adopt_card_imsi(profile.id, profile.iccid, "001010987654321")
+    except ValueError as exc:
+        assert str(exc) == "pending_change"
+    else:
+        raise AssertionError("pending draft was overwritten")

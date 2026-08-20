@@ -98,6 +98,47 @@ class ProfileVaultService:
             if cursor.rowcount == 0: raise KeyError(profile_id)
             self._connection.commit()
 
+    def adopt_card_imsi(self, profile_id: int, card_iccid: str, card_imsi: str) -> int:
+        """Adopt a securely re-read card IMSI as a new encrypted profile revision."""
+        from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+        with self._lock:
+            row = self._connection.execute(
+                "SELECT revision, nonce, ciphertext FROM profiles WHERE id = ?", (profile_id,)
+            ).fetchone()
+            if row is None:
+                raise KeyError(profile_id)
+            if self._connection.execute(
+                "SELECT 1 FROM profile_change_drafts WHERE profile_id = ?", (profile_id,)
+            ).fetchone() is not None:
+                raise ValueError("pending_change")
+            record = json.loads(AESGCM(self._key).decrypt(row["nonce"], row["ciphertext"], AAD))
+            if record["iccid"] != card_iccid:
+                raise ValueError("iccid_mismatch")
+            if record["imsi"] == card_imsi:
+                raise ValueError("no_changes")
+            updated = dict(record)
+            updated["imsi"] = card_imsi
+            ProvisioningDraft(
+                iccid=updated["iccid"], imsi=updated["imsi"], msisdn=updated.get("msisdn") or None,
+                acc=updated.get("acc") or "0001", ki=updated["ki"], opc=updated["opc"], adm=updated["adm"],
+            )
+            created_at = datetime.now(UTC).isoformat()
+            nonce = os.urandom(12)
+            ciphertext = AESGCM(self._key).encrypt(
+                nonce, json.dumps(updated, separators=(",", ":")).encode(), AAD
+            )
+            revision = int(row["revision"]) + 1
+            self._connection.execute(
+                "UPDATE profiles SET created_at = ?, nonce = ?, ciphertext = ?, revision = ?, card_verified = 1 WHERE id = ?",
+                (created_at, nonce, ciphertext, revision, profile_id),
+            )
+            self._connection.execute(
+                "INSERT INTO profile_revisions (profile_id, revision, created_at, nonce, ciphertext) VALUES (?, ?, ?, ?, ?)",
+                (profile_id, revision, created_at, nonce, ciphertext),
+            )
+            self._connection.commit()
+        return revision
+
     def delete_profile(self, profile_id: int, confirmation_iccid: str) -> None:
         record = self._get_record(profile_id)
         if record["iccid"] != confirmation_iccid: raise ValueError("iccid_mismatch")

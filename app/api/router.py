@@ -35,6 +35,8 @@ from app.models import (
     CSVImportPreview,
     CSVImportRequest,
     ProfileImportResult,
+    ProfileAdoptCardRequest,
+    ProfileAdoptCardResult,
     ProfileSummary,
     ProfileRevealRequest,
     ProfileRevisionSummary,
@@ -409,6 +411,39 @@ def compare_stored_profile(profile_id: int, vault: Annotated[ProfileVaultService
     if result.iccid_matches: vault.mark_card_verified(profile_id)
     audit.record("profiles.card_comparison", "success", "match" if result.iccid_matches and result.imsi_matches else "difference")
     return result
+
+
+@router.post("/api/v1/profiles/{profile_id}/adopt-card", response_model=ProfileAdoptCardResult)
+def adopt_card_data(profile_id: int, payload: ProfileAdoptCardRequest, request: Request,
+    vault: Annotated[ProfileVaultService, Depends(get_profile_vault_service)],
+    cards: Annotated[SIMCardService, Depends(get_sim_card_service)],
+    auth: Annotated[AuthService, Depends(get_auth_service)],
+    audit: Annotated[AuditService, Depends(get_audit_service)]) -> ProfileAdoptCardResult:
+    """Adopt the re-read card IMSI into the vault without writing to the SIM."""
+    client = request.client.host if request.client else "unknown"
+    if not auth.verify_login(auth.username, payload.password.get_secret_value(), client):
+        audit.record("profiles.adopt_card", "error", "reauthentication_failed")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Passwort ist falsch")
+    try:
+        identity = cards.read_identity(payload.reader_index)
+        revision = vault.adopt_card_imsi(profile_id, identity.iccid, identity.imsi)
+    except SIMReadError as exc:
+        audit.record("profiles.adopt_card", "error", exc.code)
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT if exc.code == "no_card" else status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail={"code": exc.code, "message": str(exc)}) from exc
+    except KeyError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profil nicht gefunden") from exc
+    except ValueError as exc:
+        code = str(exc)
+        messages = {
+            "iccid_mismatch": "Die eingelegte Karte gehört nicht zu diesem Profil.",
+            "pending_change": "Vor der Übernahme muss der vorhandene Änderungsentwurf abgeschlossen oder verworfen werden.",
+            "no_changes": "Die IMSI der Karte entspricht bereits dem Profil.",
+        }
+        audit.record("profiles.adopt_card", "error", code)
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"code": code, "message": messages.get(code, "Kartendaten konnten nicht übernommen werden.")}) from exc
+    audit.record("profiles.adopt_card", "success", f"revision_{revision}")
+    return ProfileAdoptCardResult(profile_id=profile_id, revision=revision)
 
 
 @router.post("/api/v1/profiles/{profile_id}/secrets", response_model=ProfileSecrets)

@@ -56,3 +56,4 @@ Alle wesentlichen Änderungen an diesem Projekt werden hier dokumentiert.
 - Statusfilter im Profiltresor und sofortige Aktualisierung nach erfolgreichem Kartenabgleich
 - Eigene „Karte zuordnen“-Aktion für vorbereitete Profile und verständliche Bezeichnungen neuer Aktivitäten
 - Kartentypspezifisches, zurückgelesenes Schreiben von Ki und OPc auf SysmocomSJA5-USIMs
+- Passwortgeschützte Übernahme einer abweichenden Karten-IMSI als neue Tresorrevision ohne SIM-Schreibzugriff

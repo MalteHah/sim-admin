@@ -33,6 +33,10 @@ const deleteForm = document.querySelector("#delete-form");
 const deleteError = document.querySelector("#delete-error");
 let deleteProfileId = null;
 let deleteExpectedIccid = null;
+const adoptDialog = document.querySelector("#adopt-dialog");
+const adoptForm = document.querySelector("#adopt-form");
+const adoptError = document.querySelector("#adopt-error");
+let adoptProfileId = null;
 
 function cell(value, className = "") {
   const element = document.createElement("td");
@@ -154,11 +158,42 @@ async function compareProfile(profile) {
   const title = document.createElement("h2"); title.textContent = !profile.card_verified && data.iccid_matches ? "Karte zugeordnet – nur lesen" : "Kartenabgleich – nur lesen";
   const text = document.createElement("p");
   if (data.iccid_matches && data.imsi_matches) text.textContent = "ICCID und IMSI stimmen mit dem Tresorprofil überein.";
-  else if (data.iccid_matches) text.textContent = "Die ICCID wurde sicher zugeordnet. Die IMSI weicht noch vom vorbereiteten Profil ab und kann später kontrolliert geschrieben werden.";
+  else if (data.iccid_matches) text.textContent = "Die ICCID wurde sicher zugeordnet. Die IMSI der Karte weicht vom Tresorprofil ab.";
   else text.textContent = "Die ICCID stimmt nicht überein. Die Karte wurde diesem Profil nicht zugeordnet.";
   previewPanel.append(title, text);
+  if (data.iccid_matches && !data.imsi_matches) {
+    const adoptButton = document.createElement("button");
+    adoptButton.type = "button"; adoptButton.textContent = "Daten der Karte übernehmen";
+    adoptButton.addEventListener("click", () => {
+      adoptProfileId = profile.id; adoptForm.reset(); adoptError.hidden = true; adoptDialog.showModal();
+      document.querySelector("#adopt-password").focus();
+    });
+    previewPanel.append(adoptButton);
+  }
   if (data.iccid_matches) await loadProfiles();
 }
+
+document.querySelector("#adopt-close").addEventListener("click", () => adoptDialog.close());
+adoptDialog.addEventListener("close", () => { adoptForm.reset(); adoptError.hidden = true; adoptProfileId = null; });
+adoptForm.addEventListener("submit", async (event) => {
+  event.preventDefault(); adoptError.hidden = true;
+  const submit = adoptForm.querySelector('button[type="submit"]'); submit.disabled = true;
+  try {
+    const response = await fetch(`/api/v1/profiles/${adoptProfileId}/adopt-card`, {
+      method: "POST", headers: {"Content-Type": "application/json", "Cache-Control": "no-store"},
+      body: JSON.stringify({password: document.querySelector("#adopt-password").value, reader_index: 0}), cache: "no-store",
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      adoptError.textContent = data.detail?.message || data.detail || "Kartendaten konnten nicht übernommen werden.";
+      adoptError.hidden = false; return;
+    }
+    adoptDialog.close(); previewPanel.hidden = false; previewPanel.replaceChildren();
+    const title = document.createElement("h2"); title.textContent = "Kartendaten übernommen";
+    const text = document.createElement("p"); text.textContent = `Die IMSI wurde als Revision ${data.revision} im Profiltresor gespeichert. Auf die SIM-Karte wurde nichts geschrieben.`;
+    previewPanel.append(title, text); await loadProfiles();
+  } finally { submit.disabled = false; document.querySelector("#adopt-password").value = ""; }
+});
 
 async function showHistory(id) {
   historyValues.textContent = "Historie wird geladen …"; historyDialog.showModal();

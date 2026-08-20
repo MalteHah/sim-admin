@@ -32,6 +32,18 @@ class ProfileRevealRequest(DomainModel):
     password: SecretStr = Field(min_length=1, max_length=256)
 
 
+class ProfileAdoptCardRequest(DomainModel):
+    password: SecretStr = Field(min_length=1, max_length=256)
+    reader_index: int = Field(default=0, ge=0)
+
+
+class ProfileAdoptCardResult(DomainModel):
+    profile_id: int
+    revision: int
+    adopted_fields: list[str] = Field(default_factory=lambda: ["imsi"])
+    write_performed: bool = False
+
+
 class ProfileSecrets(DomainModel):
     fields: dict[str, str]
 

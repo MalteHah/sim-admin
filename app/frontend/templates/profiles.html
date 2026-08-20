@@ -4,9 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Profiltresor – SIM-Admin</title>
-    <link rel="stylesheet" href="/static/dashboard.css?v=20260818-22">
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260820-23">
     <script src="/static/table-pagination.js" defer></script>
-    <script src="/static/profiles.js?v=20260818-22" defer></script>
+    <script src="/static/profiles.js?v=20260820-23" defer></script>
   </head>
   <body>
     <header class="topbar">
@@ -89,6 +89,15 @@
         <p class="immutable-note"><strong>Unveränderbar:</strong> ICCID und ADM1. ADM1 wird in diesem Dialog nicht übertragen oder angezeigt.</p>
         <p id="change-error" class="form-error" hidden></p>
         <div class="dialog-actions change-actions"><button type="button" id="change-discard" class="danger-button" hidden>Entwurf verwerfen</button><button type="button" id="change-preview" hidden>Entwurf prüfen</button><button type="button" id="change-compare" hidden>Mit Karte abgleichen</button><button type="button" id="change-write" class="danger-button" hidden>Auf SIM schreiben</button><button type="button" id="change-close">Abbrechen</button><button type="submit">Entwurf speichern</button></div>
+      </form>
+    </dialog>
+    <dialog id="adopt-dialog" class="secrets-dialog">
+      <form id="adopt-form">
+        <p class="eyebrow">Karte → Profiltresor</p><h2>Daten der Karte übernehmen</h2>
+        <p>Die aktuell gelesene IMSI wird als neue Profilrevision gespeichert. ICCID, Ki, OPc, ADM1, ACC und MSISDN bleiben unverändert. Auf die SIM-Karte wird nichts geschrieben.</p>
+        <label for="adopt-password">Aktuelles Anmeldepasswort</label><input id="adopt-password" type="password" autocomplete="current-password" required>
+        <p id="adopt-error" class="form-error" hidden></p>
+        <div class="dialog-actions"><button type="button" id="adopt-close">Abbrechen</button><button type="submit">IMSI übernehmen</button></div>
       </form>
     </dialog>
     <dialog id="delete-dialog" class="secrets-dialog delete-dialog">
