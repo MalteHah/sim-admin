@@ -58,3 +58,4 @@ Alle wesentlichen Änderungen an diesem Projekt werden hier dokumentiert.
 - Kartentypspezifisches, zurückgelesenes Schreiben von Ki und OPc auf SysmocomSJA5-USIMs
 - Passwortgeschützte Übernahme einer abweichenden Karten-IMSI als neue Tresorrevision ohne SIM-Schreibzugriff
 - Nicht verändernder Installations-Prüfmodus für Debian-, Python-, systemd-, OpenSSL- und PC/SC-Voraussetzungen
+- Geschützte Neuinstallation mit Vorschau, eigenem Dienstkonto, TLS, Zugangsdaten, Tests und systemd-Diensten

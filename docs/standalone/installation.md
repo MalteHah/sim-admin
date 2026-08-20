@@ -17,6 +17,31 @@ am Rechner vor. Er kontrolliert Betriebssystem, Python-Version, systemd, OpenSSL
 und die PC/SC-Voraussetzungen. Eine bestehende Installation wird nur erkannt,
 nicht verändert.
 
+## Installationsvorschau
+
+```bash
+./scripts/install.sh --install --dry-run
+```
+
+Die Vorschau führt erneut die Voraussetzungenprüfung aus und zeigt anschließend
+die geplanten Installationsschritte. Sie benötigt keine Administratorrechte und
+verändert ebenfalls nichts.
+
+## Neuinstallation
+
+```bash
+sudo ./scripts/install.sh --install
+```
+
+Die Neuinstallation fragt verdeckt nach einem mindestens zwölf Zeichen langen
+Anmeldepasswort. Sie legt ein eigenes, nicht interaktives Systemkonto an, kopiert
+die Anwendung nach `/opt/sim-admin/application`, erstellt die Python-Umgebung,
+Zugangsdaten und ein lokales TLS-Zertifikat und richtet die beiden systemd-Dienste
+ein. Vor deren Aktivierung wird die komplette Testsuite ausgeführt.
+
+Eine vorhandene Installation wird ausdrücklich nicht überschrieben. Dafür ist
+später ausschließlich der gesicherte Offline-Updatepfad vorgesehen.
+
 ## Voraussetzungen
 
 - Debian-basiertes Linux
