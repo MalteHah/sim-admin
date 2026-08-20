@@ -113,6 +113,8 @@ nicht in dieses Dokument.
   vorherigen Version zurückkehren.
 - Benutzer-, Administrator-, Entwicklungs-, Architektur- und API-Dokumentation
   gemeinsam mit jeder Anwendungsversion veröffentlichen.
+- Private Release-Signierschlüssel ausschließlich getrennt vom Repository und
+  vom Standalone-Rechner verwahren; dort liegt nur der öffentliche Vertrauensanker.
 
 ## Noch nicht umgesetzt
 

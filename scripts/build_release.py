@@ -35,6 +35,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=ROOT / "dist")
     parser.add_argument("--allow-dirty", action="store_true")
+    parser.add_argument("--signing-key", type=Path)
     args = parser.parse_args()
 
     version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
@@ -84,6 +85,25 @@ def main() -> None:
     checksum_file.write_text(f"{checksum}  {archive.name}\n", encoding="ascii")
     print(archive)
     print(checksum_file)
+    if args.signing_key:
+        signing_key = args.signing_key.expanduser().resolve()
+        if not signing_key.is_file():
+            raise SystemExit("Privater Signierschlüssel wurde nicht gefunden")
+        signature = archive.with_suffix(archive.suffix + ".sig")
+        public_key = archive.with_suffix(archive.suffix + ".pub.pem")
+        subprocess.run(
+            ["openssl", "pkeyutl", "-sign", "-rawin", "-inkey", str(signing_key),
+             "-in", str(archive), "-out", str(signature)],
+            check=True,
+        )
+        with public_key.open("wb") as handle:
+            subprocess.run(
+                ["openssl", "pkey", "-in", str(signing_key), "-pubout"],
+                stdout=handle,
+                check=True,
+            )
+        print(signature)
+        print(public_key)
 
 
 if __name__ == "__main__":

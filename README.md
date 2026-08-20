@@ -78,6 +78,22 @@ das reproduzierbare Archiv samt SHA-256-Prüfsumme so gebaut werden:
 ./scripts/build-release.sh
 ```
 
+Für ein signiertes Offline-Paket wird ein außerhalb des Repositorys verwahrter
+Ed25519-Schlüssel angegeben. Der öffentliche Schlüssel muss auf dem Zielrechner
+bereits als vertrauenswürdiger Release-Schlüssel hinterlegt sein:
+
+```bash
+./scripts/build-release.sh --signing-key /sicherer/ort/release-signing-key.pem
+./scripts/verify-release.sh dist/sim-admin-0.1.0.tar.gz \
+  --public-key /etc/sim-admin/release-signing-key.pub.pem
+```
+
+Die dem Download beiliegende öffentliche Schlüsseldatei dient nur zur Verteilung
+und darf einen bereits hinterlegten Vertrauensanker nicht unbemerkt ersetzen.
+Der automatische GitHub-Release setzt denselben privaten Schlüssel Base64-kodiert
+als geschütztes Repository-Secret `RELEASE_SIGNING_KEY_BASE64` voraus und bricht
+ohne dieses Secret ab. Der Schlüssel wird niemals in einen Build übernommen.
+
 ## Wichtiger Sicherheitshinweis
 
 Dieses Projekt verarbeitet hochsensible Mobilfunk-Zugangsdaten. Reale Ki-,
