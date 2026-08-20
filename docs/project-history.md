@@ -116,11 +116,21 @@ nicht in dieses Dokument.
 - Private Release-Signierschlüssel ausschließlich getrennt vom Repository und
   vom Standalone-Rechner verwahren; dort liegt nur der öffentliche Vertrauensanker.
 
+## 2026-08-20 – Optionale IMS-Profildaten
+
+- IMPI, IMPU, IMS-Domain und IST als optionale, validierte Profilfelder ergänzt.
+- IMS-Felder aus CSV-Dateien werden gemeinsam mit dem übrigen Profil
+  gerätegebunden verschlüsselt und niemals im Klartext in SQLite abgelegt.
+- Bestehende Profile ohne IMS-Daten bleiben ohne Datenmigration les- und
+  bearbeitbar.
+- Änderungsentwürfe können IMS-Daten vormerken; der bestehende SIM-Schreibpfad
+  lehnt diese Felder weiterhin ausdrücklich als nicht unterstützt ab.
+
 ## Noch nicht umgesetzt
 
 - Unterstützung weiterer Kartentypen für Ki und OPc.
 - Übernahme vorbereiteter Änderungen nach einem erfolgreichen SIM-Schreibvorgang.
-- IMS-, SUCI- und weitere 5G-Profildaten.
+- SUCI- und weitere 5G-Profildaten sowie ein späterer IMS-SIM-Schreibpfad.
 - Feldweiser Kartenvergleich mit selektiver Übernahme aller technisch auslesbaren
   Werte; ICCID bleibt Zuordnungsmerkmal und nicht auslesbare Geheimnisse wie Ki,
   OPc und ADM1 werden nicht angeboten.

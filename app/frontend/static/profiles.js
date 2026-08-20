@@ -49,7 +49,7 @@ const paginator = window.createTablePaginator(document.querySelector("#profile-p
   list.replaceChildren();
   if (!profiles.length) {
     const emptyText = searchInput.value.trim() ? "Keine passenden Profile gefunden." : "Noch keine Profile gespeichert.";
-    const row = document.createElement("tr"); row.className = "profile-message-row"; const empty = cell(emptyText); empty.colSpan = 7;
+    const row = document.createElement("tr"); row.className = "profile-message-row"; const empty = cell(emptyText); empty.colSpan = 8;
     row.append(empty); list.append(row); return;
   }
   for (const profile of profiles) {
@@ -72,6 +72,7 @@ const paginator = window.createTablePaginator(document.querySelector("#profile-p
     const cardState = document.createElement("small"); cardState.className = profile.card_verified ? "card-verified-badge" : "card-pending-badge"; cardState.textContent = profile.card_verified ? "Karte geprüft" : "Kartenabgleich ausstehend"; iccidCell.append(cardState);
     if (profile.pending_change) { const pending = document.createElement("small"); pending.className = "pending-badge"; pending.textContent = "Änderung vorgemerkt"; iccidCell.append(pending); }
     row.append(cell(new Date(profile.created_at).toLocaleString("de-DE")), iccidCell, cell(profile.imsi),
+      cell(profile.ims_configured ? "Vorhanden" : "Nicht gesetzt", profile.ims_configured ? "activity-ok" : ""),
       cell(profile.ki_configured ? "Vorhanden" : "Fehlt", profile.ki_configured ? "activity-ok" : "activity-error"),
       cell(profile.opc_configured ? "Vorhanden" : "Fehlt", profile.opc_configured ? "activity-ok" : "activity-error"),
       cell(profile.adm_configured ? "Vorhanden" : "Fehlt", profile.adm_configured ? "activity-ok" : "activity-error"), actions);
@@ -89,7 +90,7 @@ async function loadProfiles() {
     applySorting();
   } catch (error) {
     summary.textContent = error.message;
-    const row = document.createElement("tr"); row.className = "profile-message-row"; const errorCell = cell(error.message, "activity-error"); errorCell.colSpan = 7;
+    const row = document.createElement("tr"); row.className = "profile-message-row"; const errorCell = cell(error.message, "activity-error"); errorCell.colSpan = 8;
     row.append(errorCell); list.replaceChildren(row);
   } finally { refresh.disabled = false; }
 }
@@ -220,6 +221,10 @@ async function openChange(id) {
   document.querySelector("#change-imsi").value = profile.imsi;
   document.querySelector("#change-msisdn").value = profile.msisdn || "";
   document.querySelector("#change-acc").value = profile.acc;
+  document.querySelector("#change-impi").value = profile.impi || "";
+  document.querySelector("#change-impu").value = profile.impu || "";
+  document.querySelector("#change-ims-domain").value = profile.ims_domain || "";
+  document.querySelector("#change-ist").value = profile.ist || "";
   if (draftResponse.ok) {
     const draft = await draftResponse.json();
     if (draft) { changeStatus.textContent = `Vorgemerkt seit ${new Date(draft.created_at).toLocaleString("de-DE")}: ${draft.changed_fields.join(", ").toUpperCase()}. Aktive Revision: ${draft.base_revision}.`; changeStatus.hidden = false; changeDiscard.hidden = false; changePreview.hidden = false; changeCompare.hidden = false; changeWrite.hidden = false; writeConfirmationLabel.hidden = false; }
@@ -238,6 +243,10 @@ changeForm.addEventListener("submit", async (event) => {
     acc: document.querySelector("#change-acc").value,
     ki: document.querySelector("#change-ki").value || null,
     opc: document.querySelector("#change-opc").value || null,
+    impi: document.querySelector("#change-impi").value || null,
+    impu: document.querySelector("#change-impu").value || null,
+    ims_domain: document.querySelector("#change-ims-domain").value || null,
+    ist: document.querySelector("#change-ist").value || null,
     password: document.querySelector("#change-password").value,
   };
   try {

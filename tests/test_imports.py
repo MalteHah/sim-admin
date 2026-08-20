@@ -70,3 +70,31 @@ def test_csv_preview_reports_fields_without_secret_values() -> None:
     assert preview.invalid_rows == 1
     assert preview.rows[0].errors == ["Ki: muss aus genau 32 Hex-Zeichen bestehen"]
     assert "not-a-key" not in preview.model_dump_json()
+
+
+def test_csv_import_accepts_optional_ims_fields() -> None:
+    content = CSV.replace(
+        "iccid;imsi;msisdn;acc;ki;opc;adm",
+        "iccid;imsi;msisdn;acc;ki;opc;adm;impi;impu;domain;ist",
+    ).replace(
+        ";DEADBEEF\n",
+        ";DEADBEEF;user@ims.example;sip:user@ims.example;ims.example;03FF\n",
+    )
+
+    preview, records = CSVImportPreviewService().parse(content)
+
+    assert preview.valid_rows == 1
+    assert records[0]["impi"] == "user@ims.example"
+    assert records[0]["impu"] == "sip:user@ims.example"
+    assert records[0]["ims_domain"] == "ims.example"
+    assert records[0]["ist"] == "03FF"
+
+
+def test_csv_import_rejects_invalid_ims_field_without_echoing_value() -> None:
+    content = CSV.replace(";adm\n", ";adm;impi\n").replace(";DEADBEEF\n", ";DEADBEEF;invalid identity\n")
+
+    preview = CSVImportPreviewService().create_preview(content)
+
+    assert preview.invalid_rows == 1
+    assert preview.rows[0].errors == ["IMPI: ungültiges Format"]
+    assert "invalid identity" not in preview.model_dump_json()

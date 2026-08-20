@@ -272,7 +272,8 @@ def create_single_profile(payload: SingleProfileCreateRequest, request: Request,
             audit.record("profiles.single_create", "error", "card_changed")
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Die eingelegte Karte hat sich seit dem Einlesen geändert")
     draft = ProvisioningDraft(iccid=payload.iccid, imsi=payload.imsi, msisdn=payload.msisdn, acc=payload.acc,
-        ki=payload.ki, opc=payload.opc, adm=payload.adm)
+        ki=payload.ki, opc=payload.opc, adm=payload.adm, impi=payload.impi, impu=payload.impu,
+        ims_domain=payload.ims_domain, ist=payload.ist)
     try: result = vault.add_profile(draft, card_verified=payload.verify_card)
     except ValueError as exc:
         if str(exc) == "duplicate_iccid":
@@ -323,7 +324,9 @@ def prepare_profile_change(profile_id: int, payload: ProfileChangeRequest, reque
         audit.record("profiles.change_draft", "error", "reauthentication_failed")
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Passwort ist falsch")
     try:
-        result = vault.prepare_change(profile_id, payload.imsi, payload.msisdn, payload.acc, payload.ki.get_secret_value() if payload.ki else None, payload.opc.get_secret_value() if payload.opc else None)
+        result = vault.prepare_change(profile_id, payload.imsi, payload.msisdn, payload.acc,
+            payload.ki.get_secret_value() if payload.ki else None, payload.opc.get_secret_value() if payload.opc else None,
+            payload.impi, payload.impu, payload.ims_domain, payload.ist)
     except KeyError as exc: raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profil nicht gefunden") from exc
     except ValueError as exc:
         if str(exc) == "no_changes": raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Es wurden keine Änderungen eingegeben") from exc

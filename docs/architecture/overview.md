@@ -79,6 +79,11 @@ FastAPI, pySim und einer späteren Datenbank:
 - `IMSProfile`: IMPI, IMPU, Domain und IMS Service Table.
 - `FiveGSProfile`: SUCI-Parameter und öffentliche Schlüssel des Heimnetzes.
 
+Die IMS-Felder IMPI, IMPU, IMS-Domain und IST sind optional in den verschlüsselten
+Profilrecords enthalten. Fehlende Schlüssel werden beim Lesen älterer Records als
+„nicht gesetzt“ behandelt. Diese Felder sind derzeit reine Tresordaten: Sie werden
+weder durch den Kartenadapter gelesen noch auf eine SIM geschrieben.
+
 Geheime Werte werden mit Pydantics `SecretStr` gekapselt, damit sie nicht
 versehentlich in Standarddarstellungen und Logs im Klartext erscheinen. Das
 ersetzt noch keine spätere Verschlüsselung bei Speicherung oder Export.

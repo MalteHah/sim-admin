@@ -58,6 +58,14 @@ class ProvisioningPreviewService:
             )
             for index, step in enumerate(steps, start=1):
                 step.order = index
+        if draft.impi or draft.impu or draft.ims_domain or draft.ist:
+            steps.append(ProvisioningStep(
+                order=len(steps) + 1,
+                target="ADF.ISIM",
+                action="IMS-Profildaten vormerken",
+                fields=[field for field, value in (("IMPI", draft.impi), ("IMPU", draft.impu), ("DOMAIN", draft.ims_domain), ("IST", draft.ist)) if value],
+                risk="Nur verschlüsselte Profilspeicherung; kein SIM-Schreibpfad",
+            ))
 
         return ProvisioningPreview(
             iccid=draft.iccid,

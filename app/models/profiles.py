@@ -16,6 +16,7 @@ class ProfileSummary(DomainModel):
     revision: int = 1
     pending_change: bool = False
     card_verified: bool = False
+    ims_configured: bool = False
 
 
 class ProfileRevisionSummary(DomainModel):
@@ -56,6 +57,10 @@ class ProfileEditableView(DomainModel):
     revision: int
     pending_change: bool = False
     changed_fields: list[str] = Field(default_factory=list)
+    impi: str | None = None
+    impu: str | None = None
+    ims_domain: str | None = None
+    ist: str | None = None
 
 
 class ProfileChangeRequest(DomainModel):
@@ -65,6 +70,10 @@ class ProfileChangeRequest(DomainModel):
     acc: str = Field(pattern=r"^[0-9A-Fa-f]{4}$")
     ki: SecretStr | None = Field(default=None, min_length=32, max_length=32)
     opc: SecretStr | None = Field(default=None, min_length=32, max_length=32)
+    impi: str | None = Field(default=None, min_length=3, max_length=255, pattern=r"^[^\s@]+@[^\s@]+$")
+    impu: str | None = Field(default=None, min_length=5, max_length=255, pattern=r"^(sip:|sips:|tel:)[^\s]+$")
+    ims_domain: str | None = Field(default=None, min_length=1, max_length=253, pattern=r"^[A-Za-z0-9](?:[A-Za-z0-9.-]{0,251}[A-Za-z0-9])?$")
+    ist: str | None = Field(default=None, pattern=r"^(?:[0-9A-Fa-f]{2})+$")
 
 
 class ProfileChangeSummary(DomainModel):
@@ -86,6 +95,10 @@ class SingleProfileCreateRequest(DomainModel):
     ki: SecretStr = Field(min_length=32, max_length=32)
     opc: SecretStr = Field(min_length=32, max_length=32)
     adm: SecretStr = Field(min_length=4, max_length=32)
+    impi: str | None = Field(default=None, min_length=3, max_length=255, pattern=r"^[^\s@]+@[^\s@]+$")
+    impu: str | None = Field(default=None, min_length=5, max_length=255, pattern=r"^(sip:|sips:|tel:)[^\s]+$")
+    ims_domain: str | None = Field(default=None, min_length=1, max_length=253, pattern=r"^[A-Za-z0-9](?:[A-Za-z0-9.-]{0,251}[A-Za-z0-9])?$")
+    ist: str | None = Field(default=None, pattern=r"^(?:[0-9A-Fa-f]{2})+$")
 
 
 class ProfileDeleteRequest(DomainModel):

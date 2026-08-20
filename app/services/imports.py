@@ -11,7 +11,8 @@ REQUIRED_COLUMNS = {"iccid", "imsi", "ki", "opc", "adm"}
 SYSMOCOM_COLUMNS = {"pin1", "puk1", "pin2", "puk2", "adm1"} | {
     f"{prefix}{index}" for prefix in ("kic", "kid", "kik") for index in range(1, 4)
 }
-ALLOWED_COLUMNS = REQUIRED_COLUMNS | {"msisdn", "acc"} | SYSMOCOM_COLUMNS
+IMS_COLUMNS = {"impi", "impu", "ims_domain", "domain", "ist"}
+ALLOWED_COLUMNS = REQUIRED_COLUMNS | {"msisdn", "acc"} | SYSMOCOM_COLUMNS | IMS_COLUMNS
 
 
 class CSVImportError(Exception):
@@ -82,6 +83,8 @@ class CSVImportPreviewService:
                 continue
             if not normalized.get("adm") and normalized.get("adm1"):
                 normalized["adm"] = normalized["adm1"]
+            if not normalized.get("ims_domain") and normalized.get("domain"):
+                normalized["ims_domain"] = normalized["domain"]
             acc = normalized.get("acc", "")
             if acc and len(acc) < 4 and all(character in "0123456789abcdefABCDEF" for character in acc):
                 normalized["acc"] = acc.zfill(4)
@@ -91,9 +94,11 @@ class CSVImportPreviewService:
                     "iccid": normalized.get("iccid", ""), "imsi": normalized.get("imsi", ""),
                     "msisdn": normalized.get("msisdn") or None, "acc": normalized.get("acc") or "0001",
                     "ki": normalized.get("ki", ""), "opc": normalized.get("opc", ""), "adm": normalized.get("adm", ""),
+                    "impi": normalized.get("impi") or None, "impu": normalized.get("impu") or None,
+                    "ims_domain": normalized.get("ims_domain") or None, "ist": normalized.get("ist") or None,
                 })
             except ValidationError as exc:
-                labels = {"iccid": "ICCID", "imsi": "IMSI", "msisdn": "MSISDN", "acc": "ACC", "ki": "Ki", "opc": "OPc", "adm": "ADM1"}
+                labels = {"iccid": "ICCID", "imsi": "IMSI", "msisdn": "MSISDN", "acc": "ACC", "ki": "Ki", "opc": "OPc", "adm": "ADM1", "impi": "IMPI", "impu": "IMPU", "ims_domain": "IMS-Domain", "ist": "IST"}
                 seen_fields: set[str] = set()
                 for issue in exc.errors():
                     field = str(issue["loc"][0]) if issue.get("loc") else "Datensatz"
@@ -113,7 +118,8 @@ class CSVImportPreviewService:
             seen_iccid.add(iccid); seen_imsi.add(imsi)
             rows.append(CSVImportRow(row_number=row_number, iccid=iccid, imsi=imsi, valid=not errors, errors=errors,
                 ki_configured=bool(normalized.get("ki")), opc_configured=bool(normalized.get("opc")), adm_configured=bool(normalized.get("adm"))))
-            records.append({key: normalized.get(key, "") for key in sorted(ALLOWED_COLUMNS)})
+            record = {key: normalized.get(key, "") for key in sorted(ALLOWED_COLUMNS) if key != "domain"}
+            records.append(record)
             if len(rows) > 5000:
                 raise CSVImportError("too_many_rows", "Die Datei darf höchstens 5.000 Datensätze enthalten")
         if not rows:

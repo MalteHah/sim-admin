@@ -64,3 +64,4 @@ Alle wesentlichen Änderungen an diesem Projekt werden hier dokumentiert.
 - Interaktive, AES-256-geschützte Erstellung und fingerabdruckgesicherte Installation des Release-Vertrauensankers
 - Rein lesende Offline-Updateprüfung für Signatur, Manifest, Einzeldateien, Versionsfolge, Archivpfade und Speicherplatz
 - Linux-Wheelpaket mit sämtlichen Python-Abhängigkeiten für netzwerkfreie Installation und spätere USB-Updates
+- Optionale IMS-Felder IMPI, IMPU, IMS-Domain und IST in CSV-Import, verschlüsseltem Profiltresor und Änderungsentwürfen ohne SIM-Schreibzugriff

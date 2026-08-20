@@ -244,3 +244,34 @@ def test_card_imsi_adoption_rejects_wrong_card_and_pending_change(tmp_path) -> N
         assert str(exc) == "pending_change"
     else:
         raise AssertionError("pending draft was overwritten")
+
+
+def test_optional_ims_fields_are_encrypted_and_backward_compatible(tmp_path) -> None:
+    database = tmp_path / "profiles.db"
+    vault = ProfileVaultService(str(database), str(tmp_path / "profile.key"))
+    ims_csv = CSV.replace(
+        "IMSI;ICCID;ACC;Ki;OPC;ADM1",
+        "IMSI;ICCID;ACC;Ki;OPC;ADM1;IMPI;IMPU;DOMAIN;IST",
+    ).replace(
+        ";DEADBEEF\n",
+        ";DEADBEEF;user@ims.example;sip:user@ims.example;ims.example;03FF\n",
+    )
+
+    vault.import_csv(ims_csv)
+    profile = vault.list_profiles()[0]
+    editable = vault.get_editable(profile.id)
+
+    assert profile.ims_configured is True
+    assert editable.impi == "user@ims.example"
+    assert editable.impu == "sip:user@ims.example"
+    assert editable.ims_domain == "ims.example"
+    assert editable.ist == "03FF"
+    raw = database.read_bytes()
+    for value in ("user@ims.example", "sip:user@ims.example", "ims.example", "03FF"):
+        assert value.encode() not in raw
+
+    legacy = ProfileVaultService(str(tmp_path / "legacy.db"), str(tmp_path / "legacy.key"))
+    legacy.import_csv(CSV)
+    legacy_profile = legacy.list_profiles()[0]
+    assert legacy_profile.ims_configured is False
+    assert legacy.get_editable(legacy_profile.id).impi is None

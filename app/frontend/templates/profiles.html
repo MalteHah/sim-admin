@@ -6,7 +6,7 @@
     <title>Profiltresor – SIM-Admin</title>
     <link rel="stylesheet" href="/static/dashboard.css?v=20260820-23">
     <script src="/static/table-pagination.js" defer></script>
-    <script src="/static/profiles.js?v=20260820-24" defer></script>
+    <script src="/static/profiles.js?v=20260820-25" defer></script>
   </head>
   <body>
     <header class="topbar">
@@ -44,8 +44,8 @@
       <section class="activity-card" aria-live="polite">
         <div class="activity-table-wrap">
           <table class="activity-table profile-table">
-            <thead><tr><th>Importiert</th><th>ICCID</th><th>IMSI</th><th>Ki</th><th>OPc</th><th>ADM1</th><th>Aktion</th></tr></thead>
-            <tbody id="profile-list"><tr><td colspan="7">Profile werden entschlüsselt …</td></tr></tbody>
+            <thead><tr><th>Importiert</th><th>ICCID</th><th>IMSI</th><th>IMS</th><th>Ki</th><th>OPc</th><th>ADM1</th><th>Aktion</th></tr></thead>
+            <tbody id="profile-list"><tr><td colspan="8">Profile werden entschlüsselt …</td></tr></tbody>
           </table>
         </div>
         <nav id="profile-pagination" class="table-pagination" aria-label="Seitennavigation" hidden></nav>
@@ -83,10 +83,14 @@
           <label>ACC<input id="change-acc" maxlength="4" pattern="[0-9A-Fa-f]{4}" required></label>
           <label>Ki<input id="change-ki" type="password" minlength="32" maxlength="32" pattern="[0-9A-Fa-f]{32}" placeholder="leer = unverändert" autocomplete="off"></label>
           <label>OPc<input id="change-opc" type="password" minlength="32" maxlength="32" pattern="[0-9A-Fa-f]{32}" placeholder="leer = unverändert" autocomplete="off"></label>
+          <label>IMPI<input id="change-impi" maxlength="255" placeholder="optional, z. B. user@ims.example"></label>
+          <label>IMPU<input id="change-impu" maxlength="255" placeholder="optional, z. B. sip:user@ims.example"></label>
+          <label>IMS-Domain<input id="change-ims-domain" maxlength="253" placeholder="optional"></label>
+          <label>IST<input id="change-ist" pattern="(?:[0-9A-Fa-f]{2})+" placeholder="optional, Hex-Bytes"></label>
           <label>Aktuelles Anmeldepasswort<input id="change-password" type="password" autocomplete="current-password" required></label>
           <label id="write-confirmation-label" hidden>Schreibfreigabe: SIM SCHREIBEN<input id="write-confirmation" autocomplete="off" placeholder="SIM SCHREIBEN"></label>
         </div>
-        <p class="immutable-note"><strong>Unveränderbar:</strong> ICCID und ADM1. ADM1 wird in diesem Dialog nicht übertragen oder angezeigt.</p>
+        <p class="immutable-note"><strong>Unveränderbar:</strong> ICCID und ADM1. IMS-Felder werden vorerst nur verschlüsselt im Tresor vorgemerkt und nicht auf die SIM geschrieben.</p>
         <p id="change-error" class="form-error" hidden></p>
         <div class="dialog-actions change-actions"><button type="button" id="change-discard" class="danger-button" hidden>Entwurf verwerfen</button><button type="button" id="change-preview" hidden>Entwurf prüfen</button><button type="button" id="change-compare" hidden>Mit Karte abgleichen</button><button type="button" id="change-write" class="danger-button" hidden>Auf SIM schreiben</button><button type="button" id="change-close">Abbrechen</button><button type="submit">Entwurf speichern</button></div>
       </form>

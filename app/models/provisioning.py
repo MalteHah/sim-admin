@@ -15,6 +15,10 @@ class ProvisioningDraft(DomainModel):
     ki: SecretStr = Field(min_length=32, max_length=32)
     opc: SecretStr = Field(min_length=32, max_length=32)
     adm: SecretStr = Field(min_length=4, max_length=32)
+    impi: str | None = Field(default=None, min_length=3, max_length=255, pattern=r"^[^\s@]+@[^\s@]+$")
+    impu: str | None = Field(default=None, min_length=5, max_length=255, pattern=r"^(sip:|sips:|tel:)[^\s]+$")
+    ims_domain: str | None = Field(default=None, min_length=1, max_length=253, pattern=r"^[A-Za-z0-9](?:[A-Za-z0-9.-]{0,251}[A-Za-z0-9])?$")
+    ist: str | None = Field(default=None, pattern=r"^(?:[0-9A-Fa-f]{2})+$")
 
     @field_validator("ki", "opc")
     @classmethod
