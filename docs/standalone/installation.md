@@ -1,8 +1,21 @@
 # Installation auf einem Standalone-System
 
-Die aktuelle Installation wird noch manuell verwaltet. Ein reproduzierbares
-Installationsskript und signierte Offline-Updates sind als nächste
-Bereitstellungsstufe vorgesehen.
+Die Installation wird schrittweise automatisiert. Der erste, nicht verändernde
+Prüfmodus kontrolliert die Systemvoraussetzungen. Die eigentliche Installation
+und signierte Offline-Updates folgen in den nächsten Bereitstellungsstufen.
+
+## Installationsprüfung
+
+Im Wurzelverzeichnis des entpackten Release-Pakets:
+
+```bash
+./scripts/install.sh --check
+```
+
+Der Prüfmodus benötigt keine Administratorrechte und nimmt keinerlei Änderungen
+am Rechner vor. Er kontrolliert Betriebssystem, Python-Version, systemd, OpenSSL
+und die PC/SC-Voraussetzungen. Eine bestehende Installation wird nur erkannt,
+nicht verändert.
 
 ## Voraussetzungen
 

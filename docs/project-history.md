@@ -119,4 +119,7 @@ nicht in dieses Dokument.
 - Unterstützung weiterer Kartentypen für Ki und OPc.
 - Übernahme vorbereiteter Änderungen nach einem erfolgreichen SIM-Schreibvorgang.
 - IMS-, SUCI- und weitere 5G-Profildaten.
+- Feldweiser Kartenvergleich mit selektiver Übernahme aller technisch auslesbaren
+  Werte; ICCID bleibt Zuordnungsmerkmal und nicht auslesbare Geheimnisse wie Ki,
+  OPc und ADM1 werden nicht angeboten.
 - GitHub-Releaseprozess, Installationsskript und signierte Offline-Updates.

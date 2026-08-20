@@ -163,7 +163,7 @@ async function compareProfile(profile) {
   previewPanel.append(title, text);
   if (data.iccid_matches && !data.imsi_matches) {
     const adoptButton = document.createElement("button");
-    adoptButton.type = "button"; adoptButton.textContent = "Daten der Karte übernehmen";
+    adoptButton.type = "button"; adoptButton.textContent = "IMSI der Karte übernehmen";
     adoptButton.addEventListener("click", () => {
       adoptProfileId = profile.id; adoptForm.reset(); adoptError.hidden = true; adoptDialog.showModal();
       document.querySelector("#adopt-password").focus();
@@ -189,7 +189,7 @@ adoptForm.addEventListener("submit", async (event) => {
       adoptError.hidden = false; return;
     }
     adoptDialog.close(); previewPanel.hidden = false; previewPanel.replaceChildren();
-    const title = document.createElement("h2"); title.textContent = "Kartendaten übernommen";
+    const title = document.createElement("h2"); title.textContent = "IMSI der Karte übernommen";
     const text = document.createElement("p"); text.textContent = `Die IMSI wurde als Revision ${data.revision} im Profiltresor gespeichert. Auf die SIM-Karte wurde nichts geschrieben.`;
     previewPanel.append(title, text); await loadProfiles();
   } finally { submit.disabled = false; document.querySelector("#adopt-password").value = ""; }
