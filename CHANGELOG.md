@@ -99,3 +99,4 @@ Hardware- und Bereitstellungstests stehen in `docs/testing-and-roadmap.md`.
 - Präzise Anzeige leerer IMS-Kartenfelder und des gültigen, schlüssellosen Null-Scheme-Standardzustands ohne unnötiges Übernahmeangebot
 - Werkseitiger, allein vorhandener IST-Servicewert gilt nicht als Teilnehmer-IMS-Konfiguration und löst keine Übernahmeaktion aus
 - Übernahmeaktion berücksichtigt einen technischen Vergleichsunterschied nur bei tatsächlich verwalteten Feldern
+- Erfolgreicher Hardwaretest der selektiven Übernahme einer abweichenden IMS-Domain als neue Tresorrevision ohne SIM-Schreibzugriff

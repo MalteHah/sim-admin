@@ -170,3 +170,12 @@ nicht in dieses Dokument.
   IMPI, IMPU und Domain wurden geleert, IST-Dienste deaktiviert und alle Werte
   zurückgelesen. Ein vorausgehender Fehler erzeugte erwartungsgemäß keine neue
   Revision und der Entwurf konnte nach der Korrektur erneut ausgeführt werden.
+
+## 2026-08-21 – Selektive Kartenübernahme
+
+- Eine IMS-Domain wurde kontrolliert ausschließlich auf einer Testkarte gesetzt,
+  während der verschlüsselte Tresoreintrag unverändert blieb.
+- Der Kartenabgleich erkannte genau diese Abweichung. Nach erneuter Kartenlesung
+  und Passwortprüfung wurde nur die IMS-Domain als neue Tresorrevision übernommen.
+- Der Übernahmevorgang selbst führte keinen Schreibzugriff auf die SIM aus;
+  ICCID, Ki, OPc und ADM1 blieben grundsätzlich ausgeschlossen.

@@ -28,6 +28,10 @@ Stand: 21. August 2026, Zielversion 0.2.0 (Vorabstand).
   Adapter ohne realen ADM-Versuch geprüft: Revision und Entwurf bleiben erhalten.
 - Eine unpassende IST-Dateigröße wurde simuliert und eindeutig abgebrochen;
   Revision und Entwurf bleiben ebenfalls unverändert.
+- Die selektive Kartenübernahme wurde mit einer ausschließlich auf der Karte
+  abweichenden IMS-Domain praktisch geprüft: Nur das betroffene Feld wurde nach
+  erneuter Karten- und Passwortprüfung als Revision 2 übernommen; die SIM blieb
+  beim Übernahmevorgang unverändert.
 
 ## Vor einem ersten stabilen Release zwingend zu testen
 
@@ -43,8 +47,6 @@ Stand: 21. August 2026, Zielversion 0.2.0 (Vorabstand).
 
 ## Noch zu entwickeln
 
-- Hardware-Abnahme der selektiven Übernahme abweichender IMS-/5GS-Werte. Die
-  Funktion ist umgesetzt; Ki, OPc und ADM1 bleiben ausgeschlossen.
 - Mehrere Home-Network-Schlüssel und mehrere Protection-Scheme-Einträge mit
   Prioritätsverwaltung.
 - S17-spezifische SUCI-Berechnung auf der USIM über `DF.SAIP` und Profile B mit
