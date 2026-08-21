@@ -4,10 +4,11 @@ Stand: 21. August 2026, Zielversion 0.2.0 (Vorabstand).
 
 ## Erfolgreich geprüft
 
-- SysmocomSJA5: Routing Indicator `0000`, Profile A (X25519), HN-Key-ID 1,
-  öffentlicher Schlüssel sowie UST-Service 124 aktiv und 125 inaktiv wurden
-  geschrieben und unmittelbar zurückgelesen.
-- Open5GS hat die verschlüsselte SUCI mit Scheme 1 und Key ID 1 verarbeitet,
+- SysmocomSJA5: Routing Indicator `0000`, Null Scheme, Profile A (X25519) mit
+  HN-Key-ID 1 und Profile B (P-256) mit HN-Key-ID 2 wurden geschrieben und
+  unmittelbar zurückgelesen. UST-Service 124 war aktiv und 125 inaktiv.
+- Open5GS hat sowohl die unverschlüsselte Null-Scheme-SUCI als auch die mit
+  Profile A beziehungsweise Profile B geschützten SUCIs verarbeitet, jeweils
   zur erwarteten IMSI aufgelöst und die 5G-Registrierung abgeschlossen.
 - Der Profiltresor-Kartenabgleich liest diese SUCI-Werte künftig ohne
   Schreibzugriff zurück und vergleicht sie mit der aktiven Revision.
@@ -15,8 +16,6 @@ Stand: 21. August 2026, Zielversion 0.2.0 (Vorabstand).
 ## Vor einem ersten stabilen Release zwingend zu testen
 
 - IMS-Schreiben auf einer vorgesehenen SysmocomSJA5: IMPI, IMPU, Domain und IST.
-- Verbleibende 5GS-/SUCI-Varianten: Null Scheme und Profile B mit geeignetem
-  öffentlichen Testschlüssel.
 - Readback, Revisionierung und Abbruchverhalten bei falscher ICCID, falschem ADM1,
   nicht unterstützter Karte, unpassender Dateigröße und entferntem Kartenleser.
 - Neuinstallation aus einem vollständig offline gebauten Release-Paket auf der

@@ -143,7 +143,17 @@ nicht in dieses Dokument.
 - Die Werte werden beim Import wie alle Profildaten ausschließlich im
   verschlüsselten Datensatz abgelegt.
 - Auf eindeutig erkannten SysmocomSJA5-Karten werden EF.Routing_Indicator unter
-  DF.5GS und die für die Kartenberechnung verwendete EF.SUCI_Calc_Info unter
-  DF.SAIP vor jedem Schreibvorgang lesend geprüft. Erst danach werden die Werte
+  DF.5GS und die für die Endgeräteberechnung verwendete EF.SUCI_Calc_Info unter
+  DF.5GS vor jedem Schreibvorgang lesend geprüft. Erst danach werden die Werte
   geschrieben und unmittelbar zurückgelesen. Eine neue Tresorrevision entsteht
   nur nach vollständiger Bestätigung.
+
+## 2026-08-21 – SUCI-Ende-zu-Ende-Abnahme
+
+- Null Scheme, Profile A (X25519, HN-Key-ID 1) und Profile B (P-256,
+  HN-Key-ID 2) wurden auf einer SysmocomSJA5 erfolgreich programmiert und
+  zurückgelesen.
+- Open5GS löste alle drei SUCI-Varianten zur erwarteten IMSI auf und schloss die
+  5G-Registrierung erfolgreich ab.
+- Der Profiltresor erhielt einen rein lesenden Vergleich der SUCI-Kartendaten
+  einschließlich Routing Indicator, Scheme, Key-ID, Public Key und UST 124/125.

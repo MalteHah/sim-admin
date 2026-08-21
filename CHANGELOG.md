@@ -80,4 +80,4 @@ Hardware- und Bereitstellungstests stehen in `docs/testing-and-roadmap.md`.
 - Auswahl aktiver zentraler SUCI-Schlüsselprofile bei Einzelkarte und Profiländerung
 - Kompatibilität mit der strukturierten UST-Darstellung aktueller pySim-Versionen und stufenbezogene Schreibfehler
 - Rein lesender SUCI-Kartenabgleich von Routing Indicator, Schutzverfahren, HN-Key-ID, öffentlichem Schlüssel und UST 124/125 gegen das Tresorprofil
-- Erfolgreicher Ende-zu-Ende-Test einer verschlüsselten Profile-A-SUCI bis zur abgeschlossenen Open5GS-Registrierung
+- Erfolgreiche Ende-zu-Ende-Tests von Null Scheme, Profile A und Profile B bis zur jeweils abgeschlossenen Open5GS-Registrierung
