@@ -136,6 +136,16 @@ nicht in dieses Dokument.
   OPc und ADM1 werden nicht angeboten.
 - Produktive Updateausführung mit Vorab-Backup und Rollback.
 
+## Priorisierte Karten-Roadmap
+
+- Revision 1: SUCI-Berechnung auf der USIM, mehrere SUCI-Konfigurationen mit
+  Prioritäten und weitere auslesbare Felder für Vergleich und Übernahme.
+- Revision 2: weitere Kartentypen, S17-spezifische Parameter, weitere
+  kartenspezifische SUCI-Varianten, erweiterte IMS-Strukturen,
+  Stapelverarbeitung und Wiederaufnahme unterbrochener Schreibvorgänge.
+- ADM1 bleibt unveränderbar: Es wird ausschließlich zur Autorisierung geprüft
+  und niemals von SIM-Admin gelesen, geändert, entsperrt oder geschrieben.
+
 ## 2026-08-20 – Beginn der 5GS-/SUCI-Erweiterung
 
 - Optionale CSV-Felder `routing_indicator`, `protection_scheme`,

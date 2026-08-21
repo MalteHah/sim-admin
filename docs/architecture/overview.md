@@ -70,6 +70,10 @@ Zurücklesen und anschließender Revisions-Commit. Ki, OPc, IMS- und
 5GS-/SUCI-Felder werden nur für eindeutig erkannte SysmocomSJA5-Karten
 freigegeben.
 
+ADM1 ist ausschließlich ein Autorisierungsnachweis. Die Anwendung besitzt
+keinen Pfad zum Lesen, Ändern, Entsperren, Zurücksetzen oder Schreiben von ADM1
+auf der Karte; diese Grenze ist Teil des Sicherheitsmodells.
+
 ## Fachmodelle
 
 Die ersten internen Modelle liegen in `app/models` und bleiben unabhängig von

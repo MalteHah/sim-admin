@@ -45,27 +45,40 @@ Stand: 21. August 2026, Zielversion 0.2.0 (Vorabstand).
   Datenträger; danach Anmeldung, Historie und Entschlüsselung stichprobenartig
   prüfen.
 
-## Noch zu entwickeln
+## Karten-Roadmap
 
-- Mehrere Home-Network-Schlüssel und mehrere Protection-Scheme-Einträge mit
-  Prioritätsverwaltung.
-- S17-spezifische SUCI-Berechnung auf der USIM über `DF.SAIP` und Profile B mit
-  unkomprimiertem öffentlichen Schlüssel.
+### Revision 1 – nächste Kartenfunktionen
+
+- SUCI-Berechnung direkt auf der USIM.
+- Mehrere Home-Network-Schlüssel und Protection-Scheme-Einträge gleichzeitig
+  auf einer Karte, einschließlich Prioritätsverwaltung.
+- Weitere technisch auslesbare Kartenfelder in Vergleich und selektive
+  Übernahme aufnehmen.
+
+### Revision 2 – spätere Kartenfunktionen
+
+- Weitere Kartentypen und Hersteller unterstützen.
+- S17-spezifische Dateien und Parameter sowie weitere kartenspezifische
+  SUCI-Varianten.
+- Erweiterte IMS-Kartenstrukturen, darunter zusätzliche Dateien und mehrere
+  Datensätze.
+- Geführte Stapelverarbeitung mehrerer Karten.
+- Erkennung, Bestandsaufnahme und geführte Wiederaufnahme nach Unterbrechung
+  eines Schreibvorgangs.
+
+### Verbindliche ADM1-Grenze
+
+- ADM1 wird nur zur Autorisierung eines ausdrücklich freigegebenen
+  Schreibvorgangs geprüft.
+- SIM-Admin liest ADM1 nicht von der Karte, übernimmt es nicht von der Karte und
+  ändert, entsperrt oder schreibt ADM1 niemals.
+
+## Noch zu entwickeln – Betrieb und Veröffentlichung
+
 - Produktiver Offline-Updatepfad mit Sicherung, atomarem Austausch,
   Datenbankschema-Prüfung und Rollback.
 - Bedienoberfläche und Fehlermeldungen nach den Hardwaretests nachschärfen.
 - Finales Release-Paket, signierter Tag und abschließende Release Notes.
 
-## Zurückgestellte Integrationstests
-
-Die Open5GS-Netzregistrierung mit verschlüsselter SUCI wurde erfolgreich
-geprüft. Kamailio-IMS ist derzeit ein eigenständiger, größerer Integrationsblock und wird separat
-analysiert. Erst nach funktionsfähigem P-/I-/S-CSCF-Aufbau folgen:
-
-- IMS-Registrierung der vorgesehenen Teilnehmer,
-- Zuordnung von IMPI, IMPU und Nebenstelle,
-- Gespräche in beide Richtungen,
-- Prüfung, dass programmierte IMS-/SUCI-Werte tatsächlich verwendet werden.
-
-Kamailio-IMS blockiert nicht die lokale Weiterentwicklung oder Dokumentation von
-SIM-Admin, wohl aber die Ende-zu-Ende-Abnahme der IMS-Funktionen.
+Netzseitige IMS-Systeme sind ausdrücklich nicht Bestandteil dieser Karten-
+Roadmap und werden in einem getrennten Projektblock behandelt.
