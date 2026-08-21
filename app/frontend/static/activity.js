@@ -89,6 +89,8 @@ function translateDetail(detail) {
   if (!detail) return "–";
   const revision = /^revision_(\d+)$/.exec(detail);
   if (revision) return `Als Revision ${revision[1]} übernommen`;
+  const writeStage = /^write_failed_(.+)$/.exec(detail);
+  if (writeStage) return `Schreibvorgang fehlgeschlagen: ${writeStage[1].replaceAll("_", " ")}`;
   return detailLabels[detail] || detail.replaceAll("_", " ");
 }
 

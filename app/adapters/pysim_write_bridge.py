@@ -24,6 +24,7 @@ def main() -> None:
     if not fields or not fields <= {"imsi", "msisdn", "acc", "ki", "opc", "impi", "impu", "ims_domain", "ist"} | fivegs_fields:
         emit_error("unsupported_fields", "Der Entwurf enthält noch nicht unterstützte Schreibfelder", 4)
     transport = None
+    stage = "initialization"
     try:
         if not card_is_present(args.reader): emit_error("no_card", "Keine SIM-Karte eingelegt", 2)
         options = argparse.Namespace(pcsc_dev=args.reader, pcsc_regex=None, pcsc_shared=True)
@@ -46,11 +47,13 @@ def main() -> None:
         # This prevents a missing or inaccessible file from causing a partial write.
         current_routing = None
         if "routing_indicator" in fields:
+            stage = "routing_indicator_preflight"
             channel.select("MF/ADF.USIM/DF.5GS/EF.Routing_Indicator")
             current_routing, _ = channel.read_binary_dec()
         suci_fields = {"protection_scheme", "hn_public_key_id", "hn_public_key"}
         current_ust = None
         if fields & suci_fields:
+            stage = "suci_preflight"
             channel.select("MF/ADF.USIM/DF.5GS/EF.SUCI_Calc_Info")
             channel.read_binary_dec()
             channel.select("MF/ADF.USIM/EF.UST")
@@ -58,22 +61,26 @@ def main() -> None:
 
         verified = []
         if "imsi" in fields:
+            stage = "imsi"
             channel.select("MF/ADF.USIM/EF.IMSI"); channel.update_binary_dec({"imsi": payload["imsi"]})
             value, _ = channel.read_binary_dec()
             if value.get("imsi") != payload["imsi"]: emit_error("verification_failed", "IMSI konnte nicht bestätigt werden", 7)
             verified.append("imsi")
         if "acc" in fields:
+            stage = "acc"
             channel.select("MF/ADF.USIM/EF.ACC"); channel.update_binary(payload["acc"].lower())
             raw, _ = channel.read_binary()
             if raw.lower() != payload["acc"].lower(): emit_error("verification_failed", "ACC konnte nicht bestätigt werden", 7)
             verified.append("acc")
         if "msisdn" in fields:
+            stage = "msisdn"
             number = (payload.get("msisdn") or "").lstrip("+")
             channel.select("MF/DF.TELECOM/EF.MSISDN"); channel.update_record_dec(1, {"msisdn": number})
             value, _ = channel.read_record_dec(1)
             if value.get("dialing_nr", "").rstrip("f") != number: emit_error("verification_failed", "MSISDN konnte nicht bestätigt werden", 7)
             verified.append("msisdn")
         if fields & {"ki", "opc"}:
+            stage = "authentication_keys"
             key = h2b(payload["ki"]); opc = h2b(payload["opc"])
             auth_3g = {"cfg": {"only_4bytes_res_in_3g": False, "sres_deriv_func_in_2g": 1, "use_opc_instead_of_op": True, "algorithm": "milenage"}, "key": key, "op_opc": opc}
             auth_2g = {"cfg": {"only_4bytes_res_in_3g": False, "sres_deriv_func_in_2g": 1, "use_opc_instead_of_op": True, "algorithm": "milenage"}, "key": key, "op_opc": opc}
@@ -84,6 +91,7 @@ def main() -> None:
             if "ki" in fields: verified.append("ki")
             if "opc" in fields: verified.append("opc")
         if fields & {"impi", "impu", "ims_domain", "ist"}:
+            stage = "ims"
             if "impi" in fields:
                 channel.select("MF/ADF.ISIM/EF.IMPI"); channel.update_binary_dec({"nai": payload["impi"]})
                 value, _ = channel.read_binary_dec()
@@ -107,6 +115,7 @@ def main() -> None:
                 if value.lower() != target: emit_error("verification_failed", "IST konnte nicht bestätigt werden", 7)
                 verified.append("ist")
         if "routing_indicator" in fields:
+            stage = "routing_indicator"
             channel.select("MF/ADF.USIM/DF.5GS/EF.Routing_Indicator")
             target = {"routing_indicator": payload["routing_indicator"], "rfu": current_routing.get("rfu", b"\xff\xff")}
             channel.update_binary_dec(target); value, _ = channel.read_binary_dec()
@@ -114,6 +123,7 @@ def main() -> None:
                 emit_error("verification_failed", "Routing Indicator konnte nicht bestätigt werden", 7)
             verified.append("routing_indicator")
         if fields & suci_fields:
+            stage = "suci_calc_info"
             scheme = payload.get("protection_scheme")
             key_id = payload.get("hn_public_key_id")
             key_hex = payload.get("hn_public_key")
@@ -121,6 +131,7 @@ def main() -> None:
             channel.select("MF/ADF.USIM/DF.5GS/EF.SUCI_Calc_Info")
             channel.update_binary_dec(target); value, _ = channel.read_binary_dec()
             if value != target: emit_error("verification_failed", "SUCI-Konfiguration konnte nicht bestätigt werden", 7)
+            stage = "ust_services"
             channel.select("MF/ADF.USIM/EF.UST")
             target_ust = enable_suci_by_me(current_ust)
             channel.update_binary_dec(target_ust); value, _ = channel.read_binary_dec()
@@ -130,7 +141,7 @@ def main() -> None:
     except NoCardError: emit_error("no_card", "Keine SIM-Karte eingelegt", 2)
     except ReaderError: emit_error("reader_error", "Kartenleser ist nicht verfügbar", 8)
     except ProtocolError: emit_error("protocol_error", "SIM-Karte antwortet nicht", 9)
-    except Exception: emit_error("write_failed", "SIM-Schreibvorgang oder Rückprüfung ist fehlgeschlagen", 10)
+    except Exception: emit_error(f"write_failed_{stage}", f"SIM-Schreibvorgang ist in der Stufe {stage} fehlgeschlagen", 10)
     finally:
         if transport is not None:
             try: transport.disconnect()

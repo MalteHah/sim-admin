@@ -78,3 +78,4 @@ Hardware- und Bereitstellungstests stehen in `docs/testing-and-roadmap.md`.
 - Eindeutige Oberflächenbezeichnungen für AMF und SUCI Routing Indicator sowie Pflichtprüfung des Routing Indicators
 - Zentraler, verschlüsselter SUCI-Heimnetzschlüsselkatalog in den Einstellungen mit PEM-/DER-/Hex-Import, Fingerprint und Verwendungsschutz
 - Auswahl aktiver zentraler SUCI-Schlüsselprofile bei Einzelkarte und Profiländerung
+- Kompatibilität mit der strukturierten UST-Darstellung aktueller pySim-Versionen und stufenbezogene Schreibfehler

@@ -37,6 +37,15 @@ def test_suci_by_me_enables_124_and_disables_125() -> None:
     assert enable_suci_by_me([2, 124, 125, 126]) == [2, 124, 126]
 
 
+def test_suci_by_me_updates_structured_pysim_ust() -> None:
+    current = {124: {"activated": False, "description": "privacy"},
+        125: {"activated": True, "description": "on-card"}}
+    updated = enable_suci_by_me(current)
+    assert updated[124]["activated"] is True
+    assert updated[125]["activated"] is False
+    assert current[124]["activated"] is False
+
+
 def test_suci_configuration_requires_routing_indicator() -> None:
     with pytest.raises(ValidationError, match="routing_indicator is required"):
         ProvisioningDraft(
