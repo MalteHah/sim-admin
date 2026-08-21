@@ -109,6 +109,23 @@ class CardComparisonService:
             warnings.append("Die Ziel-IMSI weicht von der eingelegten Karte ab.")
         if iccid_matches and imsi_matches:
             warnings.append("ICCID und IMSI entsprechen bereits dem Entwurf.")
+        ims_values = {
+            "impi_matches": None, "impu_matches": None, "ims_domain_matches": None,
+            "ist_matches": None, "ims_matches": None,
+        }
+        if request.compare_ims and current.ims_readable:
+            ims_values = {
+                "impi_matches": current.impi == request.target_impi,
+                "impu_matches": current.impu == request.target_impu,
+                "ims_domain_matches": current.ims_domain == request.target_ims_domain,
+                "ist_matches": (current.ist or "").upper() == (request.target_ist or "").upper(),
+                "ims_matches": False,
+            }
+            ims_values["ims_matches"] = all(value for key, value in ims_values.items() if key != "ims_matches")
+            if not ims_values["ims_matches"]:
+                warnings.append("Die IMS-Konfiguration der Karte weicht vom Tresorprofil ab.")
+        elif request.compare_ims:
+            warnings.append("Die IMS-Konfiguration konnte auf dieser Karte nicht gelesen werden.")
         suci_compared = request.target_protection_scheme is not None
         suci_values = {
             "routing_indicator_matches": None, "protection_scheme_matches": None,
@@ -139,6 +156,13 @@ class CardComparisonService:
             target_imsi=request.target_imsi,
             iccid_matches=iccid_matches,
             imsi_matches=imsi_matches,
+            ims_compared=request.compare_ims,
+            ims_readable=current.ims_readable,
+            current_impi=current.impi,
+            current_impu=current.impu,
+            current_ims_domain=current.ims_domain,
+            current_ist=current.ist,
+            **ims_values,
             suci_compared=suci_compared,
             suci_readable=current.suci_readable,
             current_routing_indicator=current.routing_indicator,

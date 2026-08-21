@@ -142,6 +142,9 @@ class FakeSuciCardAdapter(FakeCardAdapter):
             suci_supported=True, suci_readable=True, routing_indicator="0000",
             protection_scheme=1, hn_public_key_id=1, hn_public_key="A1" * 32,
             suci_service_124_active=True, suci_service_125_active=False,
+            ims_supported=True, ims_readable=True,
+            impi="001010123456789@ims.example", impu="sip:123@ims.example",
+            ims_domain="ims.example", ist="190208",
         )
 
 
@@ -157,3 +160,32 @@ def test_card_comparison_includes_matching_suci_configuration() -> None:
     assert result.suci_matches is True
     assert result.suci_service_124_active is True
     assert result.suci_service_125_active is False
+
+
+def test_card_comparison_includes_matching_ims_configuration() -> None:
+    service = CardComparisonService(FakeSuciCardAdapter())
+    result = service.compare(CardComparisonRequest(
+        target_iccid="8949012345678901234", target_imsi="001010123456789",
+        compare_ims=True, target_impi="001010123456789@ims.example",
+        target_impu="sip:123@ims.example", target_ims_domain="ims.example", target_ist="190208",
+    ))
+
+    assert result.ims_compared is True
+    assert result.ims_matches is True
+
+
+def test_card_comparison_accepts_fully_cleared_ims_configuration() -> None:
+    class FakeClearedImsCardAdapter(FakeCardAdapter):
+        def read_identity(self, reader_index: int = 0) -> SIMReadResult:
+            result = super().read_identity(reader_index)
+            result.ims_supported = True
+            result.ims_readable = True
+            return result
+
+    service = CardComparisonService(FakeClearedImsCardAdapter())
+    result = service.compare(CardComparisonRequest(
+        target_iccid="8949012345678901234", target_imsi="001010123456789", compare_ims=True,
+    ))
+
+    assert result.ims_readable is True
+    assert result.ims_matches is True

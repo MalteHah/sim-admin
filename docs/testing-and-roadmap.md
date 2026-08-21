@@ -18,6 +18,8 @@ Stand: 21. August 2026, Zielversion 0.2.0 (Vorabstand).
 - Das anschließende Löschen aller IMS-Werte wurde ebenfalls geschrieben und
   zurückgelesen. Ein erster fehlgeschlagener Versuch ließ aktive Revision und
   Änderungsentwurf unverändert; nach der Korrektur entstand regulär Revision 4.
+- Der rein lesende IMS-Kartenabgleich erkennt sowohl belegte als auch vollständig
+  geleerte ISIM-Felder und vergleicht IMPI, IMPU, Domain und IST einzeln.
 
 ## Vor einem ersten stabilen Release zwingend zu testen
 
@@ -35,9 +37,8 @@ Stand: 21. August 2026, Zielversion 0.2.0 (Vorabstand).
 
 ## Noch zu entwickeln
 
-- Feldweiser Kartenabgleich für auslesbare IMS-Werte sowie eine spätere
-  selektive Übernahme. Der 5GS-/SUCI-Abgleich ist bereits lesend umgesetzt;
-  Ki, OPc und ADM1 bleiben ausgeschlossen.
+- Spätere selektive Übernahme abweichender, auslesbarer IMS-/5GS-Werte. Der
+  lesende Feldvergleich ist umgesetzt; Ki, OPc und ADM1 bleiben ausgeschlossen.
 - Mehrere Home-Network-Schlüssel und mehrere Protection-Scheme-Einträge mit
   Prioritätsverwaltung.
 - S17-spezifische SUCI-Berechnung auf der USIM über `DF.SAIP` und Profile B mit

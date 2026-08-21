@@ -56,7 +56,7 @@ def read_suci_card_state(routing: dict, calculation: dict, services: list[int] |
         return number in {int(service) for service in services}
 
     return {
-        "routing_indicator": str(routing.get("routing_indicator", "")),
+        "routing_indicator": str(routing.get("routing_indicator", "")).zfill(4),
         "protection_scheme": scheme,
         "hn_public_key_id": int(selected_key["hnet_pubkey_identifier"]) if selected_key else None,
         "hn_public_key": key_value,

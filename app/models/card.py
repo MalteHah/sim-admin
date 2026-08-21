@@ -13,6 +13,12 @@ class SIMReadResult(DomainModel):
     atr: str = Field(pattern=r"^[0-9A-Fa-f ]+$")
     iccid: str = Field(pattern=r"^\d{18,22}$")
     imsi: str = Field(pattern=r"^\d{5,15}$")
+    ims_supported: bool = False
+    ims_readable: bool = False
+    impi: str | None = None
+    impu: str | None = None
+    ims_domain: str | None = None
+    ist: str | None = None
     suci_supported: bool = False
     suci_readable: bool = False
     routing_indicator: str | None = None

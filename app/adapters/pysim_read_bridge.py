@@ -83,9 +83,13 @@ def main() -> None:
                 suci_supported = False
                 suci_readable = False
                 suci_state = {}
+                ims_supported = False
+                ims_readable = False
+                ims_state = {}
                 try:
                     from pySim.sysmocom_sja2 import SysmocomSJA5
                     suci_supported = transport.get_atr().lower() in SysmocomSJA5._atrs
+                    ims_supported = suci_supported
                     if suci_supported:
                         from suci import read_suci_card_state
                         channel.select("MF/ADF.USIM/DF.5GS/EF.Routing_Indicator")
@@ -98,6 +102,24 @@ def main() -> None:
                         suci_readable = True
                 except Exception:
                     suci_readable = False
+                try:
+                    if ims_supported:
+                        channel.select("MF/ADF.ISIM/EF.IMPI")
+                        raw, _ = channel.read_binary()
+                        impi = None if set(raw.lower()) <= {"f"} else channel.read_binary_dec()[0].get("nai")
+                        channel.select("MF/ADF.ISIM/EF.IMPU")
+                        raw, _ = channel.read_record(1)
+                        impu = None if set(raw.lower()) <= {"f"} else channel.read_record_dec(1)[0].get("impu")
+                        channel.select("MF/ADF.ISIM/EF.DOMAIN")
+                        raw, _ = channel.read_binary()
+                        domain = None if set(raw.lower()) <= {"f"} else channel.read_binary_dec()[0].get("domain")
+                        channel.select("MF/ADF.ISIM/EF.IST")
+                        raw, _ = channel.read_binary()
+                        ist = None if not raw or set(raw.lower()) <= {"0", "f"} else raw.upper()
+                        ims_state = {"impi": impi, "impu": impu, "ims_domain": domain, "ist": ist}
+                        ims_readable = True
+                except Exception:
+                    ims_readable = False
 
         print(
             json.dumps(
@@ -107,6 +129,9 @@ def main() -> None:
                     "atr": transport.get_atr().upper(),
                     "iccid": iccid_data["iccid"],
                     "imsi": imsi_data["imsi"],
+                    "ims_supported": ims_supported,
+                    "ims_readable": ims_readable,
+                    **ims_state,
                     "suci_supported": suci_supported,
                     "suci_readable": suci_readable,
                     **suci_state,

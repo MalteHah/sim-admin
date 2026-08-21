@@ -215,6 +215,7 @@ async function compareProfile(profile) {
   else if (data.iccid_matches) text.textContent = "Die ICCID wurde sicher zugeordnet. Die IMSI der Karte weicht vom Tresorprofil ab.";
   else text.textContent = "Die ICCID stimmt nicht überein. Die Karte wurde diesem Profil nicht zugeordnet.";
   previewPanel.append(title, text);
+  appendImsComparison(previewPanel, data);
   appendSuciComparison(previewPanel, data);
   if (data.iccid_matches && !data.imsi_matches) {
     const adoptButton = document.createElement("button");
@@ -241,6 +242,22 @@ function appendSuciComparison(container, data) {
   const details = document.createElement("p");
   const schemes = {0: "Null Scheme", 1: "Profile A – X25519", 2: "Profile B – P-256"};
   details.textContent = `Karte: Routing Indicator ${data.current_routing_indicator || "–"} · ${schemes[data.current_protection_scheme] || "Unbekannt"} · HN-Key-ID ${data.current_hn_public_key_id ?? "–"} · öffentlicher Schlüssel ${data.hn_public_key_matches ? "stimmt überein" : "abweichend"} · UST 124 ${data.suci_service_124_active ? "aktiv" : "inaktiv"} · UST 125 ${data.suci_service_125_active ? "aktiv" : "inaktiv"}`;
+  container.append(details);
+}
+
+function appendImsComparison(container, data) {
+  if (!data.ims_compared) return;
+  const heading = document.createElement("h3"); heading.textContent = "IMS-Konfiguration";
+  const text = document.createElement("p");
+  if (!data.ims_readable) text.textContent = "Die IMS-Daten konnten auf dieser Karte nicht gelesen werden.";
+  else text.textContent = data.ims_matches
+    ? "IMPI, IMPU, IMS-Domain und IST stimmen mit dem Tresorprofil überein."
+    : "Die IMS-Konfiguration weicht vom Tresorprofil ab.";
+  container.append(heading, text);
+  if (!data.ims_readable) return;
+  const details = document.createElement("p");
+  const status = value => value ? "stimmt überein" : "abweichend";
+  details.textContent = `IMPI ${status(data.impi_matches)} · IMPU ${status(data.impu_matches)} · Domain ${status(data.ims_domain_matches)} · IST ${status(data.ist_matches)}`;
   container.append(details);
 }
 
@@ -365,7 +382,6 @@ changePreview.addEventListener("click", async () => {
     const title = document.createElement("h2"); title.textContent = "Entwurfsprüfung – kein Schreibzugriff";
     const text = document.createElement("p"); text.textContent = `${data.steps.length} geplante Schritte geprüft. Geheimwerte sind vorhanden und verdeckt; write_performed: false.`;
     previewPanel.append(title, text);
-    appendSuciComparison(previewPanel, data);
   } finally { changePreview.disabled = false; }
 });
 
@@ -382,6 +398,8 @@ changeCompare.addEventListener("click", async () => {
     else if (data.iccid_matches) text.textContent = "Die ICCID gehört zum Profil; die IMSI unterscheidet sich vom vorgemerkten Zielzustand. Das ist vor dem Schreiben eines IMSI-Entwurfs erwartbar.";
     else text.textContent = "Die ICCID der eingelegten Karte gehört nicht zu diesem Profil. Ein späterer Schreibvorgang darf so nicht freigegeben werden.";
     previewPanel.append(title, text);
+    appendImsComparison(previewPanel, data);
+    appendSuciComparison(previewPanel, data);
     if (data.iccid_matches) await loadProfiles();
   } finally { changeCompare.disabled = false; }
 });

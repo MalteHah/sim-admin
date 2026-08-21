@@ -88,6 +88,10 @@ und die UST-Dienste 124/125 von einer SJA5 zurück. Angezeigt wird nur, ob der
 öffentliche Schlüssel übereinstimmt; privates Schlüsselmaterial befindet sich
 weder auf der Karte noch in SIM-Admin. Der Abgleich verändert keine Kartendaten.
 
+Der Kartenabgleich liest außerdem IMPI, IMPU, IMS-Domain und IST aus der ISIM-
+Anwendung und vergleicht jedes Feld einzeln mit dem Tresorprofil. Auch eine
+vollständig geleerte IMS-Konfiguration wird als gültiger Zustand erkannt.
+
 ## Aktivitätsprotokoll
 
 Das Aktivitätsprotokoll enthält Vorgangsart, Ergebnis, Zeitpunkt und redigierte

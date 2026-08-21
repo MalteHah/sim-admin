@@ -89,6 +89,11 @@ class CardComparisonRequest(DomainModel):
     reader_index: int = Field(default=0, ge=0)
     target_iccid: str = Field(pattern=r"^\d{18,22}$")
     target_imsi: str = Field(pattern=r"^\d{5,15}$")
+    compare_ims: bool = False
+    target_impi: str | None = None
+    target_impu: str | None = None
+    target_ims_domain: str | None = None
+    target_ist: str | None = None
     target_routing_indicator: str | None = None
     target_protection_scheme: int | None = None
     target_hn_public_key_id: int | None = None
@@ -109,6 +114,17 @@ class CardComparisonResult(DomainModel):
     target_imsi: str
     iccid_matches: bool
     imsi_matches: bool
+    ims_compared: bool = False
+    ims_readable: bool = False
+    current_impi: str | None = None
+    current_impu: str | None = None
+    current_ims_domain: str | None = None
+    current_ist: str | None = None
+    impi_matches: bool | None = None
+    impu_matches: bool | None = None
+    ims_domain_matches: bool | None = None
+    ist_matches: bool | None = None
+    ims_matches: bool | None = None
     suci_compared: bool = False
     suci_readable: bool = False
     current_routing_indicator: str | None = None
