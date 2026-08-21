@@ -240,7 +240,8 @@ function appendSuciComparison(container, data) {
   const heading = document.createElement("h3"); heading.textContent = "SUCI-Konfiguration";
   const text = document.createElement("p");
   if (!data.suci_readable) text.textContent = "Die SUCI-Daten konnten auf dieser Karte nicht gelesen werden.";
-  else if (!data.suci_managed) text.textContent = "Die SUCI-Konfiguration der Karte ist im Tresorprofil nicht hinterlegt.";
+  else if (!data.suci_managed && data.current_protection_scheme === 0) text.textContent = "Die Karte verwendet Null Scheme ohne HN-Schlüssel. Dieser gültige Standardzustand wird im Tresor nicht eigens verwaltet.";
+  else if (!data.suci_managed) text.textContent = "Auf der Karte ist eine geschützte SUCI-Konfiguration vorhanden, die im Tresorprofil nicht hinterlegt ist.";
   else if (data.suci_matches) text.textContent = data.current_protection_scheme === 0
     ? "Routing Indicator und Null Scheme stimmen mit dem Tresorprofil überein."
     : "Routing Indicator, Schutzverfahren, HN-Schlüssel und UST-Dienste stimmen mit dem Tresorprofil überein.";
@@ -249,7 +250,8 @@ function appendSuciComparison(container, data) {
   if (!data.suci_readable) return;
   const details = document.createElement("p");
   const schemes = {0: "Null Scheme", 1: "Profile A – X25519", 2: "Profile B – P-256"};
-  details.textContent = `Karte: Routing Indicator ${data.current_routing_indicator || "–"} · ${schemes[data.current_protection_scheme] || "Unbekannt"} · HN-Key-ID ${data.current_hn_public_key_id ?? "–"} · öffentlicher Schlüssel ${data.hn_public_key_matches ? "stimmt überein" : "abweichend"} · UST 124 ${data.suci_service_124_active ? "aktiv" : "inaktiv"} · UST 125 ${data.suci_service_125_active ? "aktiv" : "inaktiv"}`;
+  const keyStatus = data.current_protection_scheme === 0 ? "nicht erforderlich" : data.hn_public_key_matches ? "stimmt überein" : data.suci_managed ? "abweichend" : "nicht im Tresor hinterlegt";
+  details.textContent = `Karte: Routing Indicator ${data.current_routing_indicator || "–"} · ${schemes[data.current_protection_scheme] || "Unbekannt"} · HN-Key-ID ${data.current_hn_public_key_id ?? "–"} · öffentlicher Schlüssel ${keyStatus} · UST 124 ${data.suci_service_124_active ? "aktiv" : "inaktiv"} · UST 125 ${data.suci_service_125_active ? "aktiv" : "inaktiv"}`;
   container.append(details);
 }
 
@@ -260,12 +262,15 @@ function appendImsComparison(container, data) {
   if (!data.ims_readable) text.textContent = "Die IMS-Daten konnten auf dieser Karte nicht gelesen werden.";
   else if (data.ims_matches === false) text.textContent = "Die verwaltete IMS-Konfiguration weicht vom Tresorprofil ab.";
   else if (data.ims_matches === true) text.textContent = "Die im Tresor verwalteten IMS-Felder stimmen mit der Karte überein.";
-  else text.textContent = "Auf der Karte vorhandene IMS-Werte sind im Tresorprofil nicht hinterlegt.";
+  else {
+    const cardHasIms = Boolean(data.current_impi || data.current_impu || data.current_ims_domain || data.current_ist);
+    text.textContent = cardHasIms ? "Auf der Karte vorhandene IMS-Werte sind im Tresorprofil nicht hinterlegt." : "Die Karte enthält keine IMS-Konfiguration; auch im Tresor werden keine IMS-Werte verwaltet.";
+  }
   container.append(heading, text);
   if (!data.ims_readable) return;
   const details = document.createElement("p");
-  const status = (managed, value) => !managed ? "nicht im Tresor hinterlegt" : value ? "stimmt überein" : "abweichend";
-  details.textContent = `IMPI ${status(data.impi_managed, data.impi_matches)} · IMPU ${status(data.impu_managed, data.impu_matches)} · Domain ${status(data.ims_domain_managed, data.ims_domain_matches)} · IST ${status(data.ist_managed, data.ist_matches)}`;
+  const status = (field, managed, value) => !managed ? (data[`current_${field}`] ? "nicht im Tresor hinterlegt" : "leer") : value ? "stimmt überein" : "abweichend";
+  details.textContent = `IMPI ${status("impi", data.impi_managed, data.impi_matches)} · IMPU ${status("impu", data.impu_managed, data.impu_matches)} · Domain ${status("ims_domain", data.ims_domain_managed, data.ims_domain_matches)} · IST ${status("ist", data.ist_managed, data.ist_matches)}`;
   container.append(details);
 }
 
@@ -277,7 +282,8 @@ function appendReadableAdoptButton(container, profileId, data) {
       if (data[`${field}_matches`] === false || (!data[`${field}_managed`] && current)) options.push([field, label]);
     }
   }
-  if (data.suci_compared && data.suci_readable && (data.suci_matches === false || !data.suci_managed)) options.push(["suci", "SUCI-Konfiguration als zusammengehörigen Block"]);
+  const unmanagedProtectedSuci = !data.suci_managed && (data.current_protection_scheme === 1 || data.current_protection_scheme === 2);
+  if (data.suci_compared && data.suci_readable && (data.suci_matches === false || unmanagedProtectedSuci)) options.push(["suci", "SUCI-Konfiguration als zusammengehörigen Block"]);
   if (!data.iccid_matches || !options.length) return;
   const button = document.createElement("button"); button.type = "button"; button.textContent = "Abweichende Kartendaten übernehmen";
   button.addEventListener("click", () => {
