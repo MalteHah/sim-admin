@@ -37,6 +37,14 @@ const adoptDialog = document.querySelector("#adopt-dialog");
 const adoptForm = document.querySelector("#adopt-form");
 const adoptError = document.querySelector("#adopt-error");
 let adoptProfileId = null;
+const inventoryDialog = document.querySelector("#inventory-dialog");
+const inventoryForm = document.querySelector("#inventory-form");
+const inventoryStatus = document.querySelector("#inventory-status");
+const inventoryIssuedTo = document.querySelector("#inventory-issued-to");
+const inventoryIssuedAt = document.querySelector("#inventory-issued-at");
+const inventoryNote = document.querySelector("#inventory-note");
+const inventoryError = document.querySelector("#inventory-error");
+let inventoryProfileId = null;
 
 function cell(value, className = "") {
   const element = document.createElement("td");
@@ -49,7 +57,7 @@ const paginator = window.createTablePaginator(document.querySelector("#profile-p
   list.replaceChildren();
   if (!profiles.length) {
     const emptyText = searchInput.value.trim() ? "Keine passenden Profile gefunden." : "Noch keine Profile gespeichert.";
-    const row = document.createElement("tr"); row.className = "profile-message-row"; const empty = cell(emptyText); empty.colSpan = 8;
+    const row = document.createElement("tr"); row.className = "profile-message-row"; const empty = cell(emptyText); empty.colSpan = 9;
     row.append(empty); list.append(row); return;
   }
   for (const profile of profiles) {
@@ -61,17 +69,22 @@ const paginator = window.createTablePaginator(document.querySelector("#profile-p
     const historyButton = document.createElement("button"); historyButton.type = "button"; historyButton.textContent = "Historie";
     const changeButton = document.createElement("button"); changeButton.type = "button"; changeButton.textContent = profile.pending_change ? "Entwurf verwalten" : "Änderung vorbereiten";
     const deleteButton = document.createElement("button"); deleteButton.type = "button"; deleteButton.textContent = "Profil löschen"; deleteButton.className = "danger-button";
+    const inventoryButton = document.createElement("button"); inventoryButton.type = "button"; inventoryButton.textContent = "Verwaltung";
     previewButton.addEventListener("click", () => previewProfile(profile.id));
     compareButton.addEventListener("click", () => compareProfile(profile));
     revealButton.addEventListener("click", () => openSecrets(profile.id));
     historyButton.addEventListener("click", () => showHistory(profile.id));
     changeButton.addEventListener("click", () => openChange(profile.id));
     deleteButton.addEventListener("click", () => openDelete(profile.id, profile.iccid));
-    actions.className = "table-actions"; actions.append(previewButton, compareButton, revealButton, historyButton, changeButton, deleteButton);
+    inventoryButton.addEventListener("click", () => openInventory(profile));
+    actions.className = "table-actions"; actions.append(inventoryButton, previewButton, compareButton, revealButton, historyButton, changeButton, deleteButton);
     const iccidCell = cell(profile.iccid); const revision = document.createElement("small"); revision.className = "revision-badge"; revision.textContent = `Revision ${profile.revision}`; iccidCell.append(revision);
     const cardState = document.createElement("small"); cardState.className = profile.card_verified ? "card-verified-badge" : "card-pending-badge"; cardState.textContent = profile.card_verified ? "Karte geprüft" : "Kartenabgleich ausstehend"; iccidCell.append(cardState);
     if (profile.pending_change) { const pending = document.createElement("small"); pending.className = "pending-badge"; pending.textContent = "Änderung vorgemerkt"; iccidCell.append(pending); }
-    row.append(cell(new Date(profile.created_at).toLocaleString("de-DE")), iccidCell, cell(profile.imsi),
+    const inventoryCell = cell(profile.inventory_status === "issued" ? "Ausgegeben" : "Im Bestand", profile.inventory_status === "issued" ? "inventory-issued" : "activity-ok");
+    if (profile.inventory_status === "issued") { const details = document.createElement("small"); details.className = "inventory-details"; details.textContent = `${profile.issued_to} · ${new Date(`${profile.issued_at}T00:00:00`).toLocaleDateString("de-DE")}`; inventoryCell.append(details); }
+    if (profile.inventory_note) { const note = document.createElement("small"); note.className = "inventory-details"; note.textContent = profile.inventory_note; note.title = profile.inventory_note; inventoryCell.append(note); }
+    row.append(cell(new Date(profile.created_at).toLocaleString("de-DE")), iccidCell, cell(profile.imsi), inventoryCell,
       cell(profile.ims_configured ? "Vorhanden" : "Nicht gesetzt", profile.ims_configured ? "activity-ok" : ""),
       cell(profile.ki_configured ? "Vorhanden" : "Fehlt", profile.ki_configured ? "activity-ok" : "activity-error"),
       cell(profile.opc_configured ? "Vorhanden" : "Fehlt", profile.opc_configured ? "activity-ok" : "activity-error"),
@@ -90,7 +103,7 @@ async function loadProfiles() {
     applySorting();
   } catch (error) {
     summary.textContent = error.message;
-    const row = document.createElement("tr"); row.className = "profile-message-row"; const errorCell = cell(error.message, "activity-error"); errorCell.colSpan = 8;
+    const row = document.createElement("tr"); row.className = "profile-message-row"; const errorCell = cell(error.message, "activity-error"); errorCell.colSpan = 9;
     row.append(errorCell); list.replaceChildren(row);
   } finally { refresh.disabled = false; }
 }
@@ -130,7 +143,8 @@ function applySorting() {
   const filtered = loadedProfiles.filter((profile) => {
     const queryMatches = !query || profile.iccid.includes(query) || profile.imsi.includes(query);
     const statusMatches = status === "all" || (status === "verified" && profile.card_verified) ||
-      (status === "pending-card" && !profile.card_verified) || (status === "pending-change" && profile.pending_change);
+      (status === "pending-card" && !profile.card_verified) || (status === "pending-change" && profile.pending_change) ||
+      (status === "in-stock" && profile.inventory_status === "in_stock") || (status === "issued" && profile.inventory_status === "issued");
     return queryMatches && statusMatches;
   });
   const sorted = [...filtered].sort((left, right) => left[field].localeCompare(right[field], "de", {numeric: true}));
@@ -330,6 +344,46 @@ changeWrite.addEventListener("click", async () => {
     const text = document.createElement("p"); text.textContent = `Bestätigt: ${data.verified_fields.join(", ").toUpperCase()}. Das Profil ist jetzt Revision ${data.revision}.`;
     previewPanel.append(title, text); await loadProfiles();
   } finally { changeWrite.disabled = false; document.querySelector("#change-password").value = ""; document.querySelector("#write-confirmation").value = ""; }
+});
+
+function updateInventoryFields() {
+  const issued = inventoryStatus.value === "issued";
+  document.querySelector("#inventory-issued-to-label").hidden = !issued;
+  document.querySelector("#inventory-issued-at-label").hidden = !issued;
+  inventoryIssuedTo.required = issued; inventoryIssuedAt.required = issued;
+  if (!issued) { inventoryIssuedTo.value = ""; inventoryIssuedAt.value = ""; }
+}
+
+function openInventory(profile) {
+  inventoryProfileId = profile.id; inventoryForm.reset(); inventoryError.hidden = true;
+  inventoryStatus.value = profile.inventory_status || "in_stock";
+  inventoryIssuedTo.value = profile.issued_to || "";
+  inventoryIssuedAt.value = profile.issued_at || new Date().toISOString().slice(0, 10);
+  inventoryNote.value = profile.inventory_note || "";
+  document.querySelector("#inventory-note-count").textContent = `${inventoryNote.value.length} / 500`;
+  updateInventoryFields(); inventoryDialog.showModal(); inventoryStatus.focus();
+}
+
+inventoryStatus.addEventListener("change", updateInventoryFields);
+inventoryNote.addEventListener("input", () => { document.querySelector("#inventory-note-count").textContent = `${inventoryNote.value.length} / 500`; });
+document.querySelector("#inventory-close").addEventListener("click", () => inventoryDialog.close());
+inventoryDialog.addEventListener("close", () => { inventoryForm.reset(); inventoryProfileId = null; inventoryError.hidden = true; });
+inventoryForm.addEventListener("submit", async (event) => {
+  event.preventDefault(); inventoryError.hidden = true;
+  const submit = inventoryForm.querySelector('button[type="submit"]'); submit.disabled = true;
+  const issued = inventoryStatus.value === "issued";
+  const payload = {status: inventoryStatus.value, issued_to: issued ? inventoryIssuedTo.value : null,
+    issued_at: issued ? inventoryIssuedAt.value : null, note: inventoryNote.value || null,
+    password: document.querySelector("#inventory-password").value};
+  try {
+    const response = await fetch(`/api/v1/profiles/${inventoryProfileId}/inventory`, {method: "POST", headers: {"Content-Type": "application/json", "Cache-Control": "no-store"}, body: JSON.stringify(payload), cache: "no-store"});
+    const data = await response.json();
+    if (!response.ok) { inventoryError.textContent = typeof data.detail === "string" ? data.detail : "Verwaltungsdaten konnten nicht gespeichert werden."; inventoryError.hidden = false; return; }
+    inventoryDialog.close(); previewPanel.hidden = false; previewPanel.replaceChildren();
+    const title = document.createElement("h2"); title.textContent = data.inventory_status === "issued" ? "Karte als ausgegeben markiert" : "Karte im Bestand";
+    const text = document.createElement("p"); text.textContent = "Nur die Verwaltungsdaten wurden geändert. SIM-Profil und Revision bleiben unverändert.";
+    previewPanel.append(title, text); await loadProfiles();
+  } finally { submit.disabled = false; document.querySelector("#inventory-password").value = ""; }
 });
 
 function openDelete(id, iccid) {

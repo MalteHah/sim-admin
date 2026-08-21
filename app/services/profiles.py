@@ -11,6 +11,7 @@ from app.models import ProfileChangeSummary, ProfileEditableView, ProfileImportR
 from app.services.imports import CSVImportError, CSVImportPreviewService
 
 AAD = b"sim-admin-profile-v1"
+INVENTORY_AAD = b"sim-admin-inventory-v1"
 
 
 def _optional_int(value: object) -> object | None:
@@ -45,6 +46,11 @@ class ProfileVaultService:
         self._connection.execute("""CREATE TABLE IF NOT EXISTS profile_change_drafts (
             profile_id INTEGER PRIMARY KEY, created_at TEXT NOT NULL, base_revision INTEGER NOT NULL,
             changed_fields TEXT NOT NULL, nonce BLOB NOT NULL, ciphertext BLOB NOT NULL,
+            FOREIGN KEY (profile_id) REFERENCES profiles(id) ON DELETE CASCADE
+        )""")
+        self._connection.execute("""CREATE TABLE IF NOT EXISTS profile_inventory (
+            profile_id INTEGER PRIMARY KEY, updated_at TEXT NOT NULL,
+            nonce BLOB NOT NULL, ciphertext BLOB NOT NULL,
             FOREIGN KEY (profile_id) REFERENCES profiles(id) ON DELETE CASCADE
         )""")
         self._connection.commit()
@@ -152,6 +158,7 @@ class ProfileVaultService:
         record = self._get_record(profile_id)
         if record["iccid"] != confirmation_iccid: raise ValueError("iccid_mismatch")
         with self._lock:
+            self._connection.execute("DELETE FROM profile_inventory WHERE profile_id = ?", (profile_id,))
             self._connection.execute("DELETE FROM profile_change_drafts WHERE profile_id = ?", (profile_id,))
             self._connection.execute("DELETE FROM profile_revisions WHERE profile_id = ?", (profile_id,))
             cursor = self._connection.execute("DELETE FROM profiles WHERE id = ?", (profile_id,))
@@ -160,6 +167,20 @@ class ProfileVaultService:
 
     def list_profiles(self) -> list[ProfileSummary]:
         with self._lock: return self._list_unlocked()
+
+    def set_inventory(self, profile_id: int, status: str, issued_to: str | None, issued_at: str | None, note: str | None) -> None:
+        from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+        record = {"status": status, "issued_to": issued_to or "", "issued_at": issued_at or "", "note": note or ""}
+        nonce = os.urandom(12)
+        ciphertext = AESGCM(self._key).encrypt(nonce, json.dumps(record, separators=(",", ":")).encode(), INVENTORY_AAD)
+        updated_at = datetime.now(UTC).isoformat()
+        with self._lock:
+            if self._connection.execute("SELECT 1 FROM profiles WHERE id = ?", (profile_id,)).fetchone() is None:
+                raise KeyError(profile_id)
+            self._connection.execute("""INSERT INTO profile_inventory (profile_id, updated_at, nonce, ciphertext)
+                VALUES (?, ?, ?, ?) ON CONFLICT(profile_id) DO UPDATE SET updated_at=excluded.updated_at,
+                nonce=excluded.nonce, ciphertext=excluded.ciphertext""", (profile_id, updated_at, nonce, ciphertext))
+            self._connection.commit()
 
     def list_revisions(self, profile_id: int) -> list[ProfileRevisionSummary]:
         with self._lock:
@@ -284,11 +305,16 @@ class ProfileVaultService:
         from cryptography.hazmat.primitives.ciphers.aead import AESGCM
         result = []
         for row in self._connection.execute("""SELECT profiles.id, profiles.created_at, profiles.nonce, profiles.ciphertext,
-                profiles.revision, profiles.card_verified, profile_change_drafts.profile_id IS NOT NULL AS pending_change
+                profiles.revision, profiles.card_verified, profile_change_drafts.profile_id IS NOT NULL AS pending_change,
+                profile_inventory.nonce AS inventory_nonce, profile_inventory.ciphertext AS inventory_ciphertext
                 FROM profiles LEFT JOIN profile_change_drafts ON profile_change_drafts.profile_id = profiles.id
+                LEFT JOIN profile_inventory ON profile_inventory.profile_id = profiles.id
                 ORDER BY profiles.id DESC"""):
             record = json.loads(AESGCM(self._key).decrypt(row["nonce"], row["ciphertext"], AAD))
-            result.append(ProfileSummary(id=row["id"], created_at=row["created_at"], iccid=record["iccid"], imsi=record["imsi"], ki_configured=bool(record["ki"]), opc_configured=bool(record["opc"]), adm_configured=bool(record["adm"]), revision=row["revision"], pending_change=bool(row["pending_change"]), card_verified=bool(row["card_verified"]), ims_configured=bool(record.get("impi") or record.get("impu") or record.get("ims_domain") or record.get("ist")), fivegs_configured=bool(record.get("routing_indicator") or record.get("protection_scheme") is not None or record.get("hn_public_key_id") is not None or record.get("hn_public_key"))))
+            inventory = {"status": "in_stock", "issued_to": "", "issued_at": "", "note": ""}
+            if row["inventory_nonce"] is not None:
+                inventory = json.loads(AESGCM(self._key).decrypt(row["inventory_nonce"], row["inventory_ciphertext"], INVENTORY_AAD))
+            result.append(ProfileSummary(id=row["id"], created_at=row["created_at"], iccid=record["iccid"], imsi=record["imsi"], ki_configured=bool(record["ki"]), opc_configured=bool(record["opc"]), adm_configured=bool(record["adm"]), revision=row["revision"], pending_change=bool(row["pending_change"]), card_verified=bool(row["card_verified"]), ims_configured=bool(record.get("impi") or record.get("impu") or record.get("ims_domain") or record.get("ist")), fivegs_configured=bool(record.get("routing_indicator") or record.get("protection_scheme") is not None or record.get("hn_public_key_id") is not None or record.get("hn_public_key")), inventory_status=inventory.get("status", "in_stock"), issued_to=inventory.get("issued_to") or None, issued_at=inventory.get("issued_at") or None, inventory_note=inventory.get("note") or None))
         return result
 
     def snapshot(self, database: Path, key_file: Path) -> None:

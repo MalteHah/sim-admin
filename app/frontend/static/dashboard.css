@@ -138,10 +138,11 @@ button:disabled { cursor: wait; opacity: .65; }
 .profile-table tbody tr { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 20px; padding: 18px; border-bottom: 1px solid var(--border); }
 .profile-table tbody tr:last-child { border-bottom: 0; }
 .profile-table td { display: block; min-width: 0; padding: 0; border: 0; white-space: normal; overflow-wrap: anywhere; }
-.profile-table td:nth-child(1), .profile-table td:nth-child(4), .profile-table td:nth-child(5), .profile-table td:nth-child(6) { display: none; }
-.profile-table td:nth-child(2)::before, .profile-table td:nth-child(3)::before { display: block; margin-bottom: 5px; color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .04em; }
+.profile-table td:nth-child(1), .profile-table td:nth-child(5), .profile-table td:nth-child(6), .profile-table td:nth-child(7), .profile-table td:nth-child(8) { display: none; }
+.profile-table td:nth-child(2)::before, .profile-table td:nth-child(3)::before, .profile-table td:nth-child(4)::before { display: block; margin-bottom: 5px; color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .04em; }
 .profile-table td:nth-child(2)::before { content: "ICCID"; }
 .profile-table td:nth-child(3)::before { content: "IMSI"; }
+.profile-table td:nth-child(4)::before { content: "BESTAND"; }
 .profile-table .table-actions { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .profile-table .table-actions button { width: 100%; }
 .profile-table .profile-message-row { display: block; }
@@ -151,6 +152,11 @@ button:disabled { cursor: wait; opacity: .65; }
 .card-verified-badge, .card-pending-badge { display: inline-block; width: max-content; margin-top: 6px; padding: 3px 7px; border-radius: 999px; font-size: 11px; font-weight: 700; }
 .card-verified-badge { color: var(--accent); background: var(--accent-soft); }
 .card-pending-badge { color: #694100; background: #fff1c2; }
+.inventory-issued { color: #8a4b08; font-weight: 700; }
+.inventory-details { display: block; max-width: 320px; margin-top: 5px; color: var(--muted); font-weight: 400; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.inventory-note-label { grid-column: 1 / -1; }
+.inventory-note-label textarea { width: 100%; resize: vertical; border: 1px solid var(--border); border-radius: 10px; padding: 12px; font: inherit; }
+.inventory-note-label small { justify-self: end; color: var(--muted); }
 .profile-tools { display: flex; align-items: end; gap: 10px; }
 .profile-tools label { display: grid; gap: 5px; color: var(--muted); font-size: 12px; font-weight: 700; }
 .profile-tools select { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; background: var(--surface); font: inherit; }
@@ -161,7 +167,7 @@ button:disabled { cursor: wait; opacity: .65; }
 .secrets-dialog::backdrop { background: rgb(10 20 16 / 55%); }
 .secrets-dialog form { display: grid; gap: 12px; }
 .secrets-dialog h2 { font-size: 26px; }
-.secrets-dialog input { border: 1px solid var(--border); border-radius: 10px; padding: 12px; font: inherit; }
+.secrets-dialog input, .secrets-dialog select { border: 1px solid var(--border); border-radius: 10px; padding: 12px; background: var(--surface); font: inherit; }
 .secret-values { display: grid; max-height: 42vh; overflow: auto; border: 1px solid var(--border); border-radius: 10px; }
 .secret-values div { display: grid; grid-template-columns: 80px minmax(0, 1fr); gap: 12px; padding: 10px 12px; border-bottom: 1px solid var(--border); }
 .secret-values div:last-child { border-bottom: 0; }
@@ -382,11 +388,12 @@ footer a { color: var(--accent); }
   .profile-table tbody tr { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 20px; padding: 18px; border-bottom: 1px solid var(--border); }
   .profile-table tbody tr:last-child { border-bottom: 0; }
   .profile-table td { display: block; min-width: 0; padding: 0; border: 0; white-space: normal; overflow-wrap: anywhere; }
-  .profile-table td:nth-child(1), .profile-table td:nth-child(4),
-  .profile-table td:nth-child(5), .profile-table td:nth-child(6) { display: none; }
-  .profile-table td:nth-child(2)::before, .profile-table td:nth-child(3)::before { display: block; margin-bottom: 5px; color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .04em; }
+  .profile-table td:nth-child(1), .profile-table td:nth-child(5), .profile-table td:nth-child(6),
+  .profile-table td:nth-child(7), .profile-table td:nth-child(8) { display: none; }
+  .profile-table td:nth-child(2)::before, .profile-table td:nth-child(3)::before, .profile-table td:nth-child(4)::before { display: block; margin-bottom: 5px; color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .04em; }
   .profile-table td:nth-child(2)::before { content: "ICCID"; }
   .profile-table td:nth-child(3)::before { content: "IMSI"; }
+  .profile-table td:nth-child(4)::before { content: "BESTAND"; }
   .profile-table .table-actions { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .profile-table .table-actions button { width: 100%; }
   .profile-table .profile-message-row { display: block; }

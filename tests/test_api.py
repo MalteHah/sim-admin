@@ -22,6 +22,7 @@ def test_dashboard() -> None:
 
     assert response.status_code == 200
     assert "SIM-Admin" in response.text
+    assert "SIM-Admin 0.2.0" in response.text
     assert "Kartenleser" in response.text
 
 
@@ -36,7 +37,7 @@ def test_api_information() -> None:
     response = authenticated_client().get("/api/v1")
 
     assert response.status_code == 200
-    assert response.json() == {"application": "sim-admin", "version": "0.1.0"}
+    assert response.json() == {"application": "sim-admin", "version": "0.2.0"}
 
 
 def test_health() -> None:

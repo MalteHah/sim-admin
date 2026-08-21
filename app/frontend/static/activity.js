@@ -21,6 +21,7 @@ const actionLabels = {
   "profiles.change_draft_write": "Änderung auf SIM geschrieben",
   "profiles.single_create": "Einzelprofil gespeichert",
   "profiles.delete": "Profil gelöscht",
+  "profiles.inventory_update": "Bestandsverwaltung geändert",
 };
 
 const detailLabels = {
@@ -44,7 +45,42 @@ const detailLabels = {
   confirmation_mismatch: "Bestätigung stimmt nicht überein",
   duplicate_iccid: "ICCID bereits vorhanden",
   card_changed: "Karte wurde gewechselt",
+  reauthenticated: "Passwort erneut bestätigt",
+  protocol_error: "SIM-Karte antwortet nicht",
+  reader_error: "Kartenleser nicht verfügbar",
+  no_reader: "Kein Kartenleser verfügbar",
+  read_failed: "Karte konnte nicht gelesen werden",
+  write_failed: "Schreibvorgang fehlgeschlagen",
+  verification_failed: "Rückprüfung fehlgeschlagen",
+  adm_verification_failed: "ADM1 wurde abgelehnt",
+  iccid_mismatch: "ICCID stimmt nicht überein",
+  unsupported_card: "Kartentyp nicht unterstützt",
+  unsupported_card_for_ims: "Kartentyp unterstützt diese Felder nicht",
+  unsupported_card_for_auth_keys: "Kartentyp unterstützt Ki/OPc nicht",
+  unsupported_fields: "Felder noch nicht unterstützt",
+  missing_draft: "Änderungsentwurf fehlt",
+  revision_conflict: "Profilrevision wurde zwischenzeitlich geändert",
+  invalid_csv: "CSV-Datei nicht lesbar",
+  missing_columns: "CSV-Pflichtspalten fehlen",
+  unknown_columns: "CSV enthält unbekannte Spalten",
+  validation_errors: "Validierungsfehler vorhanden",
+  valid: "Datei vollständig gültig",
+  encrypted: "Verschlüsselt gespeichert",
+  redacted: "Ohne Geheimwerte exportiert",
+  integrity_valid: "Integrität bestätigt",
+  decryption_failed: "Passwort falsch oder Datei beschädigt",
+  invalid_backup: "Backup ungültig",
+  incompatible_backup: "Backupversion nicht kompatibel",
+  inventory_in_stock: "Karte im Bestand",
+  inventory_issued: "Karte ausgegeben",
 };
+
+function translateDetail(detail) {
+  if (!detail) return "–";
+  const revision = /^revision_(\d+)$/.exec(detail);
+  if (revision) return `Als Revision ${revision[1]} übernommen`;
+  return detailLabels[detail] || detail.replaceAll("_", " ");
+}
 
 const list = document.querySelector("#activity-list");
 const refresh = document.querySelector("#activity-refresh");
@@ -65,7 +101,7 @@ const paginator = window.createTablePaginator(document.querySelector("#activity-
     const row = document.createElement("tr");
     const status = event.status === "success" ? "Erfolgreich" : "Fehler";
     const statusCell = cell(status); statusCell.className = event.status === "success" ? "activity-ok" : "activity-error";
-    row.append(cell(new Date(event.created_at).toLocaleString("de-DE")), cell(event.username), cell(actionLabels[event.action] || event.action), statusCell, cell(detailLabels[event.detail] || event.detail || "–"));
+    row.append(cell(new Date(event.created_at).toLocaleString("de-DE")), cell(event.username), cell(actionLabels[event.action] || event.action), statusCell, cell(translateDetail(event.detail)));
     list.append(row);
   }
 });

@@ -47,6 +47,32 @@ def test_missing_profile_is_not_found(tmp_path) -> None:
         raise AssertionError("missing profile was returned")
 
 
+def test_inventory_management_is_encrypted_and_does_not_create_revision(tmp_path) -> None:
+    database = tmp_path / "profiles.db"
+    service = ProfileVaultService(str(database), str(tmp_path / "profile.key")); service.import_csv(CSV)
+    profile = service.list_profiles()[0]
+
+    service.set_inventory(profile.id, "issued", "Max Mustermann", "2026-08-21", "Testgerät im Labor")
+
+    updated = service.list_profiles()[0]
+    assert updated.inventory_status == "issued"
+    assert updated.issued_to == "Max Mustermann"
+    assert updated.issued_at.isoformat() == "2026-08-21"
+    assert updated.inventory_note == "Testgerät im Labor"
+    assert updated.revision == 1
+    raw = database.read_bytes()
+    assert b"Max Mustermann" not in raw
+    assert "Testgerät im Labor".encode() not in raw
+
+    service.set_inventory(profile.id, "in_stock", None, None, "Zurückgegeben")
+    returned = service.list_profiles()[0]
+    assert returned.inventory_status == "in_stock"
+    assert returned.issued_to is None
+    assert returned.issued_at is None
+    assert returned.inventory_note == "Zurückgegeben"
+    assert returned.revision == 1
+
+
 def test_existing_vault_is_backfilled_with_revision_one(tmp_path) -> None:
     database = tmp_path / "profiles.db"; key = tmp_path / "profile.key"
     original = ProfileVaultService(str(database), str(key)); original.import_csv(CSV)

@@ -4,9 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Profiltresor – SIM-Admin</title>
-    <link rel="stylesheet" href="/static/dashboard.css?v=20260820-23">
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260821-24">
     <script src="/static/table-pagination.js" defer></script>
-    <script src="/static/profiles.js?v=20260820-26" defer></script>
+    <script src="/static/profiles.js?v=20260821-27" defer></script>
   </head>
   <body>
     <header class="topbar">
@@ -35,6 +35,8 @@
             <option value="verified">Karte geprüft</option>
             <option value="pending-card">Kartenabgleich ausstehend</option>
             <option value="pending-change">Änderung vorgemerkt</option>
+            <option value="in-stock">Im Bestand</option>
+            <option value="issued">Ausgegeben</option>
           </select>
           <button id="profile-refresh" type="button">Neu laden</button>
           <a class="button-link" href="/api/v1/profiles/export" download>Inventar exportieren</a>
@@ -44,8 +46,8 @@
       <section class="activity-card" aria-live="polite">
         <div class="activity-table-wrap">
           <table class="activity-table profile-table">
-            <thead><tr><th>Importiert</th><th>ICCID</th><th>IMSI</th><th>IMS</th><th>Ki</th><th>OPc</th><th>ADM1</th><th>Aktion</th></tr></thead>
-            <tbody id="profile-list"><tr><td colspan="8">Profile werden entschlüsselt …</td></tr></tbody>
+            <thead><tr><th>Importiert</th><th>ICCID</th><th>IMSI</th><th>Bestand</th><th>IMS</th><th>Ki</th><th>OPc</th><th>ADM1</th><th>Aktion</th></tr></thead>
+            <tbody id="profile-list"><tr><td colspan="9">Profile werden entschlüsselt …</td></tr></tbody>
           </table>
         </div>
         <nav id="profile-pagination" class="table-pagination" aria-label="Seitennavigation" hidden></nav>
@@ -116,6 +118,21 @@
         <label for="delete-password">Aktuelles Anmeldepasswort</label><input id="delete-password" type="password" autocomplete="current-password" required>
         <p id="delete-error" class="form-error" hidden></p>
         <div class="dialog-actions"><button type="button" id="delete-close">Abbrechen</button><button type="submit" class="danger-button">Profil löschen</button></div>
+      </form>
+    </dialog>
+    <dialog id="inventory-dialog" class="secrets-dialog change-dialog">
+      <form id="inventory-form">
+        <p class="eyebrow">Reine Verwaltungsdaten</p><h2>Bestand und Ausgabe verwalten</h2>
+        <p>Diese Angaben verändern weder SIM-Daten noch die Profilrevision.</p>
+        <div class="change-grid">
+          <label>Status<select id="inventory-status"><option value="in_stock">Im Bestand</option><option value="issued">Ausgegeben</option></select></label>
+          <label id="inventory-issued-to-label">Ausgegeben an<input id="inventory-issued-to" maxlength="100" autocomplete="off"></label>
+          <label id="inventory-issued-at-label">Ausgabedatum<input id="inventory-issued-at" type="date"></label>
+          <label class="inventory-note-label">Bemerkung<textarea id="inventory-note" maxlength="500" rows="4" placeholder="optional, maximal 500 Zeichen"></textarea><small id="inventory-note-count">0 / 500</small></label>
+          <label>Aktuelles Anmeldepasswort<input id="inventory-password" type="password" autocomplete="current-password" required></label>
+        </div>
+        <p id="inventory-error" class="form-error" hidden></p>
+        <div class="dialog-actions"><button type="button" id="inventory-close">Abbrechen</button><button type="submit">Verwaltungsdaten speichern</button></div>
       </form>
     </dialog>
   </body>

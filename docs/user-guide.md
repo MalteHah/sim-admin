@@ -48,6 +48,13 @@ Seitennavigation, Revisionshistorie und folgende Aktionen:
   aktive Revision oder Karte zu ändern.
 - **Profil löschen:** löscht Profil, Revisionen und Entwurf erst nach Passwort-
   und ICCID-Bestätigung.
+- **Verwaltung:** markiert eine Karte als „Im Bestand“ oder „Ausgegeben“. Bei
+  Ausgabe werden Name und Datum erfasst; eine optionale Bemerkung ist auf 500
+  Zeichen begrenzt. Diese Angaben ändern weder SIM-Daten noch Profilrevision.
+
+Die Liste kann zusätzlich nach Bestandsstatus gefiltert werden. Der
+Inventarexport enthält Status, Ausgabeangaben und Bemerkung, aber weiterhin keine
+SIM-Geheimnisse.
 
 ## Auf eine SIM schreiben
 
@@ -72,4 +79,3 @@ nicht protokolliert.
 
 Die Bedienung von Backup und Wiederherstellung beschreibt die
 [Backup- und Wiederherstellungsanleitung](standalone/backup-restore.md).
-

@@ -35,6 +35,7 @@ from app.models import (
     CSVImportPreview,
     CSVImportRequest,
     ProfileImportResult,
+    ProfileInventoryUpdateRequest,
     ProfileAdoptCardRequest,
     ProfileAdoptCardResult,
     ProfileSummary,
@@ -60,6 +61,7 @@ from app.services.imports import CSVImportError, CSVImportPreviewService
 from app.services.profiles import ProfileVaultService
 from app.services.readers import ReaderService
 from app.services.sim_cards import SIMCardService
+from app.core.version import application_version
 
 router = APIRouter()
 
@@ -67,7 +69,7 @@ router = APIRouter()
 @router.get("/api/v1")
 def api_information() -> dict[str, str]:
     """Return basic API information."""
-    return {"application": "sim-admin", "version": "0.1.0"}
+    return {"application": "sim-admin", "version": application_version()}
 
 
 @router.get("/health")
@@ -255,6 +257,24 @@ def list_profiles(service: Annotated[ProfileVaultService, Depends(get_profile_va
 @router.get("/api/v1/profiles/by-iccid/{iccid}", response_model=ProfileSummary | None)
 def find_profile_by_iccid(iccid: str, service: Annotated[ProfileVaultService, Depends(get_profile_vault_service)]) -> ProfileSummary | None:
     return service.find_by_iccid(iccid)
+
+
+@router.post("/api/v1/profiles/{profile_id}/inventory", response_model=ProfileSummary)
+def update_profile_inventory(profile_id: int, payload: ProfileInventoryUpdateRequest, request: Request,
+    vault: Annotated[ProfileVaultService, Depends(get_profile_vault_service)],
+    auth: Annotated[AuthService, Depends(get_auth_service)],
+    audit: Annotated[AuditService, Depends(get_audit_service)]) -> ProfileSummary:
+    client = request.client.host if request.client else "unknown"
+    if not auth.verify_login(auth.username, payload.password.get_secret_value(), client):
+        audit.record("profiles.inventory_update", "error", "reauthentication_failed")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Passwort ist falsch")
+    try:
+        vault.set_inventory(profile_id, payload.status, payload.issued_to,
+            payload.issued_at.isoformat() if payload.issued_at else None, payload.note)
+    except KeyError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profil nicht gefunden") from exc
+    audit.record("profiles.inventory_update", "success", f"inventory_{payload.status}")
+    return next(profile for profile in vault.list_profiles() if profile.id == profile_id)
 
 
 @router.post("/api/v1/profiles/single", response_model=ProfileSummary, status_code=status.HTTP_201_CREATED)
@@ -470,8 +490,10 @@ def reveal_profile_secrets(profile_id: int, payload: ProfileRevealRequest, reque
 def export_profile_inventory(vault: Annotated[ProfileVaultService, Depends(get_profile_vault_service)], audit: Annotated[AuditService, Depends(get_audit_service)]) -> Response:
     buffer = io.StringIO()
     writer = csv.writer(buffer, delimiter=";", lineterminator="\n")
-    writer.writerow(["ICCID", "IMSI", "Ki vorhanden", "OPc vorhanden", "ADM1 vorhanden"])
+    writer.writerow(["ICCID", "IMSI", "Bestandsstatus", "Ausgegeben an", "Ausgabedatum", "Bemerkung", "Ki vorhanden", "OPc vorhanden", "ADM1 vorhanden"])
     for profile in vault.list_profiles():
-        writer.writerow([profile.iccid, profile.imsi, "ja" if profile.ki_configured else "nein", "ja" if profile.opc_configured else "nein", "ja" if profile.adm_configured else "nein"])
+        writer.writerow([profile.iccid, profile.imsi, "ausgegeben" if profile.inventory_status == "issued" else "im Bestand",
+            profile.issued_to or "", profile.issued_at.isoformat() if profile.issued_at else "", profile.inventory_note or "",
+            "ja" if profile.ki_configured else "nein", "ja" if profile.opc_configured else "nein", "ja" if profile.adm_configured else "nein"])
     audit.record("profiles.inventory_export", "success", "redacted")
     return Response(content="\ufeff" + buffer.getvalue(), media_type="text/csv; charset=utf-8", headers={"Content-Disposition": "attachment; filename=sim-admin-inventar.csv", "Cache-Control": "no-store, max-age=0"})

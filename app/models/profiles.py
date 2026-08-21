@@ -1,6 +1,7 @@
 """Redacted views of encrypted SIM profiles."""
 
-from datetime import datetime
+from datetime import date, datetime
+from typing import Literal
 from pydantic import Field, SecretStr, model_validator
 from app.models.common import DomainModel
 
@@ -18,6 +19,29 @@ class ProfileSummary(DomainModel):
     card_verified: bool = False
     ims_configured: bool = False
     fivegs_configured: bool = False
+    inventory_status: Literal["in_stock", "issued"] = "in_stock"
+    issued_to: str | None = None
+    issued_at: date | None = None
+    inventory_note: str | None = None
+
+
+class ProfileInventoryUpdateRequest(DomainModel):
+    password: SecretStr = Field(min_length=1, max_length=256)
+    status: Literal["in_stock", "issued"]
+    issued_to: str | None = Field(default=None, max_length=100)
+    issued_at: date | None = None
+    note: str | None = Field(default=None, max_length=500)
+
+    @model_validator(mode="after")
+    def validate_issuance(self):
+        self.issued_to = self.issued_to.strip() if self.issued_to else None
+        self.note = self.note.strip() if self.note else None
+        if self.status == "issued" and (not self.issued_to or self.issued_at is None):
+            raise ValueError("Bei Ausgabe sind Name und Datum erforderlich")
+        if self.status == "in_stock":
+            self.issued_to = None
+            self.issued_at = None
+        return self
 
 
 class ProfileRevisionSummary(DomainModel):

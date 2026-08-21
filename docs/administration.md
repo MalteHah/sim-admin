@@ -56,6 +56,10 @@ Regelmäßig sollten ein verschlüsseltes USB-Backup erstellt, dessen Integritä
 ausgeworfen werden. Inventarexporte enthalten keine Schlüssel oder ADM-Daten und
 ersetzen kein vollständiges Backup.
 
+Bestandsstatus, Ausgabeempfänger, Datum und Bemerkung liegen separat
+gerätegebunden verschlüsselt in der Profildatenbank. Sie werden vom regulären
+USB-Backup erfasst, erzeugen aber keine neue SIM-Profilrevision.
+
 ## Versions- und Updatebetrieb
 
 Nur signierte Pakete verwenden. Die Offline-Prüfung verändert keine Dateien und
@@ -69,4 +73,3 @@ Bei einem Fehler keine wiederholten Schreibversuche auf derselben Karte starten.
 Zuerst Aktivitätsprotokoll und Dienststatus prüfen, Kartenleser neu verbinden und
 den Kartenstand erneut ausschließlich lesen. Fehlermeldungen und Metadaten dürfen
 dokumentiert werden; Geheimwerte gehören niemals in Issues oder Chatverläufe.
-

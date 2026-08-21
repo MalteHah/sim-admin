@@ -71,3 +71,6 @@ Hardware- und Bereitstellungstests stehen in `docs/testing-and-roadmap.md`.
 - Kontrollierter, zurückgelesener IMS-Schreibpfad für eindeutig erkannte SysmocomSJA5-Karten
 - Validierte optionale 5GS-/SUCI-Felder für Routing Indicator, Protection Scheme und Home-Network-Public-Key-Metadaten
 - Kontrollierter, vorab lesend geprüfter und unmittelbar zurückgelesener 5GS-/SUCI-Schreibpfad für eindeutig erkannte SysmocomSJA5-Karten
+- Separat verschlüsselte Bestandsverwaltung je Karte mit Status, Ausgabeempfänger, Ausgabedatum und begrenzter Bemerkung ohne Profilrevision
+- Einheitliche deutsche Aktivitätsdetails einschließlich dynamischer Revisionsnummern und Karten-/Protokollfehler
+- Versionsanzeige aus der zentralen `VERSION`-Datei statt fest codierter API- und Footerwerte

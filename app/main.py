@@ -8,6 +8,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.api.router import router
 from app.core.dependencies import get_auth_service
+from app.core.version import application_version
 from app.frontend.auth import router as auth_router
 from app.frontend.audit import router as audit_router
 from app.frontend.backup import router as backup_router
@@ -24,7 +25,7 @@ def create_app() -> FastAPI:
     application = FastAPI(
         title="sim-admin",
         description="Standalone SIM administration application",
-        version="0.1.0",
+        version=application_version(),
     )
     auth_service = get_auth_service()
 

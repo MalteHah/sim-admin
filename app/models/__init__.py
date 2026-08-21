@@ -21,7 +21,7 @@ from app.models.provisioning import (
 )
 from app.models.profiles import (
     ProfileAdoptCardRequest, ProfileAdoptCardResult, ProfileChangeRequest, ProfileChangeSummary, ProfileEditableView, ProfileImportResult,
-    ProfileDeleteRequest, ProfileRevealRequest, ProfileRevisionSummary, ProfileSecrets, ProfileSummary,
+    ProfileDeleteRequest, ProfileInventoryUpdateRequest, ProfileRevealRequest, ProfileRevisionSummary, ProfileSecrets, ProfileSummary,
     SingleProfileCreateRequest,
 )
 from app.models.sim import SIMProfile
@@ -53,6 +53,7 @@ __all__ = [
     "ProfileAdoptCardRequest",
     "ProfileAdoptCardResult",
     "ProfileImportResult",
+    "ProfileInventoryUpdateRequest",
     "ProfileSummary",
     "ProfileRevealRequest",
     "ProfileRevisionSummary",
