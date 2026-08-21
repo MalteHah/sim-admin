@@ -56,8 +56,10 @@ def main() -> None:
             current_routing, _ = channel.read_binary_dec()
         suci_fields = {"protection_scheme", "hn_public_key_id", "hn_public_key"}
         current_ust = None
+        target_suci = None
         if fields & suci_fields:
             stage = "suci_preflight"
+            target_suci = build_suci_calc_info(payload.get("protection_scheme"), payload.get("hn_public_key_id"), payload.get("hn_public_key"))
             channel.select("MF/ADF.USIM/DF.5GS/EF.SUCI_Calc_Info")
             channel.read_binary_dec()
             channel.select("MF/ADF.USIM/EF.UST")
@@ -143,10 +145,7 @@ def main() -> None:
             verified.append("routing_indicator")
         if fields & suci_fields:
             stage = "suci_calc_info"
-            scheme = payload.get("protection_scheme")
-            key_id = payload.get("hn_public_key_id")
-            key_hex = payload.get("hn_public_key")
-            target = build_suci_calc_info(scheme, key_id, key_hex)
+            target = target_suci
             channel.select("MF/ADF.USIM/DF.5GS/EF.SUCI_Calc_Info")
             channel.update_binary_dec(target); value, _ = channel.read_binary_dec()
             if value != target: emit_error("verification_failed", "SUCI-Konfiguration konnte nicht bestätigt werden", 7)

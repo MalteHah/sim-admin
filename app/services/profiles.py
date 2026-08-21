@@ -299,7 +299,10 @@ class ProfileVaultService:
             impi=updated.get("impi") or None, impu=updated.get("impu") or None, ims_domain=updated.get("ims_domain") or None, ist=updated.get("ist") or None,
             routing_indicator=updated.get("routing_indicator") or None, protection_scheme=_optional_int(updated.get("protection_scheme")),
             hn_public_key_id=_optional_int(updated.get("hn_public_key_id")), hn_public_key=updated.get("hn_public_key") or None)
-        changed = sorted(field for field, value in proposed.items() if value != current.get(field, ""))
+        changed = sorted(
+            field for field, value in proposed.items()
+            if value != (current.get(field) if current.get(field) is not None else "")
+        )
         if not changed: raise ValueError("no_changes")
         created_at = datetime.now(UTC).isoformat(); nonce = os.urandom(12)
         ciphertext = AESGCM(self._key).encrypt(nonce, json.dumps(updated, separators=(",", ":")).encode(), AAD)

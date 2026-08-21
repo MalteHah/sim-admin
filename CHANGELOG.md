@@ -90,3 +90,4 @@ Hardware- und Bereitstellungstests stehen in `docs/testing-and-roadmap.md`.
 - Feldgenaue, redigierte Validierungsmeldungen im Einzelkarten-Dry-Run statt einer pauschalen Fehlermeldung
 - Korrekte Behandlung deaktivierter optionaler SUCI-Zahlenfelder als leer statt irrtümlich als Null Scheme
 - Eindeutige Klassifizierung einer von pySim als Ausnahme gemeldeten ADM1-Ablehnung ohne Wiederholung des Kartenversuchs
+- Keine Phantomänderungen mehr zwischen `null` und leer bei optionalen 5GS-Feldern sowie vollständige SUCI-Zielprüfung vor dem ersten Feldschreibzugriff

@@ -157,6 +157,17 @@ def test_unchanged_profile_cannot_create_change_draft(tmp_path) -> None:
         raise AssertionError("unchanged profile created a draft")
 
 
+def test_null_optional_fields_do_not_create_phantom_changes(tmp_path) -> None:
+    service = ProfileVaultService(str(tmp_path / "profiles.db"), str(tmp_path / "profile.key"))
+    draft = ProvisioningDraft(iccid="8949012345678901234", imsi="001010123456789", acc="0001",
+        ki="00112233445566778899AABBCCDDEEFF", opc="FFEEDDCCBBAA99887766554433221100", adm="DEADBEEF")
+    profile = service.add_profile(draft)
+
+    change = service.prepare_change(profile.id, draft.imsi, None, "0002", None, None)
+
+    assert change.changed_fields == ["acc"]
+
+
 def test_verified_write_commits_new_revision(tmp_path) -> None:
     class FakeWriteAdapter:
         def write_standard_fields(self, reader_index, expected_iccid, imsi, acc, msisdn, adm, fields, ki, opc, impi=None, impu=None, ims_domain=None, ist=None):
