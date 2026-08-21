@@ -6,7 +6,10 @@ from app.models.backup import (
     BackupFile, BackupInspectRequest, BackupInspection, BackupRequest,
     BackupRestoreRequest, BackupResult, BackupTarget,
 )
-from app.models.five_gs import FiveGSProfile, HomeNetworkPublicKey
+from app.models.five_gs import (
+    FiveGSProfile, HomeNetworkPublicKey, SuciKeyDeleteRequest, SuciKeyImportRequest,
+    SuciKeyStatusRequest, SuciKeySummary,
+)
 from app.models.ims import IMSProfile
 from app.models.imports import CSVImportPreview, CSVImportRequest, CSVImportRow
 from app.models.reader import Reader, ReaderStatus
@@ -42,6 +45,10 @@ __all__ = [
     "CSVImportRow",
     "FiveGSProfile",
     "HomeNetworkPublicKey",
+    "SuciKeyDeleteRequest",
+    "SuciKeyImportRequest",
+    "SuciKeyStatusRequest",
+    "SuciKeySummary",
     "IMSProfile",
     "Reader",
     "ReaderStatus",

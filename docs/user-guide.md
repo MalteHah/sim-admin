@@ -69,6 +69,19 @@ Tresorrevision entsteht erst nach vollständigem Erfolg.
 
 ICCID und ADM1 sind in Änderungsentwürfen absichtlich nicht veränderbar.
 
+## SUCI-Heimnetzschlüssel
+
+Unter **Einstellungen → SUCI-Heimnetzschlüssel** können öffentliche Open5GS-
+HNET-Schlüssel als PEM-, DER- oder Hex-Datei importiert werden. Erforderlich sind
+eine Bezeichnung, Profile A oder B und die zugehörige Open5GS Key ID. Private
+Schlüsseldateien werden abgewiesen. Die Anwendung zeigt anschließend den
+SHA-256-Fingerprint und den Verwendungsstatus an.
+
+In Einzelkarte und Profiländerung kann ein aktiver Katalogeintrag ausgewählt
+werden. Routing Indicator `0000` wird dabei als sinnvoller Ausgangswert
+vorbelegt. Verwendete Schlüssel können deaktiviert, aber nicht gelöscht werden;
+bereits gespeicherte Profilrevisionen bleiben vollständig nachvollziehbar.
+
 ## Aktivitätsprotokoll
 
 Das Aktivitätsprotokoll enthält Vorgangsart, Ergebnis, Zeitpunkt und redigierte

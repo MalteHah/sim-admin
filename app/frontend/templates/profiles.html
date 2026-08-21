@@ -6,7 +6,7 @@
     <title>Profiltresor – SIM-Admin</title>
     <link rel="stylesheet" href="/static/dashboard.css?v=20260821-25">
     <script src="/static/table-pagination.js" defer></script>
-    <script src="/static/profiles.js?v=20260821-29" defer></script>
+    <script src="/static/profiles.js?v=20260821-30" defer></script>
   </head>
   <body>
     <header class="topbar">
@@ -89,6 +89,7 @@
           <label>IMPU<input id="change-impu" maxlength="255" placeholder="sip:Nebenstelle@ims.mnc098.mcc262.3gppnetwork.org"></label>
           <label>IMS-Domain<input id="change-ims-domain" maxlength="253" placeholder="ims.mnc098.mcc262.3gppnetwork.org"></label>
           <label>IST<input id="change-ist" pattern="(?:[0-9A-Fa-f]{2})+" placeholder="optional, Hex-Bytes"></label>
+          <label>Gespeichertes SUCI-Schlüsselprofil<select id="change-suci-key-profile"><option value="">Manuelle Eingabe / vorhandener Profilwert</option></select></label>
           <label>SUCI Routing Indicator<input id="change-routing-indicator" inputmode="numeric" maxlength="4" pattern="[0-9]{1,4}" placeholder="z. B. 0000"></label>
           <label>SUCI-Schutzverfahren (Endgerät)<select id="change-protection-scheme"><option value="">Nicht konfigurieren</option><option value="0">Null Scheme</option><option value="1">Profile A – X25519</option><option value="2">Profile B – P-256</option></select></label>
           <label>HN Public Key ID<input id="change-hn-public-key-id" type="number" min="0" max="255" placeholder="optional, 0–255"></label>

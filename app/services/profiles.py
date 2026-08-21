@@ -7,11 +7,13 @@ from pathlib import Path
 import sqlite3
 from threading import Lock
 
-from app.models import ProfileChangeSummary, ProfileEditableView, ProfileImportResult, ProfileRevisionSummary, ProfileSummary, ProvisioningDraft
+from app.models import ProfileChangeSummary, ProfileEditableView, ProfileImportResult, ProfileRevisionSummary, ProfileSummary, ProvisioningDraft, SuciKeySummary
+from app.adapters.suci import normalize_hnet_public_key
 from app.services.imports import CSVImportError, CSVImportPreviewService
 
 AAD = b"sim-admin-profile-v1"
 INVENTORY_AAD = b"sim-admin-inventory-v1"
+SUCI_KEY_AAD = b"sim-admin-suci-key-v1"
 
 
 def _optional_int(value: object) -> object | None:
@@ -52,6 +54,10 @@ class ProfileVaultService:
             profile_id INTEGER PRIMARY KEY, updated_at TEXT NOT NULL,
             nonce BLOB NOT NULL, ciphertext BLOB NOT NULL,
             FOREIGN KEY (profile_id) REFERENCES profiles(id) ON DELETE CASCADE
+        )""")
+        self._connection.execute("""CREATE TABLE IF NOT EXISTS suci_keys (
+            id INTEGER PRIMARY KEY, created_at TEXT NOT NULL,
+            nonce BLOB NOT NULL, ciphertext BLOB NOT NULL
         )""")
         self._connection.commit()
         if self._database != ":memory:": os.chmod(self._database, 0o600)
@@ -181,6 +187,78 @@ class ProfileVaultService:
                 VALUES (?, ?, ?, ?) ON CONFLICT(profile_id) DO UPDATE SET updated_at=excluded.updated_at,
                 nonce=excluded.nonce, ciphertext=excluded.ciphertext""", (profile_id, updated_at, nonce, ciphertext))
             self._connection.commit()
+
+    def import_suci_key(self, name: str, scheme: int, key_id: int, key_data: str) -> SuciKeySummary:
+        from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+        public_key, fingerprint = normalize_hnet_public_key(scheme, key_data)
+        with self._lock:
+            existing = self._list_suci_keys_unlocked()
+            if any(item.scheme == scheme and item.key_id == key_id for item in existing):
+                raise ValueError("duplicate_key_id")
+            if any(item.fingerprint == fingerprint for item in existing):
+                raise ValueError("duplicate_key")
+            created_at = datetime.now(UTC).isoformat()
+            record = {"name": name.strip(), "scheme": scheme, "key_id": key_id,
+                "public_key": public_key, "fingerprint": fingerprint, "active": True}
+            nonce = os.urandom(12)
+            ciphertext = AESGCM(self._key).encrypt(nonce, json.dumps(record, separators=(",", ":")).encode(), SUCI_KEY_AAD)
+            cursor = self._connection.execute("INSERT INTO suci_keys (created_at, nonce, ciphertext) VALUES (?, ?, ?)",
+                (created_at, nonce, ciphertext))
+            self._connection.commit()
+            key_db_id = int(cursor.lastrowid)
+        return SuciKeySummary(id=key_db_id, created_at=created_at, in_use=False, **record)
+
+    def list_suci_keys(self) -> list[SuciKeySummary]:
+        with self._lock:
+            return self._list_suci_keys_unlocked()
+
+    def set_suci_key_active(self, key_db_id: int, active: bool) -> SuciKeySummary:
+        from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+        with self._lock:
+            row = self._connection.execute("SELECT created_at, nonce, ciphertext FROM suci_keys WHERE id = ?", (key_db_id,)).fetchone()
+            if row is None: raise KeyError(key_db_id)
+            record = json.loads(AESGCM(self._key).decrypt(row["nonce"], row["ciphertext"], SUCI_KEY_AAD))
+            record["active"] = active
+            nonce = os.urandom(12)
+            ciphertext = AESGCM(self._key).encrypt(nonce, json.dumps(record, separators=(",", ":")).encode(), SUCI_KEY_AAD)
+            self._connection.execute("UPDATE suci_keys SET nonce = ?, ciphertext = ? WHERE id = ?", (nonce, ciphertext, key_db_id))
+            self._connection.commit()
+            in_use = self._suci_key_in_use_unlocked(record)
+        return SuciKeySummary(id=key_db_id, created_at=row["created_at"], in_use=in_use, **record)
+
+    def delete_suci_key(self, key_db_id: int) -> None:
+        from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+        with self._lock:
+            row = self._connection.execute("SELECT nonce, ciphertext FROM suci_keys WHERE id = ?", (key_db_id,)).fetchone()
+            if row is None: raise KeyError(key_db_id)
+            record = json.loads(AESGCM(self._key).decrypt(row["nonce"], row["ciphertext"], SUCI_KEY_AAD))
+            if self._suci_key_in_use_unlocked(record): raise ValueError("key_in_use")
+            self._connection.execute("DELETE FROM suci_keys WHERE id = ?", (key_db_id,))
+            self._connection.commit()
+
+    def _list_suci_keys_unlocked(self) -> list[SuciKeySummary]:
+        from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+        result = []
+        for row in self._connection.execute("SELECT id, created_at, nonce, ciphertext FROM suci_keys ORDER BY id"):
+            record = json.loads(AESGCM(self._key).decrypt(row["nonce"], row["ciphertext"], SUCI_KEY_AAD))
+            result.append(SuciKeySummary(id=row["id"], created_at=row["created_at"],
+                in_use=self._suci_key_in_use_unlocked(record), **record))
+        return result
+
+    def _suci_key_in_use_unlocked(self, key_record: dict) -> bool:
+        from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+        queries = (
+            "SELECT nonce, ciphertext FROM profile_revisions",
+            "SELECT nonce, ciphertext FROM profile_change_drafts",
+        )
+        for query in queries:
+            for row in self._connection.execute(query):
+                record = json.loads(AESGCM(self._key).decrypt(row["nonce"], row["ciphertext"], AAD))
+                if (record.get("protection_scheme") == key_record["scheme"]
+                    and record.get("hn_public_key_id") == key_record["key_id"]
+                    and (record.get("hn_public_key") or "").upper() == key_record["public_key"]):
+                    return True
+        return False
 
     def list_revisions(self, profile_id: int) -> list[ProfileRevisionSummary]:
         with self._lock:

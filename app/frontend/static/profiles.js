@@ -45,6 +45,23 @@ const inventoryIssuedAt = document.querySelector("#inventory-issued-at");
 const inventoryNote = document.querySelector("#inventory-note");
 const inventoryError = document.querySelector("#inventory-error");
 let inventoryProfileId = null;
+let suciKeys = [];
+
+async function loadSuciKeyProfiles() {
+  const response = await fetch("/api/v1/settings/suci-keys", {cache: "no-store"}); if (!response.ok) return;
+  suciKeys = (await response.json()).filter(key => key.active);
+  const select = document.querySelector("#change-suci-key-profile");
+  for (const key of suciKeys) { const option = document.createElement("option"); option.value = String(key.id); option.textContent = `${key.name} · Profile ${key.scheme === 1 ? "A" : "B"} · ID ${key.key_id}`; select.append(option); }
+}
+
+document.querySelector("#change-suci-key-profile").addEventListener("change", (event) => {
+  const key = suciKeys.find(item => item.id === Number(event.target.value)); if (!key) return;
+  document.querySelector("#change-protection-scheme").value = String(key.scheme);
+  document.querySelector("#change-hn-public-key-id").value = String(key.key_id);
+  document.querySelector("#change-hn-public-key").value = key.public_key;
+  if (!document.querySelector("#change-routing-indicator").value) document.querySelector("#change-routing-indicator").value = "0000";
+});
+loadSuciKeyProfiles();
 
 function cell(value, className = "") {
   const element = document.createElement("td");

@@ -242,6 +242,16 @@ button:disabled { cursor: wait; opacity: .65; }
   font: inherit;
 }
 .settings-card button { justify-self: start; margin-top: 12px; color: white; background: var(--accent); }
+.suci-settings { margin-top: 22px; }
+.suci-key-list-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 30px; }
+.suci-key-list-heading h3 { margin: 0; }
+.suci-key-list-heading button { margin: 0; }
+.suci-key-list { display: grid; gap: 12px; margin-top: 14px; }
+.suci-key-card { display: grid; gap: 8px; padding: 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+.suci-key-card.is-inactive { opacity: .68; }
+.suci-key-card h4, .suci-key-card p { margin: 0; }
+.suci-key-card code { overflow-wrap: anywhere; color: var(--muted); }
+.suci-key-card .table-actions { margin-top: 4px; }
 
 .provisioning-layout { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(320px, .9fr); gap: 20px; align-items: start; }
 .provisioning-layout > * { min-width: 0; }

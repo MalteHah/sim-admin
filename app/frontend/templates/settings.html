@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Einstellungen – SIM-Admin</title>
-    <link rel="stylesheet" href="/static/dashboard.css?v=20260818-5">
-    <script src="/static/settings.js" defer></script>
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260821-26">
+    <script src="/static/settings.js?v=20260821-2" defer></script>
   </head>
   <body>
     <header class="topbar">
@@ -28,6 +28,28 @@
           <p id="password-message" class="form-error" role="status" hidden></p>
           <button type="submit">Passwort speichern</button>
         </form>
+      </section>
+      <section class="settings-card suci-settings" aria-labelledby="suci-title">
+        <p class="eyebrow">5GS-Teilnehmerdatenschutz</p>
+        <h2 id="suci-title">SUCI-Heimnetzschlüssel</h2>
+        <p>Hier werden ausschließlich öffentliche Open5GS-HNET-Schlüssel verwaltet. Private Schlüsseldateien werden abgewiesen.</p>
+        <form id="suci-key-form">
+          <label for="suci-key-name">Bezeichnung</label>
+          <input id="suci-key-name" maxlength="100" placeholder="z. B. Open5GS Profile A" required>
+          <label for="suci-key-scheme">Schutzverfahren</label>
+          <select id="suci-key-scheme" required><option value="1">Profile A – X25519</option><option value="2">Profile B – P-256</option></select>
+          <label for="suci-key-id">Open5GS HN Key ID</label>
+          <input id="suci-key-id" type="number" min="1" max="255" value="1" required>
+          <label for="suci-key-file">Öffentliche Schlüsseldatei</label>
+          <input id="suci-key-file" type="file" accept=".pem,.der,.key,.pub,.txt,application/x-pem-file,application/octet-stream" required>
+          <label for="suci-key-password">Aktuelles Admin-Passwort</label>
+          <input id="suci-key-password" type="password" autocomplete="current-password" required>
+          <p class="immutable-note">Unterstützt werden öffentliche PEM-/DER-Dateien und reine Hex-Dateien. Nach dem Import wird ein SHA-256-Fingerprint angezeigt.</p>
+          <p id="suci-key-message" class="form-error" role="status" hidden></p>
+          <button type="submit">Öffentlichen Schlüssel importieren</button>
+        </form>
+        <div class="suci-key-list-heading"><h3>Vorhandene Schlüssel</h3><button type="button" id="suci-key-refresh">Aktualisieren</button></div>
+        <div id="suci-key-list" class="suci-key-list" aria-live="polite">Schlüssel werden geladen …</div>
       </section>
     </main>
   </body>

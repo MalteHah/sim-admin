@@ -22,6 +22,9 @@ const actionLabels = {
   "profiles.single_create": "Einzelprofil gespeichert",
   "profiles.delete": "Profil gelöscht",
   "profiles.inventory_update": "Bestandsverwaltung geändert",
+  "settings.suci_key_import": "SUCI-Schlüssel importiert",
+  "settings.suci_key_status": "SUCI-Schlüsselstatus geändert",
+  "settings.suci_key_delete": "SUCI-Schlüssel gelöscht",
 };
 
 const detailLabels = {
@@ -73,6 +76,13 @@ const detailLabels = {
   incompatible_backup: "Backupversion nicht kompatibel",
   inventory_in_stock: "Karte im Bestand",
   inventory_issued: "Karte ausgegeben",
+  activated: "Aktiviert",
+  deactivated: "Deaktiviert",
+  unused_key: "Unbenutzter Schlüssel gelöscht",
+  key_in_use: "Schlüssel wird verwendet",
+  duplicate_key: "Schlüssel bereits vorhanden",
+  duplicate_key_id: "Key ID bereits vergeben",
+  invalid_public_key: "Öffentlicher Schlüssel ungültig",
 };
 
 function translateDetail(detail) {

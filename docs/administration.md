@@ -37,6 +37,10 @@ sudo systemctl restart sim-admin
   nicht in Git oder Supportausgaben gelangen.
 - Der Profiltresor ist gerätegebunden: `profiles.db` und `profile.key` gehören
   zusammen. Der Schlüssel wird deshalb im verschlüsselten USB-Backup gesichert.
+- Der zentrale SUCI-Schlüsselkatalog liegt ebenfalls verschlüsselt in
+  `profiles.db` und ist damit automatisch Bestandteil des USB-Backups. Er nimmt
+  ausschließlich öffentliche HNET-Schlüssel an; der private Open5GS-Schlüssel
+  verbleibt auf dem UDM-System.
 - Das Backup-Passwort wird nicht gespeichert und kann nicht zurückgesetzt
   werden.
 - Der private Release-Schlüssel gehört nicht auf den Standalone-Rechner. Dort

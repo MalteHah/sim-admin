@@ -76,3 +76,5 @@ Hardware- und Bereitstellungstests stehen in `docs/testing-and-roadmap.md`.
 - Versionsanzeige aus der zentralen `VERSION`-Datei statt fest codierter API- und Footerwerte
 - SJA5-kompatible SUCI-Berechnung im Endgerät über `DF.5GS`, UST-Service 124 und getrennte HN-Key-ID/Listenreferenz
 - Eindeutige Oberflächenbezeichnungen für AMF und SUCI Routing Indicator sowie Pflichtprüfung des Routing Indicators
+- Zentraler, verschlüsselter SUCI-Heimnetzschlüsselkatalog in den Einstellungen mit PEM-/DER-/Hex-Import, Fingerprint und Verwendungsschutz
+- Auswahl aktiver zentraler SUCI-Schlüsselprofile bei Einzelkarte und Profiländerung

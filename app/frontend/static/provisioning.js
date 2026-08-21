@@ -10,6 +10,21 @@ let comparisonTarget = null;
 let unknownCard = false;
 let dryRunReady = false;
 let captureMode = "card";
+let suciKeys = [];
+
+async function loadSuciKeyProfiles() {
+  const response = await fetch("/api/v1/settings/suci-keys", {cache: "no-store"}); if (!response.ok) return;
+  suciKeys = (await response.json()).filter(key => key.active);
+  const select = document.querySelector("#suci-key-profile");
+  for (const key of suciKeys) { const option = document.createElement("option"); option.value = String(key.id); option.textContent = `${key.name} · Profile ${key.scheme === 1 ? "A" : "B"} · ID ${key.key_id}`; select.append(option); }
+}
+
+document.querySelector("#suci-key-profile").addEventListener("change", (event) => {
+  const key = suciKeys.find(item => item.id === Number(event.target.value)); if (!key) return;
+  form.protection_scheme.value = String(key.scheme); form.hn_public_key_id.value = String(key.key_id); form.hn_public_key.value = key.public_key;
+  if (!form.routing_indicator.value) form.routing_indicator.value = "0000";
+});
+loadSuciKeyProfiles();
 
 for (const option of document.querySelectorAll('input[name="capture-mode"]')) option.addEventListener("change", () => {
   captureMode = option.value; unknownCard = captureMode === "data"; dryRunReady = false; saveButton.disabled = true;
