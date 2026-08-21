@@ -4,9 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Profiltresor – SIM-Admin</title>
-    <link rel="stylesheet" href="/static/dashboard.css?v=20260821-27">
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260821-29">
     <script src="/static/table-pagination.js" defer></script>
-    <script src="/static/profiles.js?v=20260821-32" defer></script>
+    <script src="/static/profiles.js?v=20260821-33" defer></script>
   </head>
   <body>
     <header class="topbar">
@@ -109,6 +109,16 @@
         <label for="adopt-password">Aktuelles Anmeldepasswort</label><input id="adopt-password" type="password" autocomplete="current-password" required>
         <p id="adopt-error" class="form-error" hidden></p>
         <div class="dialog-actions"><button type="button" id="adopt-close">Abbrechen</button><button type="submit">IMSI übernehmen</button></div>
+      </form>
+    </dialog>
+    <dialog id="adopt-readable-dialog" class="secrets-dialog">
+      <form id="adopt-readable-form">
+        <p class="eyebrow">Karte → Profiltresor</p><h2>Auslesbare Kartendaten übernehmen</h2>
+        <p>Nur ausgewählte IMS-Felder und die zusammengehörige SUCI-Konfiguration werden als neue Tresorrevision gespeichert. Die SIM-Karte wird nicht verändert.</p>
+        <div id="adopt-readable-fields" class="adopt-field-list"></div>
+        <label for="adopt-readable-password">Aktuelles Anmeldepasswort</label><input id="adopt-readable-password" type="password" autocomplete="current-password" required>
+        <p id="adopt-readable-error" class="form-error" hidden></p>
+        <div class="dialog-actions"><button type="button" id="adopt-readable-close">Abbrechen</button><button type="submit">Auswahl übernehmen</button></div>
       </form>
     </dialog>
     <dialog id="delete-dialog" class="secrets-dialog delete-dialog">

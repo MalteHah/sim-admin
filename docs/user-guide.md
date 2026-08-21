@@ -92,6 +92,13 @@ Der Kartenabgleich liest außerdem IMPI, IMPU, IMS-Domain und IST aus der ISIM-
 Anwendung und vergleicht jedes Feld einzeln mit dem Tresorprofil. Auch eine
 vollständig geleerte IMS-Konfiguration wird als gültiger Zustand erkannt.
 
+Bei abweichenden, auslesbaren Werten erscheint **Abweichende Kartendaten
+übernehmen**. IMS-Felder können einzeln ausgewählt werden; Routing Indicator,
+Schutzverfahren, HN-Key-ID und öffentlicher Schlüssel werden aus Konsistenzgründen
+nur gemeinsam als SUCI-Block übernommen. Nach erneuter Karten- und Passwortprüfung
+entsteht eine verschlüsselte Tresorrevision. Die SIM-Karte wird nicht verändert;
+ICCID, Ki, OPc und ADM1 sind von dieser Funktion ausgeschlossen.
+
 ## Aktivitätsprotokoll
 
 Das Aktivitätsprotokoll enthält Vorgangsart, Ergebnis, Zeitpunkt und redigierte

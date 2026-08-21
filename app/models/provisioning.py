@@ -94,6 +94,7 @@ class CardComparisonRequest(DomainModel):
     target_impu: str | None = None
     target_ims_domain: str | None = None
     target_ist: str | None = None
+    compare_suci: bool = False
     target_routing_indicator: str | None = None
     target_protection_scheme: int | None = None
     target_hn_public_key_id: int | None = None

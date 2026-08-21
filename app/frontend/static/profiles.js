@@ -37,6 +37,11 @@ const adoptDialog = document.querySelector("#adopt-dialog");
 const adoptForm = document.querySelector("#adopt-form");
 const adoptError = document.querySelector("#adopt-error");
 let adoptProfileId = null;
+const adoptReadableDialog = document.querySelector("#adopt-readable-dialog");
+const adoptReadableForm = document.querySelector("#adopt-readable-form");
+const adoptReadableFields = document.querySelector("#adopt-readable-fields");
+const adoptReadableError = document.querySelector("#adopt-readable-error");
+let adoptReadableProfileId = null;
 const inventoryDialog = document.querySelector("#inventory-dialog");
 const inventoryForm = document.querySelector("#inventory-form");
 const inventoryStatus = document.querySelector("#inventory-status");
@@ -217,6 +222,7 @@ async function compareProfile(profile) {
   previewPanel.append(title, text);
   appendImsComparison(previewPanel, data);
   appendSuciComparison(previewPanel, data);
+  appendReadableAdoptButton(previewPanel, profile.id, data);
   if (data.iccid_matches && !data.imsi_matches) {
     const adoptButton = document.createElement("button");
     adoptButton.type = "button"; adoptButton.textContent = "IMSI der Karte übernehmen";
@@ -261,6 +267,28 @@ function appendImsComparison(container, data) {
   container.append(details);
 }
 
+function appendReadableAdoptButton(container, profileId, data) {
+  const options = [];
+  if (data.ims_readable) {
+    for (const [field, label] of [["impi", "IMPI"], ["impu", "IMPU"], ["ims_domain", "IMS-Domain"], ["ist", "IST"]]) {
+      if (data[`${field}_matches`] === false) options.push([field, label]);
+    }
+  }
+  if (data.suci_compared && data.suci_readable && data.suci_matches === false) options.push(["suci", "SUCI-Konfiguration als zusammengehörigen Block"]);
+  if (!data.iccid_matches || !options.length) return;
+  const button = document.createElement("button"); button.type = "button"; button.textContent = "Abweichende Kartendaten übernehmen";
+  button.addEventListener("click", () => {
+    adoptReadableProfileId = profileId; adoptReadableFields.replaceChildren(); adoptReadableError.hidden = true;
+    for (const [field, label] of options) {
+      const row = document.createElement("label"); const checkbox = document.createElement("input");
+      checkbox.type = "checkbox"; checkbox.name = "adopt-field"; checkbox.value = field; checkbox.checked = true;
+      row.append(checkbox, document.createTextNode(label)); adoptReadableFields.append(row);
+    }
+    adoptReadableDialog.showModal(); document.querySelector("#adopt-readable-password").focus();
+  });
+  container.append(button);
+}
+
 document.querySelector("#adopt-close").addEventListener("click", () => adoptDialog.close());
 adoptDialog.addEventListener("close", () => { adoptForm.reset(); adoptError.hidden = true; adoptProfileId = null; });
 adoptForm.addEventListener("submit", async (event) => {
@@ -281,6 +309,26 @@ adoptForm.addEventListener("submit", async (event) => {
     const text = document.createElement("p"); text.textContent = `Die IMSI wurde als Revision ${data.revision} im Profiltresor gespeichert. Auf die SIM-Karte wurde nichts geschrieben.`;
     previewPanel.append(title, text); await loadProfiles();
   } finally { submit.disabled = false; document.querySelector("#adopt-password").value = ""; }
+});
+
+document.querySelector("#adopt-readable-close").addEventListener("click", () => adoptReadableDialog.close());
+adoptReadableDialog.addEventListener("close", () => { adoptReadableForm.reset(); adoptReadableFields.replaceChildren(); adoptReadableProfileId = null; });
+adoptReadableForm.addEventListener("submit", async (event) => {
+  event.preventDefault(); adoptReadableError.hidden = true;
+  const fields = [...adoptReadableForm.querySelectorAll('input[name="adopt-field"]:checked')].map(input => input.value);
+  if (!fields.length) { adoptReadableError.textContent = "Mindestens ein Feld auswählen."; adoptReadableError.hidden = false; return; }
+  const submit = adoptReadableForm.querySelector('button[type="submit"]'); submit.disabled = true;
+  try {
+    const response = await fetch(`/api/v1/profiles/${adoptReadableProfileId}/adopt-readable-fields`, {method: "POST",
+      headers: {"Content-Type": "application/json", "Cache-Control": "no-store"}, cache: "no-store",
+      body: JSON.stringify({password: document.querySelector("#adopt-readable-password").value, reader_index: 0, fields})});
+    const data = await response.json();
+    if (!response.ok) { adoptReadableError.textContent = data.detail?.message || data.detail || "Kartendaten konnten nicht übernommen werden."; adoptReadableError.hidden = false; return; }
+    adoptReadableDialog.close(); previewPanel.hidden = false; previewPanel.replaceChildren();
+    const title = document.createElement("h2"); title.textContent = "Kartendaten übernommen";
+    const text = document.createElement("p"); text.textContent = `Neue Revision ${data.revision}: ${data.adopted_fields.join(", ").toUpperCase()}. Auf die SIM-Karte wurde nichts geschrieben.`;
+    previewPanel.append(title, text); await loadProfiles();
+  } finally { submit.disabled = false; document.querySelector("#adopt-readable-password").value = ""; }
 });
 
 async function showHistory(id) {

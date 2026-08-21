@@ -126,7 +126,7 @@ class CardComparisonService:
                 warnings.append("Die IMS-Konfiguration der Karte weicht vom Tresorprofil ab.")
         elif request.compare_ims:
             warnings.append("Die IMS-Konfiguration konnte auf dieser Karte nicht gelesen werden.")
-        suci_compared = request.target_protection_scheme is not None
+        suci_compared = request.compare_suci or request.target_protection_scheme is not None
         suci_values = {
             "routing_indicator_matches": None, "protection_scheme_matches": None,
             "hn_public_key_id_matches": None, "hn_public_key_matches": None, "suci_matches": None,

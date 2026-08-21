@@ -68,6 +68,19 @@ class ProfileAdoptCardResult(DomainModel):
     write_performed: bool = False
 
 
+class ProfileAdoptReadableFieldsRequest(DomainModel):
+    password: SecretStr = Field(min_length=1, max_length=256)
+    reader_index: int = Field(default=0, ge=0)
+    fields: list[Literal["impi", "impu", "ims_domain", "ist", "suci"]] = Field(min_length=1)
+
+
+class ProfileAdoptReadableFieldsResult(DomainModel):
+    profile_id: int
+    revision: int
+    adopted_fields: list[str]
+    write_performed: bool = False
+
+
 class ProfileSecrets(DomainModel):
     fields: dict[str, str]
 

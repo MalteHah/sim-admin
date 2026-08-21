@@ -94,3 +94,4 @@ Hardware- und Bereitstellungstests stehen in `docs/testing-and-roadmap.md`.
 - Simulierter Sicherheitstest für nicht unterstützte Kartentypen mit unveränderter Revision und erhaltenem Änderungsentwurf
 - Simulierter Abbruch bei unpassender IST-Dateigröße mit verständlicher Aktivitätsmeldung und unverändertem Tresorstand
 - Einzelkarten-Abgleich direkt unter der Vorschau statt am unteren Rand der hohen Eingabemaske
+- Passwortgeschützte selektive Übernahme abweichender, erneut gelesener IMS-Felder und vollständiger SUCI-Konfiguration als neue Tresorrevision ohne SIM-Schreibzugriff

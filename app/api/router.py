@@ -38,6 +38,8 @@ from app.models import (
     ProfileInventoryUpdateRequest,
     ProfileAdoptCardRequest,
     ProfileAdoptCardResult,
+    ProfileAdoptReadableFieldsRequest,
+    ProfileAdoptReadableFieldsResult,
     ProfileSummary,
     ProfileRevealRequest,
     ProfileRevisionSummary,
@@ -387,7 +389,7 @@ def compare_profile_change_to_card(profile_id: int, vault: Annotated[ProfileVaul
     try:
         result = comparison.compare(CardComparisonRequest(reader_index=reader_index, target_iccid=draft.iccid, target_imsi=draft.imsi,
             compare_ims=True, target_impi=draft.impi, target_impu=draft.impu, target_ims_domain=draft.ims_domain, target_ist=draft.ist,
-            target_routing_indicator=draft.routing_indicator, target_protection_scheme=draft.protection_scheme,
+            compare_suci=True, target_routing_indicator=draft.routing_indicator, target_protection_scheme=draft.protection_scheme,
             target_hn_public_key_id=draft.hn_public_key_id, target_hn_public_key=draft.hn_public_key))
     except SIMReadError as exc:
         audit.record("profiles.change_draft_card_comparison", "error", exc.code)
@@ -435,7 +437,7 @@ def compare_stored_profile(profile_id: int, vault: Annotated[ProfileVaultService
     try:
         result = comparison.compare(CardComparisonRequest(reader_index=reader_index, target_iccid=draft.iccid, target_imsi=draft.imsi,
             compare_ims=True, target_impi=draft.impi, target_impu=draft.impu, target_ims_domain=draft.ims_domain, target_ist=draft.ist,
-            target_routing_indicator=draft.routing_indicator, target_protection_scheme=draft.protection_scheme,
+            compare_suci=True, target_routing_indicator=draft.routing_indicator, target_protection_scheme=draft.protection_scheme,
             target_hn_public_key_id=draft.hn_public_key_id, target_hn_public_key=draft.hn_public_key))
     except SIMReadError as exc:
         audit.record("profiles.card_comparison", "error", exc.code)
@@ -476,6 +478,43 @@ def adopt_card_data(profile_id: int, payload: ProfileAdoptCardRequest, request: 
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"code": code, "message": messages.get(code, "Kartendaten konnten nicht übernommen werden.")}) from exc
     audit.record("profiles.adopt_card", "success", f"revision_{revision}")
     return ProfileAdoptCardResult(profile_id=profile_id, revision=revision)
+
+
+@router.post("/api/v1/profiles/{profile_id}/adopt-readable-fields", response_model=ProfileAdoptReadableFieldsResult)
+def adopt_readable_card_fields(profile_id: int, payload: ProfileAdoptReadableFieldsRequest, request: Request,
+    vault: Annotated[ProfileVaultService, Depends(get_profile_vault_service)],
+    cards: Annotated[SIMCardService, Depends(get_sim_card_service)],
+    auth: Annotated[AuthService, Depends(get_auth_service)],
+    audit: Annotated[AuditService, Depends(get_audit_service)]) -> ProfileAdoptReadableFieldsResult:
+    """Adopt selected non-secret IMS/SUCI values after a fresh card read."""
+    client = request.client.host if request.client else "unknown"
+    if not auth.verify_login(auth.username, payload.password.get_secret_value(), client):
+        audit.record("profiles.adopt_readable_fields", "error", "reauthentication_failed")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Passwort ist falsch")
+    try:
+        identity = cards.read_identity(payload.reader_index)
+        if any(field in payload.fields for field in ("impi", "impu", "ims_domain", "ist")) and not identity.ims_readable:
+            raise ValueError("ims_unreadable")
+        if "suci" in payload.fields and not identity.suci_readable:
+            raise ValueError("suci_unreadable")
+        values = {"impi": identity.impi, "impu": identity.impu, "ims_domain": identity.ims_domain, "ist": identity.ist,
+            "routing_indicator": identity.routing_indicator, "protection_scheme": identity.protection_scheme,
+            "hn_public_key_id": identity.hn_public_key_id, "hn_public_key": identity.hn_public_key}
+        revision, adopted = vault.adopt_readable_card_fields(profile_id, identity.iccid, values, payload.fields)
+    except SIMReadError as exc:
+        audit.record("profiles.adopt_readable_fields", "error", exc.code)
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"code": exc.code, "message": str(exc)}) from exc
+    except KeyError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profil nicht gefunden") from exc
+    except ValueError as exc:
+        code = str(exc); messages = {"iccid_mismatch": "Die eingelegte Karte gehört nicht zu diesem Profil.",
+            "pending_change": "Vor der Übernahme muss der vorhandene Änderungsentwurf abgeschlossen oder verworfen werden.",
+            "no_changes": "Die ausgewählten Kartendaten entsprechen bereits dem Profil.",
+            "ims_unreadable": "Die IMS-Daten konnten nicht erneut gelesen werden.", "suci_unreadable": "Die SUCI-Daten konnten nicht erneut gelesen werden."}
+        audit.record("profiles.adopt_readable_fields", "error", code)
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"code": code, "message": messages.get(code, "Kartendaten konnten nicht übernommen werden.")}) from exc
+    audit.record("profiles.adopt_readable_fields", "success", f"revision_{revision}")
+    return ProfileAdoptReadableFieldsResult(profile_id=profile_id, revision=revision, adopted_fields=adopted)
 
 
 @router.post("/api/v1/profiles/{profile_id}/secrets", response_model=ProfileSecrets)

@@ -43,8 +43,8 @@ Stand: 21. August 2026, Zielversion 0.2.0 (Vorabstand).
 
 ## Noch zu entwickeln
 
-- Spätere selektive Übernahme abweichender, auslesbarer IMS-/5GS-Werte. Der
-  lesende Feldvergleich ist umgesetzt; Ki, OPc und ADM1 bleiben ausgeschlossen.
+- Hardware-Abnahme der selektiven Übernahme abweichender IMS-/5GS-Werte. Die
+  Funktion ist umgesetzt; Ki, OPc und ADM1 bleiben ausgeschlossen.
 - Mehrere Home-Network-Schlüssel und mehrere Protection-Scheme-Einträge mit
   Prioritätsverwaltung.
 - S17-spezifische SUCI-Berechnung auf der USIM über `DF.SAIP` und Profile B mit

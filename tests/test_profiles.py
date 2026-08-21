@@ -302,6 +302,25 @@ def test_card_imsi_adoption_rejects_wrong_card_and_pending_change(tmp_path) -> N
         raise AssertionError("pending draft was overwritten")
 
 
+def test_selected_readable_card_fields_create_revision_without_card_write(tmp_path) -> None:
+    vault = ProfileVaultService(str(tmp_path / "profiles.db"), str(tmp_path / "profile.key")); vault.import_csv(CSV)
+    profile = vault.list_profiles()[0]
+    values = {"impi": "001010123456789@ims.example", "impu": "sip:123@ims.example",
+        "ims_domain": "ims.example", "ist": "190208", "routing_indicator": "0000",
+        "protection_scheme": 0, "hn_public_key_id": None, "hn_public_key": None}
+
+    revision, adopted = vault.adopt_readable_card_fields(profile.id, profile.iccid, values, ["impi", "ims_domain", "suci"])
+
+    updated = vault.get_draft(profile.id)
+    assert revision == 2
+    assert adopted == ["impi", "ims_domain", "routing_indicator", "protection_scheme", "hn_public_key_id", "hn_public_key"]
+    assert updated.impi == values["impi"]
+    assert updated.impu is None
+    assert updated.ims_domain == values["ims_domain"]
+    assert updated.protection_scheme == 0
+    assert updated.routing_indicator == "0000"
+
+
 def test_optional_ims_fields_are_encrypted_and_backward_compatible(tmp_path) -> None:
     database = tmp_path / "profiles.db"
     vault = ProfileVaultService(str(database), str(tmp_path / "profile.key"))

@@ -160,6 +160,45 @@ class ProfileVaultService:
             self._connection.commit()
         return revision
 
+    def adopt_readable_card_fields(self, profile_id: int, card_iccid: str, values: dict, fields: list[str]) -> tuple[int, list[str]]:
+        """Commit selected, re-read non-secret IMS/SUCI values as a revision."""
+        from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+        allowed = {"impi", "impu", "ims_domain", "ist", "suci"}
+        selected = set(fields)
+        if not selected or not selected <= allowed: raise ValueError("unsupported_fields")
+        with self._lock:
+            row = self._connection.execute("SELECT revision, nonce, ciphertext FROM profiles WHERE id = ?", (profile_id,)).fetchone()
+            if row is None: raise KeyError(profile_id)
+            if self._connection.execute("SELECT 1 FROM profile_change_drafts WHERE profile_id = ?", (profile_id,)).fetchone() is not None:
+                raise ValueError("pending_change")
+            record = json.loads(AESGCM(self._key).decrypt(row["nonce"], row["ciphertext"], AAD))
+            if record["iccid"] != card_iccid: raise ValueError("iccid_mismatch")
+            updated = dict(record); adopted: list[str] = []
+            for field in ("impi", "impu", "ims_domain", "ist"):
+                if field in selected and (record.get(field) or None) != (values.get(field) or None):
+                    updated[field] = values.get(field) or ""; adopted.append(field)
+            if "suci" in selected:
+                suci_fields = ("routing_indicator", "protection_scheme", "hn_public_key_id", "hn_public_key")
+                if any(record.get(field) != values.get(field) for field in suci_fields):
+                    for field in suci_fields: updated[field] = values.get(field)
+                    adopted.extend(suci_fields)
+            if not adopted: raise ValueError("no_changes")
+            ProvisioningDraft(iccid=updated["iccid"], imsi=updated["imsi"], msisdn=updated.get("msisdn") or None,
+                acc=updated.get("acc") or "0001", ki=updated["ki"], opc=updated["opc"], adm=updated["adm"],
+                impi=updated.get("impi") or None, impu=updated.get("impu") or None, ims_domain=updated.get("ims_domain") or None,
+                ist=updated.get("ist") or None, routing_indicator=updated.get("routing_indicator") or None,
+                protection_scheme=_optional_int(updated.get("protection_scheme")), hn_public_key_id=_optional_int(updated.get("hn_public_key_id")),
+                hn_public_key=updated.get("hn_public_key") or None)
+            created_at = datetime.now(UTC).isoformat(); nonce = os.urandom(12)
+            ciphertext = AESGCM(self._key).encrypt(nonce, json.dumps(updated, separators=(",", ":")).encode(), AAD)
+            revision = int(row["revision"]) + 1
+            self._connection.execute("UPDATE profiles SET created_at = ?, nonce = ?, ciphertext = ?, revision = ?, card_verified = 1 WHERE id = ?",
+                (created_at, nonce, ciphertext, revision, profile_id))
+            self._connection.execute("INSERT INTO profile_revisions (profile_id, revision, created_at, nonce, ciphertext) VALUES (?, ?, ?, ?, ?)",
+                (profile_id, revision, created_at, nonce, ciphertext))
+            self._connection.commit()
+        return revision, adopted
+
     def delete_profile(self, profile_id: int, confirmation_iccid: str) -> None:
         record = self._get_record(profile_id)
         if record["iccid"] != confirmation_iccid: raise ValueError("iccid_mismatch")
