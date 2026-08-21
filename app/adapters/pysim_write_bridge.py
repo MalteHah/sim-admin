@@ -93,23 +93,38 @@ def main() -> None:
         if fields & {"impi", "impu", "ims_domain", "ist"}:
             stage = "ims"
             if "impi" in fields:
-                channel.select("MF/ADF.ISIM/EF.IMPI"); channel.update_binary_dec({"nai": payload["impi"]})
-                value, _ = channel.read_binary_dec()
-                if value.get("nai") != payload["impi"]: emit_error("verification_failed", "IMPI konnte nicht bestätigt werden", 7)
+                channel.select("MF/ADF.ISIM/EF.IMPI")
+                if payload["impi"] is None:
+                    current, _ = channel.read_binary(); target = "ff" * (len(current) // 2)
+                    channel.update_binary(target); value, _ = channel.read_binary()
+                    if value.lower() != target: emit_error("verification_failed", "Löschen der IMPI konnte nicht bestätigt werden", 7)
+                else:
+                    channel.update_binary_dec({"nai": payload["impi"]}); value, _ = channel.read_binary_dec()
+                    if value.get("nai") != payload["impi"]: emit_error("verification_failed", "IMPI konnte nicht bestätigt werden", 7)
                 verified.append("impi")
             if "ims_domain" in fields:
-                channel.select("MF/ADF.ISIM/EF.DOMAIN"); channel.update_binary_dec({"domain": payload["ims_domain"]})
-                value, _ = channel.read_binary_dec()
-                if value.get("domain") != payload["ims_domain"]: emit_error("verification_failed", "IMS-Domain konnte nicht bestätigt werden", 7)
+                channel.select("MF/ADF.ISIM/EF.DOMAIN")
+                if payload["ims_domain"] is None:
+                    current, _ = channel.read_binary(); target = "ff" * (len(current) // 2)
+                    channel.update_binary(target); value, _ = channel.read_binary()
+                    if value.lower() != target: emit_error("verification_failed", "Löschen der IMS-Domain konnte nicht bestätigt werden", 7)
+                else:
+                    channel.update_binary_dec({"domain": payload["ims_domain"]}); value, _ = channel.read_binary_dec()
+                    if value.get("domain") != payload["ims_domain"]: emit_error("verification_failed", "IMS-Domain konnte nicht bestätigt werden", 7)
                 verified.append("ims_domain")
             if "impu" in fields:
-                channel.select("MF/ADF.ISIM/EF.IMPU"); channel.update_record_dec(1, {"impu": payload["impu"]})
-                value, _ = channel.read_record_dec(1)
-                if value.get("impu") != payload["impu"]: emit_error("verification_failed", "IMPU konnte nicht bestätigt werden", 7)
+                channel.select("MF/ADF.ISIM/EF.IMPU")
+                if payload["impu"] is None:
+                    current, _ = channel.read_record(1); target = "ff" * (len(current) // 2)
+                    channel.update_record(1, target); value, _ = channel.read_record(1)
+                    if value.lower() != target: emit_error("verification_failed", "Löschen der IMPU konnte nicht bestätigt werden", 7)
+                else:
+                    channel.update_record_dec(1, {"impu": payload["impu"]}); value, _ = channel.read_record_dec(1)
+                    if value.get("impu") != payload["impu"]: emit_error("verification_failed", "IMPU konnte nicht bestätigt werden", 7)
                 verified.append("impu")
             if "ist" in fields:
                 channel.select("MF/ADF.ISIM/EF.IST"); current, _ = channel.read_binary()
-                target = payload["ist"].lower()
+                target = payload["ist"].lower() if payload["ist"] is not None else "00" * (len(current) // 2)
                 if len(target) != len(current): emit_error("invalid_ist_length", "IST muss exakt der Dateigröße der Karte entsprechen", 13)
                 channel.update_binary(target); value, _ = channel.read_binary()
                 if value.lower() != target: emit_error("verification_failed", "IST konnte nicht bestätigt werden", 7)

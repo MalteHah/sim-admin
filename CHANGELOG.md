@@ -85,3 +85,4 @@ Hardware- und Bereitstellungstests stehen in `docs/testing-and-roadmap.md`.
 - Browserübergreifend zuverlässiges Ausblenden von mit `hidden` markierten Formularelementen
 - Eindeutige HN-Schlüsselprofilauswahl mit automatischer Feldübernahme und gesperrten Schlüsselfeldern bei Null Scheme
 - Erfolgreicher Hardwaretest des IMS-Schreibpfads für IMPI, IMPU, IMS-Domain und IST einschließlich Rücklesen und Tresorrevision
+- Definierte, zurückgelesene Löschsemantik für IMPI, IMPU, IMS-Domain und IST statt Abbruch bei leeren IMS-Zielwerten
