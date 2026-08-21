@@ -88,3 +88,4 @@ Hardware- und Bereitstellungstests stehen in `docs/testing-and-roadmap.md`.
 - Definierte, zurückgelesene Löschsemantik für IMPI, IMPU, IMS-Domain und IST statt Abbruch bei leeren IMS-Zielwerten
 - Rein lesender IMS-Kartenabgleich von IMPI, IMPU, IMS-Domain und IST einschließlich korrekt erkanntem Leerzustand
 - Feldgenaue, redigierte Validierungsmeldungen im Einzelkarten-Dry-Run statt einer pauschalen Fehlermeldung
+- Korrekte Behandlung deaktivierter optionaler SUCI-Zahlenfelder als leer statt irrtümlich als Null Scheme

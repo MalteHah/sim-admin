@@ -65,7 +65,7 @@ function escapeHtml(value) {
 
 function optionalNumber(values, name) {
   const value = values.get(name);
-  return value === "" ? null : Number(value);
+  return value === null || value === "" ? null : Number(value);
 }
 
 function profileFields(values) {
