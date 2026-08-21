@@ -61,6 +61,7 @@ const detailLabels = {
   unsupported_card_for_ims: "Kartentyp unterstützt diese Felder nicht",
   unsupported_card_for_auth_keys: "Kartentyp unterstützt Ki/OPc nicht",
   unsupported_fields: "Felder noch nicht unterstützt",
+  invalid_ist_length: "IST-Länge passt nicht zur Kartendatei",
   missing_draft: "Änderungsentwurf fehlt",
   revision_conflict: "Profilrevision wurde zwischenzeitlich geändert",
   invalid_csv: "CSV-Datei nicht lesbar",

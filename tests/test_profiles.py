@@ -373,6 +373,23 @@ def test_unsupported_card_error_keeps_revision_and_change_draft(tmp_path) -> Non
     assert vault.get_draft(profile.id).impi is None
 
 
+def test_invalid_card_file_size_keeps_revision_and_change_draft(tmp_path) -> None:
+    class InvalidFileSizeAdapter:
+        def write_standard_fields(self, *args, **kwargs):
+            raise SIMWriteError("invalid_ist_length", "IST muss exakt der Dateigröße der Karte entsprechen")
+
+    vault = ProfileVaultService(str(tmp_path / "profiles.db"), str(tmp_path / "profile.key")); vault.import_csv(CSV)
+    profile = vault.list_profiles()[0]
+    vault.prepare_change(profile.id, profile.imsi, None, "0001", None, None, ist="03FF")
+
+    with pytest.raises(SIMWriteError, match="Dateigröße"):
+        ProfileWriteService(InvalidFileSizeAdapter(), vault).execute(profile.id)
+
+    assert vault.list_profiles()[0].revision == 1
+    assert vault.get_change_summary(profile.id) is not None
+    assert vault.get_draft(profile.id).ist is None
+
+
 def test_verified_fivegs_write_commits_encrypted_revision(tmp_path) -> None:
     public_key = "A1" * 32
     class FakeFiveGsAdapter:

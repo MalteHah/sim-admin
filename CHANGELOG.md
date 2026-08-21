@@ -92,3 +92,4 @@ Hardware- und Bereitstellungstests stehen in `docs/testing-and-roadmap.md`.
 - Eindeutige Klassifizierung einer von pySim als Ausnahme gemeldeten ADM1-Ablehnung ohne Wiederholung des Kartenversuchs
 - Keine Phantomänderungen mehr zwischen `null` und leer bei optionalen 5GS-Feldern sowie vollständige SUCI-Zielprüfung vor dem ersten Feldschreibzugriff
 - Simulierter Sicherheitstest für nicht unterstützte Kartentypen mit unveränderter Revision und erhaltenem Änderungsentwurf
+- Simulierter Abbruch bei unpassender IST-Dateigröße mit verständlicher Aktivitätsmeldung und unverändertem Tresorstand
