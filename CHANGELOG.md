@@ -81,3 +81,4 @@ Hardware- und Bereitstellungstests stehen in `docs/testing-and-roadmap.md`.
 - Kompatibilität mit der strukturierten UST-Darstellung aktueller pySim-Versionen und stufenbezogene Schreibfehler
 - Rein lesender SUCI-Kartenabgleich von Routing Indicator, Schutzverfahren, HN-Key-ID, öffentlichem Schlüssel und UST 124/125 gegen das Tresorprofil
 - Erfolgreiche Ende-zu-Ende-Tests von Null Scheme, Profile A und Profile B bis zur jeweils abgeschlossenen Open5GS-Registrierung
+- Schreibfreigabe `SIM SCHREIBEN` erst nach bewusster Wahl des tatsächlichen SIM-Schreibvorgangs statt bereits bei der Entwurfsvorbereitung

@@ -279,7 +279,7 @@ async function openChange(id) {
   document.querySelector("#change-hn-public-key").value = profile.hn_public_key || "";
   if (draftResponse.ok) {
     const draft = await draftResponse.json();
-    if (draft) { changeStatus.textContent = `Vorgemerkt seit ${new Date(draft.created_at).toLocaleString("de-DE")}: ${draft.changed_fields.join(", ").toUpperCase()}. Aktive Revision: ${draft.base_revision}.`; changeStatus.hidden = false; changeDiscard.hidden = false; changePreview.hidden = false; changeCompare.hidden = false; changeWrite.hidden = false; writeConfirmationLabel.hidden = false; }
+    if (draft) { changeStatus.textContent = `Vorgemerkt seit ${new Date(draft.created_at).toLocaleString("de-DE")}: ${draft.changed_fields.join(", ").toUpperCase()}. Aktive Revision: ${draft.base_revision}.`; changeStatus.hidden = false; changeDiscard.hidden = false; changePreview.hidden = false; changeCompare.hidden = false; changeWrite.hidden = false; }
   }
   changeDialog.showModal(); document.querySelector("#change-imsi").focus();
 }
@@ -365,6 +365,13 @@ changeCompare.addEventListener("click", async () => {
 
 changeWrite.addEventListener("click", async () => {
   changeError.hidden = true;
+  if (writeConfirmationLabel.hidden) {
+    writeConfirmationLabel.hidden = false;
+    changeError.textContent = "Für den tatsächlichen Schreibvorgang jetzt das aktuelle Passwort und SIM SCHREIBEN eingeben.";
+    changeError.hidden = false;
+    document.querySelector("#write-confirmation").focus();
+    return;
+  }
   const password = document.querySelector("#change-password").value;
   const confirmation = document.querySelector("#write-confirmation").value;
   if (!password || confirmation !== "SIM SCHREIBEN") { changeError.textContent = "Passwort und die exakte Schreibfreigabe SIM SCHREIBEN sind erforderlich."; changeError.hidden = false; return; }
