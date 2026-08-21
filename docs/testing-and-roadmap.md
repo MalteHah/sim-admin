@@ -20,6 +20,10 @@ Stand: 21. August 2026, Zielversion 0.2.0 (Vorabstand).
   Änderungsentwurf unverändert; nach der Korrektur entstand regulär Revision 4.
 - Der rein lesende IMS-Kartenabgleich erkennt sowohl belegte als auch vollständig
   geleerte ISIM-Felder und vergleicht IMPI, IMPU, Domain und IST einzeln.
+- Sicherheitsabbruch bei entfernter Karte und bei abweichender ICCID wurde ohne
+  Revision und unter Erhalt des Änderungsentwurfs geprüft. Eine absichtlich
+  falsche ADM1 wurde genau einmal abgelehnt; weitere reale Fehlversuche wurden
+  zum Schutz des ADM-Zählers ausgeschlossen.
 
 ## Vor einem ersten stabilen Release zwingend zu testen
 

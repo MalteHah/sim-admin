@@ -34,8 +34,12 @@ def main() -> None:
         channel.select("MF/EF.ICCID"); current_iccid, _ = channel.read_binary_dec()
         if current_iccid["iccid"] != payload["expected_iccid"]:
             emit_error("iccid_mismatch", "Die eingelegte Karte gehört nicht zum ausgewählten Profil", 5)
+        stage = "adm_verification"
         pin_adm = sanitize_pin_adm(payload["adm"])
-        _response, sw = channel.scc.verify_chv(card._adm_chv_num, h2b(pin_adm))
+        try:
+            _response, sw = channel.scc.verify_chv(card._adm_chv_num, h2b(pin_adm))
+        except Exception:
+            emit_error("adm_verification_failed", "ADM1 wurde von der Karte abgelehnt", 6)
         if sw != "9000": emit_error("adm_verification_failed", "ADM1 wurde von der Karte abgelehnt", 6)
         if fields & ({"ki", "opc", "impi", "impu", "ims_domain", "ist"} | fivegs_fields):
             from pySim.sysmocom_sja2 import SysmocomSJA5
