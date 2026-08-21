@@ -13,6 +13,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 input, button, select, textarea { min-width: 0; }
 
 body {
