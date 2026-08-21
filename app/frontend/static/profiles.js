@@ -282,8 +282,9 @@ function appendReadableAdoptButton(container, profileId, data) {
     const cardHasImsIdentity = Boolean(data.current_impi || data.current_impu || data.current_ims_domain);
     for (const [field, label] of [["impi", "IMPI"], ["impu", "IMPU"], ["ims_domain", "IMS-Domain"], ["ist", "IST"]]) {
       const current = data[`current_${field}`];
+      const managedMismatch = data[`${field}_managed`] && data[`${field}_matches`] === false;
       const unmanagedValueIsRelevant = !data[`${field}_managed`] && current && (field !== "ist" || cardHasImsIdentity);
-      if (data[`${field}_matches`] === false || unmanagedValueIsRelevant) options.push([field, label]);
+      if (managedMismatch || unmanagedValueIsRelevant) options.push([field, label]);
     }
   }
   const unmanagedProtectedSuci = !data.suci_managed && (data.current_protection_scheme === 1 || data.current_protection_scheme === 2);
