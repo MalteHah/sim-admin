@@ -263,13 +263,15 @@ function appendImsComparison(container, data) {
   else if (data.ims_matches === false) text.textContent = "Die verwaltete IMS-Konfiguration weicht vom Tresorprofil ab.";
   else if (data.ims_matches === true) text.textContent = "Die im Tresor verwalteten IMS-Felder stimmen mit der Karte überein.";
   else {
-    const cardHasIms = Boolean(data.current_impi || data.current_impu || data.current_ims_domain || data.current_ist);
+    const cardHasIms = Boolean(data.current_impi || data.current_impu || data.current_ims_domain);
     text.textContent = cardHasIms ? "Auf der Karte vorhandene IMS-Werte sind im Tresorprofil nicht hinterlegt." : "Die Karte enthält keine IMS-Konfiguration; auch im Tresor werden keine IMS-Werte verwaltet.";
   }
   container.append(heading, text);
   if (!data.ims_readable) return;
   const details = document.createElement("p");
-  const status = (field, managed, value) => !managed ? (data[`current_${field}`] ? "nicht im Tresor hinterlegt" : "leer") : value ? "stimmt überein" : "abweichend";
+  const status = (field, managed, value) => !managed
+    ? (field === "ist" && data.current_ist ? "Karten-Grundwert, nicht verwaltet" : data[`current_${field}`] ? "nicht im Tresor hinterlegt" : "leer")
+    : value ? "stimmt überein" : "abweichend";
   details.textContent = `IMPI ${status("impi", data.impi_managed, data.impi_matches)} · IMPU ${status("impu", data.impu_managed, data.impu_matches)} · Domain ${status("ims_domain", data.ims_domain_managed, data.ims_domain_matches)} · IST ${status("ist", data.ist_managed, data.ist_matches)}`;
   container.append(details);
 }
@@ -277,9 +279,11 @@ function appendImsComparison(container, data) {
 function appendReadableAdoptButton(container, profileId, data) {
   const options = [];
   if (data.ims_readable) {
+    const cardHasImsIdentity = Boolean(data.current_impi || data.current_impu || data.current_ims_domain);
     for (const [field, label] of [["impi", "IMPI"], ["impu", "IMPU"], ["ims_domain", "IMS-Domain"], ["ist", "IST"]]) {
       const current = data[`current_${field}`];
-      if (data[`${field}_matches`] === false || (!data[`${field}_managed`] && current)) options.push([field, label]);
+      const unmanagedValueIsRelevant = !data[`${field}_managed`] && current && (field !== "ist" || cardHasImsIdentity);
+      if (data[`${field}_matches`] === false || unmanagedValueIsRelevant) options.push([field, label]);
     }
   }
   const unmanagedProtectedSuci = !data.suci_managed && (data.current_protection_scheme === 1 || data.current_protection_scheme === 2);

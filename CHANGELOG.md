@@ -97,3 +97,4 @@ Hardware- und Bereitstellungstests stehen in `docs/testing-and-roadmap.md`.
 - Passwortgeschützte selektive Übernahme abweichender, erneut gelesener IMS-Felder und vollständiger SUCI-Konfiguration als neue Tresorrevision ohne SIM-Schreibzugriff
 - Klare Unterscheidung zwischen nicht im Tresor verwalteten und tatsächlich abweichenden IMS-/SUCI-Werten; UST 124/125 beeinflussen Null Scheme nicht
 - Präzise Anzeige leerer IMS-Kartenfelder und des gültigen, schlüssellosen Null-Scheme-Standardzustands ohne unnötiges Übernahmeangebot
+- Werkseitiger, allein vorhandener IST-Servicewert gilt nicht als Teilnehmer-IMS-Konfiguration und löst keine Übernahmeaktion aus
