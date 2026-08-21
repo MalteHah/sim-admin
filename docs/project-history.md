@@ -166,3 +166,7 @@ nicht in dieses Dokument.
   ISIM-Felder angelegt.
 - Die spätere IMS-Netzregistrierung bleibt vom Aufbau des Kamailio-IMS-Systems
   abhängig und ist nicht Bestandteil dieses Kartenschreibtests.
+- Leere IMS-Zielwerte wurden anschließend als echter Löschvorgang geprüft:
+  IMPI, IMPU und Domain wurden geleert, IST-Dienste deaktiviert und alle Werte
+  zurückgelesen. Ein vorausgehender Fehler erzeugte erwartungsgemäß keine neue
+  Revision und der Entwurf konnte nach der Korrektur erneut ausgeführt werden.

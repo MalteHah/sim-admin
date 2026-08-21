@@ -15,6 +15,9 @@ Stand: 21. August 2026, Zielversion 0.2.0 (Vorabstand).
 - SysmocomSJA5: IMPI, IMPU, IMS-Domain und IST wurden als Änderungsentwurf
   geschrieben, unmittelbar zurückgelesen und erst nach erfolgreicher Prüfung
   als neue Tresorrevision übernommen.
+- Das anschließende Löschen aller IMS-Werte wurde ebenfalls geschrieben und
+  zurückgelesen. Ein erster fehlgeschlagener Versuch ließ aktive Revision und
+  Änderungsentwurf unverändert; nach der Korrektur entstand regulär Revision 4.
 
 ## Vor einem ersten stabilen Release zwingend zu testen
 
