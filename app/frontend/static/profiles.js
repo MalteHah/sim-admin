@@ -55,12 +55,34 @@ async function loadSuciKeyProfiles() {
 }
 
 document.querySelector("#change-suci-key-profile").addEventListener("change", (event) => {
-  const key = suciKeys.find(item => item.id === Number(event.target.value)); if (!key) return;
+  const key = suciKeys.find(item => item.id === Number(event.target.value));
+  if (!key) { syncChangeSuciFields(); return; }
   document.querySelector("#change-protection-scheme").value = String(key.scheme);
   document.querySelector("#change-hn-public-key-id").value = String(key.key_id);
   document.querySelector("#change-hn-public-key").value = key.public_key;
   if (!document.querySelector("#change-routing-indicator").value) document.querySelector("#change-routing-indicator").value = "0000";
+  syncChangeSuciFields();
 });
+document.querySelector("#change-protection-scheme").addEventListener("change", () => syncChangeSuciFields(true));
+
+function syncChangeSuciFields(schemeChanged = false) {
+  const profile = document.querySelector("#change-suci-key-profile");
+  const scheme = document.querySelector("#change-protection-scheme");
+  const keyId = document.querySelector("#change-hn-public-key-id");
+  const publicKey = document.querySelector("#change-hn-public-key");
+  if (schemeChanged && profile.value) {
+    const selected = suciKeys.find(item => item.id === Number(profile.value));
+    if (!selected || String(selected.scheme) !== scheme.value) profile.value = "";
+  }
+  if (scheme.value === "0" || scheme.value === "") {
+    profile.value = ""; keyId.value = ""; publicKey.value = "";
+    keyId.disabled = true; publicKey.disabled = true; profile.disabled = scheme.value === "0";
+  } else {
+    profile.disabled = false; keyId.disabled = false; publicKey.disabled = false;
+    const catalogSelected = Boolean(profile.value);
+    keyId.readOnly = catalogSelected; publicKey.readOnly = catalogSelected;
+  }
+}
 loadSuciKeyProfiles();
 
 function cell(value, className = "") {
@@ -277,6 +299,7 @@ async function openChange(id) {
   document.querySelector("#change-protection-scheme").value = profile.protection_scheme ?? "";
   document.querySelector("#change-hn-public-key-id").value = profile.hn_public_key_id ?? "";
   document.querySelector("#change-hn-public-key").value = profile.hn_public_key || "";
+  syncChangeSuciFields();
   if (draftResponse.ok) {
     const draft = await draftResponse.json();
     if (draft) { changeStatus.textContent = `Vorgemerkt seit ${new Date(draft.created_at).toLocaleString("de-DE")}: ${draft.changed_fields.join(", ").toUpperCase()}. Aktive Revision: ${draft.base_revision}.`; changeStatus.hidden = false; changeDiscard.hidden = false; changePreview.hidden = false; changeCompare.hidden = false; changeWrite.hidden = false; }

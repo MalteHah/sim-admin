@@ -20,10 +20,31 @@ async function loadSuciKeyProfiles() {
 }
 
 document.querySelector("#suci-key-profile").addEventListener("change", (event) => {
-  const key = suciKeys.find(item => item.id === Number(event.target.value)); if (!key) return;
+  const key = suciKeys.find(item => item.id === Number(event.target.value));
+  if (!key) { syncSuciFields(); return; }
   form.protection_scheme.value = String(key.scheme); form.hn_public_key_id.value = String(key.key_id); form.hn_public_key.value = key.public_key;
   if (!form.routing_indicator.value) form.routing_indicator.value = "0000";
+  syncSuciFields();
 });
+form.protection_scheme.addEventListener("change", () => syncSuciFields(true));
+
+function syncSuciFields(schemeChanged = false) {
+  const profile = document.querySelector("#suci-key-profile");
+  const scheme = form.protection_scheme;
+  if (schemeChanged && profile.value) {
+    const selected = suciKeys.find(item => item.id === Number(profile.value));
+    if (!selected || String(selected.scheme) !== scheme.value) profile.value = "";
+  }
+  if (scheme.value === "0" || scheme.value === "") {
+    profile.value = ""; form.hn_public_key_id.value = ""; form.hn_public_key.value = "";
+    form.hn_public_key_id.disabled = true; form.hn_public_key.disabled = true; profile.disabled = scheme.value === "0";
+  } else {
+    profile.disabled = false; form.hn_public_key_id.disabled = false; form.hn_public_key.disabled = false;
+    const catalogSelected = Boolean(profile.value);
+    form.hn_public_key_id.readOnly = catalogSelected; form.hn_public_key.readOnly = catalogSelected;
+  }
+}
+syncSuciFields();
 loadSuciKeyProfiles();
 
 for (const option of document.querySelectorAll('input[name="capture-mode"]')) option.addEventListener("change", () => {

@@ -83,3 +83,4 @@ Hardware- und Bereitstellungstests stehen in `docs/testing-and-roadmap.md`.
 - Erfolgreiche Ende-zu-Ende-Tests von Null Scheme, Profile A und Profile B bis zur jeweils abgeschlossenen Open5GS-Registrierung
 - Schreibfreigabe `SIM SCHREIBEN` erst nach bewusster Wahl des tatsächlichen SIM-Schreibvorgangs statt bereits bei der Entwurfsvorbereitung
 - Browserübergreifend zuverlässiges Ausblenden von mit `hidden` markierten Formularelementen
+- Eindeutige HN-Schlüsselprofilauswahl mit automatischer Feldübernahme und gesperrten Schlüsselfeldern bei Null Scheme
