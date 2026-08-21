@@ -5,8 +5,9 @@ Stand: 20. August 2026, Zielversion 0.2.0 (Vorabstand).
 ## Vor einem ersten stabilen Release zwingend zu testen
 
 - IMS-Schreiben auf einer vorgesehenen SysmocomSJA5: IMPI, IMPU, Domain und IST.
-- 5GS-/SUCI-Schreiben: Routing Indicator, Null Scheme sowie Profile A/B mit
-  geeignetem öffentlichen Testschlüssel.
+- 5GS-/SUCI-Schreiben im Endgerät: Routing Indicator, UST-Service 124 aktiv,
+  Service 125 inaktiv sowie Null Scheme und Profile A/B mit geeignetem
+  öffentlichen Testschlüssel.
 - Readback, Revisionierung und Abbruchverhalten bei falscher ICCID, falschem ADM1,
   nicht unterstützter Karte, unpassender Dateigröße und entferntem Kartenleser.
 - Neuinstallation aus einem vollständig offline gebauten Release-Paket auf der
@@ -25,6 +26,8 @@ Stand: 20. August 2026, Zielversion 0.2.0 (Vorabstand).
   Übernahme in den Profiltresor. Ki, OPc und ADM1 bleiben ausgeschlossen.
 - Mehrere Home-Network-Schlüssel und mehrere Protection-Scheme-Einträge mit
   Prioritätsverwaltung.
+- S17-spezifische SUCI-Berechnung auf der USIM über `DF.SAIP` und Profile B mit
+  unkomprimiertem öffentlichen Schlüssel.
 - Produktiver Offline-Updatepfad mit Sicherung, atomarem Austausch,
   Datenbankschema-Prüfung und Rollback.
 - Bedienoberfläche und Fehlermeldungen nach den Hardwaretests nachschärfen.
@@ -43,4 +46,3 @@ analysiert. Erst nach funktionsfähigem P-/I-/S-CSCF-Aufbau folgen:
 
 Kamailio-IMS blockiert nicht die lokale Weiterentwicklung oder Dokumentation von
 SIM-Admin, wohl aber die Ende-zu-Ende-Abnahme der IMS-Funktionen.
-

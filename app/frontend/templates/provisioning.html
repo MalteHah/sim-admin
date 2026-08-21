@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Einzelkarte – SIM-Admin</title>
-    <link rel="stylesheet" href="/static/dashboard.css?v=20260818-19">
-    <script src="/static/provisioning.js?v=20260820-20" defer></script>
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260821-25">
+    <script src="/static/provisioning.js?v=20260821-21" defer></script>
   </head>
   <body>
     <header class="topbar">
@@ -35,13 +35,13 @@
               <label>IMPU (optional)<input name="impu" maxlength="255" placeholder="sip:Nebenstelle@ims.mnc098.mcc262.3gppnetwork.org"></label>
               <label>IMS-Domain (optional)<input name="ims_domain" maxlength="253" placeholder="ims.mnc098.mcc262.3gppnetwork.org"></label>
               <label>IST (optional)<input name="ist" pattern="(?:[0-9A-Fa-f]{2})+" placeholder="Hex-Bytes"></label>
-              <label>Routing Indicator (optional)<input name="routing_indicator" inputmode="numeric" maxlength="4" pattern="[0-9]{1,4}" placeholder="1–4 Ziffern"></label>
-              <label>Protection Scheme (optional)<input name="protection_scheme" type="number" min="0" max="2" placeholder="0=None, 1=A, 2=B"></label>
+              <label>SUCI Routing Indicator (optional)<input name="routing_indicator" inputmode="numeric" maxlength="4" pattern="[0-9]{1,4}" placeholder="z. B. 0000"></label>
+              <label>SUCI-Schutzverfahren (Berechnung im Endgerät)<select name="protection_scheme"><option value="">Nicht konfigurieren</option><option value="0">Null Scheme</option><option value="1">Profile A – X25519</option><option value="2">Profile B – P-256</option></select></label>
               <label>HN Public Key ID (optional)<input name="hn_public_key_id" type="number" min="0" max="255" placeholder="0–255"></label>
               <label>HN Public Key (optional)<input name="hn_public_key" pattern="(?:[0-9A-Fa-f]{2})+" placeholder="Hex-Bytes"></label>
               <label>Anmeldepasswort<input name="password" type="password" autocomplete="current-password" required></label>
             </div>
-            <p class="immutable-note">IMS- und 5GS-/SUCI-Felder werden verschlüsselt im Profiltresor gespeichert. Diese Einzelerfassung schreibt nichts auf die SIM-Karte.</p>
+            <p class="immutable-note"><strong>Nicht mit AMF 8000 verwechseln:</strong> Der SUCI Routing Indicator ist ein eigener 5GS-Wert; üblich ist 0000. Die erste Ausbaustufe berechnet SUCI im Endgerät (SJA5-9FV und S17). IMS- und SUCI-Felder werden verschlüsselt im Profiltresor gespeichert. Diese Einzelerfassung schreibt nichts auf die SIM-Karte.</p>
             <p id="preview-error" class="form-error" role="alert" hidden></p>
             <div class="single-card-actions"><button type="submit">Dry Run erstellen</button><button id="save-single-profile" type="button" disabled>Verschlüsselt speichern</button></div>
           </form>

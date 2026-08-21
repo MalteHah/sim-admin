@@ -108,7 +108,7 @@ class ProfileChangeRequest(DomainModel):
 
     @model_validator(mode="after")
     def validate_suci_configuration(self):
-        _validate_suci_fields(self.protection_scheme, self.hn_public_key_id, self.hn_public_key)
+        _validate_suci_fields(self.routing_indicator, self.protection_scheme, self.hn_public_key_id, self.hn_public_key)
         return self
 
 
@@ -142,7 +142,7 @@ class SingleProfileCreateRequest(DomainModel):
 
     @model_validator(mode="after")
     def validate_suci_configuration(self):
-        _validate_suci_fields(self.protection_scheme, self.hn_public_key_id, self.hn_public_key)
+        _validate_suci_fields(self.routing_indicator, self.protection_scheme, self.hn_public_key_id, self.hn_public_key)
         return self
 
 
@@ -151,13 +151,15 @@ class ProfileDeleteRequest(DomainModel):
     confirmation_iccid: str = Field(pattern=r"^\d{18,22}$")
 
 
-def _validate_suci_fields(scheme: int | None, key_id: int | None, key: str | None) -> None:
+def _validate_suci_fields(routing_indicator: str | None, scheme: int | None, key_id: int | None, key: str | None) -> None:
     if scheme is None:
         if key_id is not None or key: raise ValueError("Protection Scheme fehlt")
         return
     if scheme == 0:
         if key_id is not None or key: raise ValueError("Null Scheme darf keinen Schlüssel enthalten")
+        if not routing_indicator: raise ValueError("SUCI Routing Indicator fehlt")
         return
+    if not routing_indicator: raise ValueError("SUCI Routing Indicator fehlt")
     if key_id is None or not key: raise ValueError("Schlüssel-ID und Schlüssel fehlen")
     key_bytes = len(key) // 2
     if scheme == 1 and key_bytes != 32: raise ValueError("Scheme A benötigt 32 Schlüsselbytes")

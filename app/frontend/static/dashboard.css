@@ -248,7 +248,7 @@ button:disabled { cursor: wait; opacity: .65; }
 .provisioning-layout .settings-card { width: 100%; }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; }
 .form-grid label { display: grid; gap: 8px; min-width: 0; }
-.form-grid input { width: 100%; min-width: 0; }
+.form-grid input, .form-grid select { width: 100%; min-width: 0; }
 .preview-panel {
   padding: 32px;
   border: 1px solid var(--border);

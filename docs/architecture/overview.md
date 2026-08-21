@@ -87,9 +87,12 @@ nach ICCID- und ADM1-Prüfung geschrieben und unmittelbar zurückgelesen werden.
 
 Routing Indicator, Protection Scheme, Home-Network Public Key ID und Public Key
 sind ebenfalls optionale Bestandteile derselben verschlüsselten Profilrecords.
-Bei SJA5-Karten verwendet der Schreibadapter `DF.5GS/EF.Routing_Indicator` und
-die kartenseitig verwendete `DF.SAIP/EF.SUCI_Calc_Info`. Beide Ziele werden vor
-der ersten Mutation gelesen; ein Revisions-Commit folgt erst nach Readback.
+Die erste Ausbaustufe verwendet auf allen SJA5-Varianten die SUCI-Berechnung im
+Endgerät: `DF.5GS/EF.Routing_Indicator`, `DF.5GS/EF.SUCI_Calc_Info`, aktivierter
+UST-Service 124 und deaktivierter Service 125. Der Listenindex des Public Keys
+bleibt dabei von der Open5GS-HN-Key-ID getrennt. Alle Ziele werden vor der ersten
+Mutation gelesen; ein Revisions-Commit folgt erst nach Readback. Die
+S17-spezifische Berechnung auf der USIM über `DF.SAIP` bleibt zurückgestellt.
 
 Geheime Werte werden mit Pydantics `SecretStr` gekapselt, damit sie nicht
 versehentlich in Standarddarstellungen und Logs im Klartext erscheinen. Das

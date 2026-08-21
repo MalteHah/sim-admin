@@ -5,6 +5,7 @@ import json
 import sys
 
 from pysim_read_bridge import card_is_present, emit_error
+from suci import build_suci_calc_info, enable_suci_by_me
 
 
 def main() -> None:
@@ -48,9 +49,12 @@ def main() -> None:
             channel.select("MF/ADF.USIM/DF.5GS/EF.Routing_Indicator")
             current_routing, _ = channel.read_binary_dec()
         suci_fields = {"protection_scheme", "hn_public_key_id", "hn_public_key"}
+        current_ust = None
         if fields & suci_fields:
-            channel.select("MF/ADF.USIM/DF.SAIP/EF.SUCI_Calc_Info")
+            channel.select("MF/ADF.USIM/DF.5GS/EF.SUCI_Calc_Info")
             channel.read_binary_dec()
+            channel.select("MF/ADF.USIM/EF.UST")
+            current_ust, _ = channel.read_binary_dec()
 
         verified = []
         if "imsi" in fields:
@@ -113,13 +117,14 @@ def main() -> None:
             scheme = payload.get("protection_scheme")
             key_id = payload.get("hn_public_key_id")
             key_hex = payload.get("hn_public_key")
-            target = {
-                "prot_scheme_id_list": [{"priority": 0, "identifier": scheme, "key_index": key_id or 0}],
-                "hnet_pubkey_list": [] if scheme == 0 else [{"hnet_pubkey_identifier": key_id, "hnet_pubkey": h2b(key_hex)}],
-            }
-            channel.select("MF/ADF.USIM/DF.SAIP/EF.SUCI_Calc_Info")
+            target = build_suci_calc_info(scheme, key_id, key_hex)
+            channel.select("MF/ADF.USIM/DF.5GS/EF.SUCI_Calc_Info")
             channel.update_binary_dec(target); value, _ = channel.read_binary_dec()
             if value != target: emit_error("verification_failed", "SUCI-Konfiguration konnte nicht bestätigt werden", 7)
+            channel.select("MF/ADF.USIM/EF.UST")
+            target_ust = enable_suci_by_me(current_ust)
+            channel.update_binary_dec(target_ust); value, _ = channel.read_binary_dec()
+            if value != target_ust: emit_error("verification_failed", "SUCI-Dienste 124/125 konnten nicht bestätigt werden", 7)
             for field in sorted(fields & suci_fields): verified.append(field)
         print(json.dumps({"verified_fields": verified}))
     except NoCardError: emit_error("no_card", "Keine SIM-Karte eingelegt", 2)

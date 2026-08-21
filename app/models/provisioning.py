@@ -42,7 +42,11 @@ class ProvisioningDraft(DomainModel):
         if self.protection_scheme == 0:
             if self.hn_public_key_id is not None or self.hn_public_key:
                 raise ValueError("null protection scheme cannot use a home-network public key")
+            if not self.routing_indicator:
+                raise ValueError("routing_indicator is required for SUCI")
             return self
+        if not self.routing_indicator:
+            raise ValueError("routing_indicator is required for SUCI")
         if self.hn_public_key_id is None or not self.hn_public_key:
             raise ValueError("home-network public key and identifier are required")
         key_bytes = len(self.hn_public_key) // 2

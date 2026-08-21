@@ -74,3 +74,5 @@ Hardware- und Bereitstellungstests stehen in `docs/testing-and-roadmap.md`.
 - Separat verschlüsselte Bestandsverwaltung je Karte mit Status, Ausgabeempfänger, Ausgabedatum und begrenzter Bemerkung ohne Profilrevision
 - Einheitliche deutsche Aktivitätsdetails einschließlich dynamischer Revisionsnummern und Karten-/Protokollfehler
 - Versionsanzeige aus der zentralen `VERSION`-Datei statt fest codierter API- und Footerwerte
+- SJA5-kompatible SUCI-Berechnung im Endgerät über `DF.5GS`, UST-Service 124 und getrennte HN-Key-ID/Listenreferenz
+- Eindeutige Oberflächenbezeichnungen für AMF und SUCI Routing Indicator sowie Pflichtprüfung des Routing Indicators
