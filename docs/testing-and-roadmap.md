@@ -24,11 +24,13 @@ Stand: 21. August 2026, Zielversion 0.2.0 (Vorabstand).
   Revision und unter Erhalt des Änderungsentwurfs geprüft. Eine absichtlich
   falsche ADM1 wurde genau einmal abgelehnt; weitere reale Fehlversuche wurden
   zum Schutz des ADM-Zählers ausgeschlossen.
+- Der Abbruch für einen nicht unterstützten Kartentyp wurde mit simuliertem
+  Adapter ohne realen ADM-Versuch geprüft: Revision und Entwurf bleiben erhalten.
 
 ## Vor einem ersten stabilen Release zwingend zu testen
 
-- Readback, Revisionierung und Abbruchverhalten bei falscher ICCID, falschem ADM1,
-  nicht unterstützter Karte, unpassender Dateigröße und entferntem Kartenleser.
+- Verbleibendes Abbruchverhalten bei unpassender Dateigröße; Karte entfernt,
+  falsche ICCID, falsches ADM1 und nicht unterstützter Kartentyp sind geprüft.
 - Neuinstallation aus einem vollständig offline gebauten Release-Paket auf der
   vorbereiteten Test-VM.
 - Signatur-, Prüfsummen-, Versions- und Speicherplatzprüfung eines Updatepakets

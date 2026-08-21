@@ -1,5 +1,8 @@
 """Tests for the encrypted device-bound profile vault."""
 
+import pytest
+
+from app.adapters.sim_cards import SIMWriteError
 from app.services.profiles import ProfileVaultService
 from app.services.provisioning import ProfileWriteService
 from app.models import ProfileInventoryUpdateRequest, ProvisioningDraft
@@ -350,6 +353,24 @@ def test_verified_ims_write_commits_new_revision(tmp_path) -> None:
     assert revision == 2
     assert verified == ["impi", "impu", "ims_domain", "ist"]
     assert vault.get_draft(profile.id).impi == "001010123456789@ims.example"
+
+
+def test_unsupported_card_error_keeps_revision_and_change_draft(tmp_path) -> None:
+    class UnsupportedCardAdapter:
+        def write_standard_fields(self, *args, **kwargs):
+            raise SIMWriteError("unsupported_card_for_ims", "Kartentyp unterstützt diese Felder nicht")
+
+    vault = ProfileVaultService(str(tmp_path / "profiles.db"), str(tmp_path / "profile.key")); vault.import_csv(CSV)
+    profile = vault.list_profiles()[0]
+    vault.prepare_change(profile.id, profile.imsi, None, "0001", None, None,
+        "001010123456789@ims.example", "sip:30006@ims.example", "ims.example", "03FF")
+
+    with pytest.raises(SIMWriteError, match="Kartentyp unterstützt"):
+        ProfileWriteService(UnsupportedCardAdapter(), vault).execute(profile.id)
+
+    assert vault.list_profiles()[0].revision == 1
+    assert vault.get_change_summary(profile.id) is not None
+    assert vault.get_draft(profile.id).impi is None
 
 
 def test_verified_fivegs_write_commits_encrypted_revision(tmp_path) -> None:
