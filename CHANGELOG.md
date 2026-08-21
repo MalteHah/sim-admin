@@ -93,3 +93,4 @@ Hardware- und Bereitstellungstests stehen in `docs/testing-and-roadmap.md`.
 - Keine Phantomänderungen mehr zwischen `null` und leer bei optionalen 5GS-Feldern sowie vollständige SUCI-Zielprüfung vor dem ersten Feldschreibzugriff
 - Simulierter Sicherheitstest für nicht unterstützte Kartentypen mit unveränderter Revision und erhaltenem Änderungsentwurf
 - Simulierter Abbruch bei unpassender IST-Dateigröße mit verständlicher Aktivitätsmeldung und unverändertem Tresorstand
+- Einzelkarten-Abgleich direkt unter der Vorschau statt am unteren Rand der hohen Eingabemaske

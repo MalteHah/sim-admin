@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Einzelkarte – SIM-Admin</title>
-    <link rel="stylesheet" href="/static/dashboard.css?v=20260821-27">
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260821-28">
     <script src="/static/provisioning.js?v=20260821-25" defer></script>
   </head>
   <body>
@@ -48,12 +48,14 @@
           </form>
         </section>
 
-        <section id="preview-panel" class="preview-panel" aria-labelledby="preview-title">
-          <p class="eyebrow">Vorschau</p>
-          <h2 id="preview-title">Noch keine Karte eingelesen</h2>
-          <p>Das Speichern verändert die SIM nicht. Ein späterer Zielzustand wird anschließend als Änderungsentwurf angelegt.</p>
-        </section>
-        <section id="comparison-panel" class="preview-panel comparison-panel" aria-live="polite" hidden></section>
+        <div class="provisioning-results">
+          <section id="preview-panel" class="preview-panel" aria-labelledby="preview-title">
+            <p class="eyebrow">Vorschau</p>
+            <h2 id="preview-title">Noch keine Karte eingelesen</h2>
+            <p>Das Speichern verändert die SIM nicht. Ein späterer Zielzustand wird anschließend als Änderungsentwurf angelegt.</p>
+          </section>
+          <section id="comparison-panel" class="preview-panel comparison-panel" aria-live="polite" hidden></section>
+        </div>
       </div>
     </main>
   </body>
