@@ -81,6 +81,18 @@ function profileFields(values) {
   };
 }
 
+function validationMessage(detail) {
+  if (!Array.isArray(detail) || !detail.length) return "Eingaben sind unvollständig oder ungültig.";
+  const labels = {
+    iccid: "ICCID", imsi: "IMSI", msisdn: "MSISDN", acc: "ACC", ki: "Ki",
+    opc: "OPc", adm: "ADM1", impi: "IMPI", impu: "IMPU", ims_domain: "IMS-Domain",
+    ist: "IST", routing_indicator: "SUCI Routing Indicator", protection_scheme: "SUCI-Schutzverfahren",
+    hn_public_key_id: "HN Public Key ID", hn_public_key: "HN Public Key",
+  };
+  const fields = [...new Set(detail.map(item => labels[item.loc?.at(-1)] || "SUCI-Konfiguration"))];
+  return `Bitte prüfen: ${fields.join(", ")}. Format, Länge oder Kombination ist ungültig.`;
+}
+
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
   errorMessage.hidden = true;
@@ -93,7 +105,7 @@ form.addEventListener("submit", async (event) => {
       body: JSON.stringify(profileFields(values)),
     });
     const preview = await response.json();
-    if (!response.ok) throw new Error("Eingaben sind unvollständig oder ungültig.");
+    if (!response.ok) throw new Error(validationMessage(preview.detail));
     panel.innerHTML = `
       <p class="eyebrow">Vorschau · Kein Schreibzugriff</p>
       <h2>${escapeHtml(preview.iccid)}</h2>

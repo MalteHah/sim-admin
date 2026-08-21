@@ -87,3 +87,4 @@ Hardware- und Bereitstellungstests stehen in `docs/testing-and-roadmap.md`.
 - Erfolgreicher Hardwaretest des IMS-Schreibpfads für IMPI, IMPU, IMS-Domain und IST einschließlich Rücklesen und Tresorrevision
 - Definierte, zurückgelesene Löschsemantik für IMPI, IMPU, IMS-Domain und IST statt Abbruch bei leeren IMS-Zielwerten
 - Rein lesender IMS-Kartenabgleich von IMPI, IMPU, IMS-Domain und IST einschließlich korrekt erkanntem Leerzustand
+- Feldgenaue, redigierte Validierungsmeldungen im Einzelkarten-Dry-Run statt einer pauschalen Fehlermeldung
