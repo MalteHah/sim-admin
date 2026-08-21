@@ -2,7 +2,7 @@
 
 from app.services.profiles import ProfileVaultService
 from app.services.provisioning import ProfileWriteService
-from app.models import ProvisioningDraft
+from app.models import ProfileInventoryUpdateRequest, ProvisioningDraft
 
 CSV = """IMSI;ICCID;ACC;Ki;OPC;ADM1
 001010123456789;8949012345678901234;1;00112233445566778899AABBCCDDEEFF;FFEEDDCCBBAA99887766554433221100;DEADBEEF
@@ -71,6 +71,22 @@ def test_inventory_management_is_encrypted_and_does_not_create_revision(tmp_path
     assert returned.issued_at is None
     assert returned.inventory_note == "Zurückgegeben"
     assert returned.revision == 1
+
+
+def test_inventory_update_request_validates_without_assignment_recursion() -> None:
+    issued = ProfileInventoryUpdateRequest(
+        password="test-password", status="issued", issued_to="  Max Mustermann  ",
+        issued_at="2026-08-21", note="  Testgerät  ",
+    )
+    assert issued.issued_to == "Max Mustermann"
+    assert issued.note == "Testgerät"
+
+    returned = ProfileInventoryUpdateRequest(
+        password="test-password", status="in_stock", issued_to="Wird entfernt",
+        issued_at="2026-08-21", note="Zurückgegeben",
+    )
+    assert returned.issued_to is None
+    assert returned.issued_at is None
 
 
 def test_existing_vault_is_backfilled_with_revision_one(tmp_path) -> None:

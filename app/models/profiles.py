@@ -34,13 +34,11 @@ class ProfileInventoryUpdateRequest(DomainModel):
 
     @model_validator(mode="after")
     def validate_issuance(self):
-        self.issued_to = self.issued_to.strip() if self.issued_to else None
-        self.note = self.note.strip() if self.note else None
         if self.status == "issued" and (not self.issued_to or self.issued_at is None):
             raise ValueError("Bei Ausgabe sind Name und Datum erforderlich")
         if self.status == "in_stock":
-            self.issued_to = None
-            self.issued_at = None
+            object.__setattr__(self, "issued_to", None)
+            object.__setattr__(self, "issued_at", None)
         return self
 
 

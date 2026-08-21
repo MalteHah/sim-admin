@@ -383,6 +383,9 @@ inventoryForm.addEventListener("submit", async (event) => {
     const title = document.createElement("h2"); title.textContent = data.inventory_status === "issued" ? "Karte als ausgegeben markiert" : "Karte im Bestand";
     const text = document.createElement("p"); text.textContent = "Nur die Verwaltungsdaten wurden geändert. SIM-Profil und Revision bleiben unverändert.";
     previewPanel.append(title, text); await loadProfiles();
+  } catch (error) {
+    inventoryError.textContent = "Verwaltungsdaten konnten nicht gespeichert werden. Bitte Verbindung prüfen und erneut versuchen.";
+    inventoryError.hidden = false;
   } finally { submit.disabled = false; document.querySelector("#inventory-password").value = ""; }
 });
 
