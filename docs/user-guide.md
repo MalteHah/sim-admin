@@ -82,6 +82,12 @@ werden. Routing Indicator `0000` wird dabei als sinnvoller Ausgangswert
 vorbelegt. Verwendete Schlüssel können deaktiviert, aber nicht gelöscht werden;
 bereits gespeicherte Profilrevisionen bleiben vollständig nachvollziehbar.
 
+Beim **Kartenabgleich** eines entsprechend konfigurierten Tresorprofils liest die
+Anwendung Routing Indicator, Schutzverfahren, HN-Key-ID, öffentlichen Schlüssel
+und die UST-Dienste 124/125 von einer SJA5 zurück. Angezeigt wird nur, ob der
+öffentliche Schlüssel übereinstimmt; privates Schlüsselmaterial befindet sich
+weder auf der Karte noch in SIM-Admin. Der Abgleich verändert keine Kartendaten.
+
 ## Aktivitätsprotokoll
 
 Das Aktivitätsprotokoll enthält Vorgangsart, Ergebnis, Zeitpunkt und redigierte

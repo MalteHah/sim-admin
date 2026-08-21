@@ -1,12 +1,21 @@
 # Offene Punkte und Abnahmetests
 
-Stand: 20. August 2026, Zielversion 0.2.0 (Vorabstand).
+Stand: 21. August 2026, Zielversion 0.2.0 (Vorabstand).
+
+## Erfolgreich geprüft
+
+- SysmocomSJA5: Routing Indicator `0000`, Profile A (X25519), HN-Key-ID 1,
+  öffentlicher Schlüssel sowie UST-Service 124 aktiv und 125 inaktiv wurden
+  geschrieben und unmittelbar zurückgelesen.
+- Open5GS hat die verschlüsselte SUCI mit Scheme 1 und Key ID 1 verarbeitet,
+  zur erwarteten IMSI aufgelöst und die 5G-Registrierung abgeschlossen.
+- Der Profiltresor-Kartenabgleich liest diese SUCI-Werte künftig ohne
+  Schreibzugriff zurück und vergleicht sie mit der aktiven Revision.
 
 ## Vor einem ersten stabilen Release zwingend zu testen
 
 - IMS-Schreiben auf einer vorgesehenen SysmocomSJA5: IMPI, IMPU, Domain und IST.
-- 5GS-/SUCI-Schreiben im Endgerät: Routing Indicator, UST-Service 124 aktiv,
-  Service 125 inaktiv sowie Null Scheme und Profile A/B mit geeignetem
+- Verbleibende 5GS-/SUCI-Varianten: Null Scheme und Profile B mit geeignetem
   öffentlichen Testschlüssel.
 - Readback, Revisionierung und Abbruchverhalten bei falscher ICCID, falschem ADM1,
   nicht unterstützter Karte, unpassender Dateigröße und entferntem Kartenleser.
@@ -22,8 +31,9 @@ Stand: 20. August 2026, Zielversion 0.2.0 (Vorabstand).
 
 ## Noch zu entwickeln
 
-- Feldweiser Kartenabgleich für auslesbare IMS- und 5GS-Werte mit selektiver
-  Übernahme in den Profiltresor. Ki, OPc und ADM1 bleiben ausgeschlossen.
+- Feldweiser Kartenabgleich für auslesbare IMS-Werte sowie eine spätere
+  selektive Übernahme. Der 5GS-/SUCI-Abgleich ist bereits lesend umgesetzt;
+  Ki, OPc und ADM1 bleiben ausgeschlossen.
 - Mehrere Home-Network-Schlüssel und mehrere Protection-Scheme-Einträge mit
   Prioritätsverwaltung.
 - S17-spezifische SUCI-Berechnung auf der USIM über `DF.SAIP` und Profile B mit
@@ -35,8 +45,8 @@ Stand: 20. August 2026, Zielversion 0.2.0 (Vorabstand).
 
 ## Zurückgestellte Integrationstests
 
-Die Open5GS-Netzregistrierung wird nach den Kartentests geprüft. Kamailio-IMS ist
-derzeit ein eigenständiger, größerer Integrationsblock und wird separat
+Die Open5GS-Netzregistrierung mit verschlüsselter SUCI wurde erfolgreich
+geprüft. Kamailio-IMS ist derzeit ein eigenständiger, größerer Integrationsblock und wird separat
 analysiert. Erst nach funktionsfähigem P-/I-/S-CSCF-Aufbau folgen:
 
 - IMS-Registrierung der vorgesehenen Teilnehmer,

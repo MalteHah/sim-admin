@@ -193,6 +193,7 @@ async function compareProfile(profile) {
   else if (data.iccid_matches) text.textContent = "Die ICCID wurde sicher zugeordnet. Die IMSI der Karte weicht vom Tresorprofil ab.";
   else text.textContent = "Die ICCID stimmt nicht überein. Die Karte wurde diesem Profil nicht zugeordnet.";
   previewPanel.append(title, text);
+  appendSuciComparison(previewPanel, data);
   if (data.iccid_matches && !data.imsi_matches) {
     const adoptButton = document.createElement("button");
     adoptButton.type = "button"; adoptButton.textContent = "IMSI der Karte übernehmen";
@@ -203,6 +204,22 @@ async function compareProfile(profile) {
     previewPanel.append(adoptButton);
   }
   if (data.iccid_matches) await loadProfiles();
+}
+
+function appendSuciComparison(container, data) {
+  if (!data.suci_compared) return;
+  const heading = document.createElement("h3"); heading.textContent = "SUCI-Konfiguration";
+  const text = document.createElement("p");
+  if (!data.suci_readable) text.textContent = "Die SUCI-Daten konnten auf dieser Karte nicht gelesen werden.";
+  else text.textContent = data.suci_matches
+    ? "Routing Indicator, Schutzverfahren, HN-Schlüssel und UST-Dienste stimmen mit dem Tresorprofil überein."
+    : "Die SUCI-Konfiguration weicht vom Tresorprofil ab.";
+  container.append(heading, text);
+  if (!data.suci_readable) return;
+  const details = document.createElement("p");
+  const schemes = {0: "Null Scheme", 1: "Profile A – X25519", 2: "Profile B – P-256"};
+  details.textContent = `Karte: Routing Indicator ${data.current_routing_indicator || "–"} · ${schemes[data.current_protection_scheme] || "Unbekannt"} · HN-Key-ID ${data.current_hn_public_key_id ?? "–"} · öffentlicher Schlüssel ${data.hn_public_key_matches ? "stimmt überein" : "abweichend"} · UST 124 ${data.suci_service_124_active ? "aktiv" : "inaktiv"} · UST 125 ${data.suci_service_125_active ? "aktiv" : "inaktiv"}`;
+  container.append(details);
 }
 
 document.querySelector("#adopt-close").addEventListener("click", () => adoptDialog.close());
@@ -325,6 +342,7 @@ changePreview.addEventListener("click", async () => {
     const title = document.createElement("h2"); title.textContent = "Entwurfsprüfung – kein Schreibzugriff";
     const text = document.createElement("p"); text.textContent = `${data.steps.length} geplante Schritte geprüft. Geheimwerte sind vorhanden und verdeckt; write_performed: false.`;
     previewPanel.append(title, text);
+    appendSuciComparison(previewPanel, data);
   } finally { changePreview.disabled = false; }
 });
 

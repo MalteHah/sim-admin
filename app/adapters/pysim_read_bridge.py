@@ -80,6 +80,25 @@ def main() -> None:
                     channel.select("MF/DF.GSM/EF.IMSI")
                 imsi_data, _ = channel.read_binary_dec()
 
+                suci_supported = False
+                suci_readable = False
+                suci_state = {}
+                try:
+                    from pySim.sysmocom_sja2 import SysmocomSJA5
+                    suci_supported = transport.get_atr().lower() in SysmocomSJA5._atrs
+                    if suci_supported:
+                        from suci import read_suci_card_state
+                        channel.select("MF/ADF.USIM/DF.5GS/EF.Routing_Indicator")
+                        routing_data, _ = channel.read_binary_dec()
+                        channel.select("MF/ADF.USIM/DF.5GS/EF.SUCI_Calc_Info")
+                        calculation_data, _ = channel.read_binary_dec()
+                        channel.select("MF/ADF.USIM/EF.UST")
+                        service_data, _ = channel.read_binary_dec()
+                        suci_state = read_suci_card_state(routing_data, calculation_data, service_data)
+                        suci_readable = True
+                except Exception:
+                    suci_readable = False
+
         print(
             json.dumps(
                 {
@@ -88,6 +107,9 @@ def main() -> None:
                     "atr": transport.get_atr().upper(),
                     "iccid": iccid_data["iccid"],
                     "imsi": imsi_data["imsi"],
+                    "suci_supported": suci_supported,
+                    "suci_readable": suci_readable,
+                    **suci_state,
                 }
             )
         )

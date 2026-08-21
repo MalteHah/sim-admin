@@ -109,6 +109,24 @@ class CardComparisonService:
             warnings.append("Die Ziel-IMSI weicht von der eingelegten Karte ab.")
         if iccid_matches and imsi_matches:
             warnings.append("ICCID und IMSI entsprechen bereits dem Entwurf.")
+        suci_compared = request.target_protection_scheme is not None
+        suci_values = {
+            "routing_indicator_matches": None, "protection_scheme_matches": None,
+            "hn_public_key_id_matches": None, "hn_public_key_matches": None, "suci_matches": None,
+        }
+        if suci_compared and current.suci_readable:
+            suci_values = {
+                "routing_indicator_matches": current.routing_indicator == request.target_routing_indicator,
+                "protection_scheme_matches": current.protection_scheme == request.target_protection_scheme,
+                "hn_public_key_id_matches": current.hn_public_key_id == request.target_hn_public_key_id,
+                "hn_public_key_matches": (current.hn_public_key or "").upper() == (request.target_hn_public_key or "").upper(),
+                "suci_matches": False,
+            }
+            suci_values["suci_matches"] = all(value for key, value in suci_values.items() if key != "suci_matches") and current.suci_service_124_active is True and current.suci_service_125_active is False
+            if not suci_values["suci_matches"]:
+                warnings.append("Die SUCI-Konfiguration der Karte weicht vom Tresorprofil ab.")
+        elif suci_compared:
+            warnings.append("Die SUCI-Konfiguration konnte auf dieser Karte nicht gelesen werden.")
         warnings.append("Der Kartenabgleich hat keine Daten verändert.")
 
         return CardComparisonResult(
@@ -121,6 +139,14 @@ class CardComparisonService:
             target_imsi=request.target_imsi,
             iccid_matches=iccid_matches,
             imsi_matches=imsi_matches,
+            suci_compared=suci_compared,
+            suci_readable=current.suci_readable,
+            current_routing_indicator=current.routing_indicator,
+            current_protection_scheme=current.protection_scheme,
+            current_hn_public_key_id=current.hn_public_key_id,
+            suci_service_124_active=current.suci_service_124_active,
+            suci_service_125_active=current.suci_service_125_active,
+            **suci_values,
             warnings=warnings,
         )
 

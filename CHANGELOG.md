@@ -79,3 +79,5 @@ Hardware- und Bereitstellungstests stehen in `docs/testing-and-roadmap.md`.
 - Zentraler, verschlüsselter SUCI-Heimnetzschlüsselkatalog in den Einstellungen mit PEM-/DER-/Hex-Import, Fingerprint und Verwendungsschutz
 - Auswahl aktiver zentraler SUCI-Schlüsselprofile bei Einzelkarte und Profiländerung
 - Kompatibilität mit der strukturierten UST-Darstellung aktueller pySim-Versionen und stufenbezogene Schreibfehler
+- Rein lesender SUCI-Kartenabgleich von Routing Indicator, Schutzverfahren, HN-Key-ID, öffentlichem Schlüssel und UST 124/125 gegen das Tresorprofil
+- Erfolgreicher Ende-zu-Ende-Test einer verschlüsselten Profile-A-SUCI bis zur abgeschlossenen Open5GS-Registrierung

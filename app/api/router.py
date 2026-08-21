@@ -385,7 +385,9 @@ def compare_profile_change_to_card(profile_id: int, vault: Annotated[ProfileVaul
     try: draft = vault.get_change_draft(profile_id)
     except KeyError as exc: raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Kein Änderungsentwurf vorhanden") from exc
     try:
-        result = comparison.compare(CardComparisonRequest(reader_index=reader_index, target_iccid=draft.iccid, target_imsi=draft.imsi))
+        result = comparison.compare(CardComparisonRequest(reader_index=reader_index, target_iccid=draft.iccid, target_imsi=draft.imsi,
+            target_routing_indicator=draft.routing_indicator, target_protection_scheme=draft.protection_scheme,
+            target_hn_public_key_id=draft.hn_public_key_id, target_hn_public_key=draft.hn_public_key))
     except SIMReadError as exc:
         audit.record("profiles.change_draft_card_comparison", "error", exc.code)
         raise HTTPException(status_code=status.HTTP_409_CONFLICT if exc.code == "no_card" else status.HTTP_503_SERVICE_UNAVAILABLE, detail={"code": exc.code, "message": str(exc)}) from exc
@@ -430,7 +432,9 @@ def compare_stored_profile(profile_id: int, vault: Annotated[ProfileVaultService
     try: draft = vault.get_draft(profile_id)
     except KeyError as exc: raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profil nicht gefunden") from exc
     try:
-        result = comparison.compare(CardComparisonRequest(reader_index=reader_index, target_iccid=draft.iccid, target_imsi=draft.imsi))
+        result = comparison.compare(CardComparisonRequest(reader_index=reader_index, target_iccid=draft.iccid, target_imsi=draft.imsi,
+            target_routing_indicator=draft.routing_indicator, target_protection_scheme=draft.protection_scheme,
+            target_hn_public_key_id=draft.hn_public_key_id, target_hn_public_key=draft.hn_public_key))
     except SIMReadError as exc:
         audit.record("profiles.card_comparison", "error", exc.code)
         raise HTTPException(status_code=status.HTTP_409_CONFLICT if exc.code == "no_card" else status.HTTP_503_SERVICE_UNAVAILABLE, detail={"code": exc.code, "message": str(exc)}) from exc

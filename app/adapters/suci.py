@@ -35,6 +35,36 @@ def enable_suci_by_me(services: list[int] | dict) -> list[int] | dict:
     return sorted(({int(service) for service in services} | {124}) - {125})
 
 
+def read_suci_card_state(routing: dict, calculation: dict, services: list[int] | dict) -> dict:
+    """Normalize decoded pySim 5GS files into JSON-safe comparison values."""
+    schemes = calculation.get("prot_scheme_id_list") or []
+    selected = min(schemes, key=lambda item: int(item.get("priority", 255))) if schemes else {}
+    scheme = int(selected.get("identifier", 0))
+    key_index = int(selected.get("key_index", 0))
+    keys = calculation.get("hnet_pubkey_list") or []
+    selected_key = keys[key_index - 1] if key_index and key_index <= len(keys) else None
+    key_value = selected_key.get("hnet_pubkey") if selected_key else None
+    if isinstance(key_value, bytes):
+        key_value = key_value.hex().upper()
+    elif key_value is not None:
+        key_value = str(key_value).replace(" ", "").upper()
+
+    def active(number: int) -> bool:
+        if isinstance(services, dict):
+            entry = services.get(number, services.get(str(number), {}))
+            return bool(entry.get("activated", False))
+        return number in {int(service) for service in services}
+
+    return {
+        "routing_indicator": str(routing.get("routing_indicator", "")),
+        "protection_scheme": scheme,
+        "hn_public_key_id": int(selected_key["hnet_pubkey_identifier"]) if selected_key else None,
+        "hn_public_key": key_value,
+        "suci_service_124_active": active(124),
+        "suci_service_125_active": active(125),
+    }
+
+
 def normalize_hnet_public_key(scheme: int, key_data: str) -> tuple[str, str]:
     """Accept public PEM/DER or raw hex and return card bytes plus fingerprint."""
     from cryptography.hazmat.primitives import serialization

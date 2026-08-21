@@ -4,7 +4,7 @@ from fastapi.testclient import TestClient
 
 from app.core.dependencies import get_card_comparison_service
 from app.main import app
-from app.models import SIMReadResult
+from app.models import CardComparisonRequest, SIMReadResult
 from app.services.provisioning import CardComparisonService
 
 client = TestClient(app)
@@ -132,3 +132,28 @@ def test_card_comparison_marks_differences() -> None:
     assert response.status_code == 200
     assert response.json()["iccid_matches"] is False
     assert response.json()["imsi_matches"] is False
+
+
+class FakeSuciCardAdapter(FakeCardAdapter):
+    def read_identity(self, reader_index: int = 0) -> SIMReadResult:
+        return SIMReadResult(
+            reader_index=reader_index, card_type="SysmocomSJA5", atr="3B 00",
+            iccid="8949012345678901234", imsi="001010123456789",
+            suci_supported=True, suci_readable=True, routing_indicator="0000",
+            protection_scheme=1, hn_public_key_id=1, hn_public_key="A1" * 32,
+            suci_service_124_active=True, suci_service_125_active=False,
+        )
+
+
+def test_card_comparison_includes_matching_suci_configuration() -> None:
+    service = CardComparisonService(FakeSuciCardAdapter())
+    result = service.compare(CardComparisonRequest(
+        target_iccid="8949012345678901234", target_imsi="001010123456789",
+        target_routing_indicator="0000", target_protection_scheme=1,
+        target_hn_public_key_id=1, target_hn_public_key="A1" * 32,
+    ))
+
+    assert result.suci_compared is True
+    assert result.suci_matches is True
+    assert result.suci_service_124_active is True
+    assert result.suci_service_125_active is False
