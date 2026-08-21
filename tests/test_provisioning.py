@@ -174,6 +174,24 @@ def test_card_comparison_includes_matching_ims_configuration() -> None:
     assert result.ims_matches is True
 
 
+def test_null_scheme_does_not_require_suci_ust_services() -> None:
+    class FakeNullSchemeAdapter(FakeCardAdapter):
+        def read_identity(self, reader_index: int = 0) -> SIMReadResult:
+            result = super().read_identity(reader_index)
+            result.suci_supported = True; result.suci_readable = True
+            result.routing_indicator = "0000"; result.protection_scheme = 0
+            result.suci_service_124_active = False; result.suci_service_125_active = False
+            return result
+
+    result = CardComparisonService(FakeNullSchemeAdapter()).compare(CardComparisonRequest(
+        target_iccid="8949012345678901234", target_imsi="001010123456789",
+        compare_suci=True, target_routing_indicator="0000", target_protection_scheme=0,
+    ))
+
+    assert result.suci_managed is True
+    assert result.suci_matches is True
+
+
 def test_card_comparison_accepts_fully_cleared_ims_configuration() -> None:
     class FakeClearedImsCardAdapter(FakeCardAdapter):
         def read_identity(self, reader_index: int = 0) -> SIMReadResult:
@@ -188,4 +206,4 @@ def test_card_comparison_accepts_fully_cleared_ims_configuration() -> None:
     ))
 
     assert result.ims_readable is True
-    assert result.ims_matches is True
+    assert result.ims_matches is None

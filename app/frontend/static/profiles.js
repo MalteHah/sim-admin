@@ -240,9 +240,11 @@ function appendSuciComparison(container, data) {
   const heading = document.createElement("h3"); heading.textContent = "SUCI-Konfiguration";
   const text = document.createElement("p");
   if (!data.suci_readable) text.textContent = "Die SUCI-Daten konnten auf dieser Karte nicht gelesen werden.";
-  else text.textContent = data.suci_matches
-    ? "Routing Indicator, Schutzverfahren, HN-Schlüssel und UST-Dienste stimmen mit dem Tresorprofil überein."
-    : "Die SUCI-Konfiguration weicht vom Tresorprofil ab.";
+  else if (!data.suci_managed) text.textContent = "Die SUCI-Konfiguration der Karte ist im Tresorprofil nicht hinterlegt.";
+  else if (data.suci_matches) text.textContent = data.current_protection_scheme === 0
+    ? "Routing Indicator und Null Scheme stimmen mit dem Tresorprofil überein."
+    : "Routing Indicator, Schutzverfahren, HN-Schlüssel und UST-Dienste stimmen mit dem Tresorprofil überein.";
+  else text.textContent = "Die SUCI-Konfiguration weicht vom Tresorprofil ab.";
   container.append(heading, text);
   if (!data.suci_readable) return;
   const details = document.createElement("p");
@@ -256,14 +258,14 @@ function appendImsComparison(container, data) {
   const heading = document.createElement("h3"); heading.textContent = "IMS-Konfiguration";
   const text = document.createElement("p");
   if (!data.ims_readable) text.textContent = "Die IMS-Daten konnten auf dieser Karte nicht gelesen werden.";
-  else text.textContent = data.ims_matches
-    ? "IMPI, IMPU, IMS-Domain und IST stimmen mit dem Tresorprofil überein."
-    : "Die IMS-Konfiguration weicht vom Tresorprofil ab.";
+  else if (data.ims_matches === false) text.textContent = "Die verwaltete IMS-Konfiguration weicht vom Tresorprofil ab.";
+  else if (data.ims_matches === true) text.textContent = "Die im Tresor verwalteten IMS-Felder stimmen mit der Karte überein.";
+  else text.textContent = "Auf der Karte vorhandene IMS-Werte sind im Tresorprofil nicht hinterlegt.";
   container.append(heading, text);
   if (!data.ims_readable) return;
   const details = document.createElement("p");
-  const status = value => value ? "stimmt überein" : "abweichend";
-  details.textContent = `IMPI ${status(data.impi_matches)} · IMPU ${status(data.impu_matches)} · Domain ${status(data.ims_domain_matches)} · IST ${status(data.ist_matches)}`;
+  const status = (managed, value) => !managed ? "nicht im Tresor hinterlegt" : value ? "stimmt überein" : "abweichend";
+  details.textContent = `IMPI ${status(data.impi_managed, data.impi_matches)} · IMPU ${status(data.impu_managed, data.impu_matches)} · Domain ${status(data.ims_domain_managed, data.ims_domain_matches)} · IST ${status(data.ist_managed, data.ist_matches)}`;
   container.append(details);
 }
 
@@ -271,10 +273,11 @@ function appendReadableAdoptButton(container, profileId, data) {
   const options = [];
   if (data.ims_readable) {
     for (const [field, label] of [["impi", "IMPI"], ["impu", "IMPU"], ["ims_domain", "IMS-Domain"], ["ist", "IST"]]) {
-      if (data[`${field}_matches`] === false) options.push([field, label]);
+      const current = data[`current_${field}`];
+      if (data[`${field}_matches`] === false || (!data[`${field}_managed`] && current)) options.push([field, label]);
     }
   }
-  if (data.suci_compared && data.suci_readable && data.suci_matches === false) options.push(["suci", "SUCI-Konfiguration als zusammengehörigen Block"]);
+  if (data.suci_compared && data.suci_readable && (data.suci_matches === false || !data.suci_managed)) options.push(["suci", "SUCI-Konfiguration als zusammengehörigen Block"]);
   if (!data.iccid_matches || !options.length) return;
   const button = document.createElement("button"); button.type = "button"; button.textContent = "Abweichende Kartendaten übernehmen";
   button.addEventListener("click", () => {

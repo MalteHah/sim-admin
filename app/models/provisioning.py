@@ -121,12 +121,17 @@ class CardComparisonResult(DomainModel):
     current_impu: str | None = None
     current_ims_domain: str | None = None
     current_ist: str | None = None
+    impi_managed: bool = False
+    impu_managed: bool = False
+    ims_domain_managed: bool = False
+    ist_managed: bool = False
     impi_matches: bool | None = None
     impu_matches: bool | None = None
     ims_domain_matches: bool | None = None
     ist_matches: bool | None = None
     ims_matches: bool | None = None
     suci_compared: bool = False
+    suci_managed: bool = False
     suci_readable: bool = False
     current_routing_indicator: str | None = None
     current_protection_scheme: int | None = None

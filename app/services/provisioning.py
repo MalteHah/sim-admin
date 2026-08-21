@@ -109,6 +109,8 @@ class CardComparisonService:
             warnings.append("Die Ziel-IMSI weicht von der eingelegten Karte ab.")
         if iccid_matches and imsi_matches:
             warnings.append("ICCID und IMSI entsprechen bereits dem Entwurf.")
+        ims_managed = {"impi_managed": request.target_impi is not None, "impu_managed": request.target_impu is not None,
+            "ims_domain_managed": request.target_ims_domain is not None, "ist_managed": request.target_ist is not None}
         ims_values = {
             "impi_matches": None, "impu_matches": None, "ims_domain_matches": None,
             "ist_matches": None, "ims_matches": None,
@@ -121,12 +123,14 @@ class CardComparisonService:
                 "ist_matches": (current.ist or "").upper() == (request.target_ist or "").upper(),
                 "ims_matches": False,
             }
-            ims_values["ims_matches"] = all(value for key, value in ims_values.items() if key != "ims_matches")
-            if not ims_values["ims_matches"]:
+            managed_matches = [ims_values[f"{field}_matches"] for field in ("impi", "impu", "ims_domain", "ist") if ims_managed[f"{field}_managed"]]
+            ims_values["ims_matches"] = all(managed_matches) if managed_matches else None
+            if ims_values["ims_matches"] is False:
                 warnings.append("Die IMS-Konfiguration der Karte weicht vom Tresorprofil ab.")
         elif request.compare_ims:
             warnings.append("Die IMS-Konfiguration konnte auf dieser Karte nicht gelesen werden.")
         suci_compared = request.compare_suci or request.target_protection_scheme is not None
+        suci_managed = request.target_protection_scheme is not None
         suci_values = {
             "routing_indicator_matches": None, "protection_scheme_matches": None,
             "hn_public_key_id_matches": None, "hn_public_key_matches": None, "suci_matches": None,
@@ -139,8 +143,10 @@ class CardComparisonService:
                 "hn_public_key_matches": (current.hn_public_key or "").upper() == (request.target_hn_public_key or "").upper(),
                 "suci_matches": False,
             }
-            suci_values["suci_matches"] = all(value for key, value in suci_values.items() if key != "suci_matches") and current.suci_service_124_active is True and current.suci_service_125_active is False
-            if not suci_values["suci_matches"]:
+            base_matches = all(value for key, value in suci_values.items() if key != "suci_matches")
+            services_match = True if request.target_protection_scheme == 0 else current.suci_service_124_active is True and current.suci_service_125_active is False
+            suci_values["suci_matches"] = base_matches and services_match if suci_managed else None
+            if suci_values["suci_matches"] is False:
                 warnings.append("Die SUCI-Konfiguration der Karte weicht vom Tresorprofil ab.")
         elif suci_compared:
             warnings.append("Die SUCI-Konfiguration konnte auf dieser Karte nicht gelesen werden.")
@@ -162,8 +168,10 @@ class CardComparisonService:
             current_impu=current.impu,
             current_ims_domain=current.ims_domain,
             current_ist=current.ist,
+            **ims_managed,
             **ims_values,
             suci_compared=suci_compared,
+            suci_managed=suci_managed,
             suci_readable=current.suci_readable,
             current_routing_indicator=current.routing_indicator,
             current_protection_scheme=current.protection_scheme,
