@@ -157,3 +157,12 @@ nicht in dieses Dokument.
   5G-Registrierung erfolgreich ab.
 - Der Profiltresor erhielt einen rein lesenden Vergleich der SUCI-Kartendaten
   einschließlich Routing Indicator, Scheme, Key-ID, Public Key und UST 124/125.
+
+## 2026-08-21 – IMS-Kartenschreibtest
+
+- IMPI, IMPU, IMS-Domain und IST wurden auf einer separaten SysmocomSJA5-
+  Testkarte programmiert und unmittelbar erfolgreich zurückgelesen.
+- Die aktive Tresorrevision wurde erst nach vollständiger Bestätigung aller vier
+  ISIM-Felder angelegt.
+- Die spätere IMS-Netzregistrierung bleibt vom Aufbau des Kamailio-IMS-Systems
+  abhängig und ist nicht Bestandteil dieses Kartenschreibtests.

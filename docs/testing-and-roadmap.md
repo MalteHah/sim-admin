@@ -12,10 +12,12 @@ Stand: 21. August 2026, Zielversion 0.2.0 (Vorabstand).
   zur erwarteten IMSI aufgelöst und die 5G-Registrierung abgeschlossen.
 - Der Profiltresor-Kartenabgleich liest diese SUCI-Werte künftig ohne
   Schreibzugriff zurück und vergleicht sie mit der aktiven Revision.
+- SysmocomSJA5: IMPI, IMPU, IMS-Domain und IST wurden als Änderungsentwurf
+  geschrieben, unmittelbar zurückgelesen und erst nach erfolgreicher Prüfung
+  als neue Tresorrevision übernommen.
 
 ## Vor einem ersten stabilen Release zwingend zu testen
 
-- IMS-Schreiben auf einer vorgesehenen SysmocomSJA5: IMPI, IMPU, Domain und IST.
 - Readback, Revisionierung und Abbruchverhalten bei falscher ICCID, falschem ADM1,
   nicht unterstützter Karte, unpassender Dateigröße und entferntem Kartenleser.
 - Neuinstallation aus einem vollständig offline gebauten Release-Paket auf der

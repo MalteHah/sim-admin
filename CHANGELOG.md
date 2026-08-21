@@ -84,3 +84,4 @@ Hardware- und Bereitstellungstests stehen in `docs/testing-and-roadmap.md`.
 - Schreibfreigabe `SIM SCHREIBEN` erst nach bewusster Wahl des tatsächlichen SIM-Schreibvorgangs statt bereits bei der Entwurfsvorbereitung
 - Browserübergreifend zuverlässiges Ausblenden von mit `hidden` markierten Formularelementen
 - Eindeutige HN-Schlüsselprofilauswahl mit automatischer Feldübernahme und gesperrten Schlüsselfeldern bei Null Scheme
+- Erfolgreicher Hardwaretest des IMS-Schreibpfads für IMPI, IMPU, IMS-Domain und IST einschließlich Rücklesen und Tresorrevision
