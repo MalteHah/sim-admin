@@ -101,3 +101,4 @@ Hardware- und Bereitstellungstests stehen in `docs/testing-and-roadmap.md`.
 - Übernahmeaktion berücksichtigt einen technischen Vergleichsunterschied nur bei tatsächlich verwalteten Feldern
 - Erfolgreicher Hardwaretest der selektiven Übernahme einer abweichenden IMS-Domain als neue Tresorrevision ohne SIM-Schreibzugriff
 - Karten-Roadmap in Revision 1 und Revision 2 priorisiert und ADM1-Änderungen verbindlich aus dem Funktionsumfang ausgeschlossen
+- Kurze, nicht sensible Änderungsnotiz je Profilrevision; bestehende Revisionen werden neutral gekennzeichnet

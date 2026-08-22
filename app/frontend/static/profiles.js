@@ -353,7 +353,7 @@ async function showHistory(id) {
   historyValues.replaceChildren();
   for (const item of revisions) {
     const row = document.createElement("div"); const revision = document.createElement("strong"); const time = document.createElement("span");
-    revision.textContent = `Revision ${item.revision}`; time.textContent = new Date(item.created_at).toLocaleString("de-DE");
+    revision.textContent = `Revision ${item.revision}`; time.textContent = `${item.note} · ${new Date(item.created_at).toLocaleString("de-DE")}`;
     row.append(revision, time); historyValues.append(row);
   }
 }

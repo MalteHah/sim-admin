@@ -20,6 +20,14 @@ def _optional_int(value: object) -> object | None:
     return None if value in (None, "") else value
 
 
+def _revision_note(fields: list[str], prefix: str = "Geändert") -> str:
+    labels = {"imsi": "IMSI", "msisdn": "MSISDN", "acc": "ACC", "ki": "Ki", "opc": "OPc",
+        "impi": "IMPI", "impu": "IMPU", "ims_domain": "IMS-Domain", "ist": "IST",
+        "routing_indicator": "Routing Indicator", "protection_scheme": "SUCI-Schutzverfahren",
+        "hn_public_key_id": "HN-Key-ID", "hn_public_key": "HN-Schlüssel"}
+    return f"{prefix}: {', '.join(labels.get(field, field) for field in fields)}"
+
+
 class ProfileVaultService:
     def __init__(self, database: str | None = None, key_file: str | None = None) -> None:
         self._database = database or os.getenv("SIM_ADMIN_PROFILE_DB", "/opt/sim-admin/application/data/database/profiles.db")
@@ -39,10 +47,13 @@ class ProfileVaultService:
             self._connection.execute("UPDATE profiles SET card_verified = 1 WHERE revision > 1")
         self._connection.execute("""CREATE TABLE IF NOT EXISTS profile_revisions (
             profile_id INTEGER NOT NULL, revision INTEGER NOT NULL, created_at TEXT NOT NULL,
-            nonce BLOB NOT NULL, ciphertext BLOB NOT NULL,
+            nonce BLOB NOT NULL, ciphertext BLOB NOT NULL, note TEXT NOT NULL DEFAULT 'Bestehende Revision',
             PRIMARY KEY (profile_id, revision),
             FOREIGN KEY (profile_id) REFERENCES profiles(id) ON DELETE CASCADE
         )""")
+        revision_columns = {row[1] for row in self._connection.execute("PRAGMA table_info(profile_revisions)")}
+        if "note" not in revision_columns:
+            self._connection.execute("ALTER TABLE profile_revisions ADD COLUMN note TEXT NOT NULL DEFAULT 'Bestehende Revision'")
         self._connection.execute("""INSERT OR IGNORE INTO profile_revisions (profile_id, revision, created_at, nonce, ciphertext)
             SELECT id, revision, created_at, nonce, ciphertext FROM profiles""")
         self._connection.execute("""CREATE TABLE IF NOT EXISTS profile_change_drafts (
@@ -87,7 +98,7 @@ class ProfileVaultService:
                 ciphertext = AESGCM(self._key).encrypt(nonce, json.dumps(record, separators=(",", ":")).encode(), AAD)
                 created_at = datetime.now(UTC).isoformat()
                 cursor = self._connection.execute("INSERT INTO profiles (created_at, nonce, ciphertext, revision) VALUES (?, ?, ?, 1)", (created_at, nonce, ciphertext))
-                self._connection.execute("INSERT INTO profile_revisions (profile_id, revision, created_at, nonce, ciphertext) VALUES (?, 1, ?, ?, ?)", (cursor.lastrowid, created_at, nonce, ciphertext))
+                self._connection.execute("INSERT INTO profile_revisions (profile_id, revision, created_at, nonce, ciphertext, note) VALUES (?, 1, ?, ?, ?, ?)", (cursor.lastrowid, created_at, nonce, ciphertext, "Ersterfassung per CSV-Import"))
             self._connection.commit()
         return ProfileImportResult(imported=len(records))
 
@@ -103,7 +114,7 @@ class ProfileVaultService:
             created_at = datetime.now(UTC).isoformat(); nonce = os.urandom(12)
             ciphertext = AESGCM(self._key).encrypt(nonce, json.dumps(record, separators=(",", ":")).encode(), AAD)
             cursor = self._connection.execute("INSERT INTO profiles (created_at, nonce, ciphertext, revision, card_verified) VALUES (?, ?, ?, 1, ?)", (created_at, nonce, ciphertext, int(card_verified)))
-            self._connection.execute("INSERT INTO profile_revisions (profile_id, revision, created_at, nonce, ciphertext) VALUES (?, 1, ?, ?, ?)", (cursor.lastrowid, created_at, nonce, ciphertext))
+            self._connection.execute("INSERT INTO profile_revisions (profile_id, revision, created_at, nonce, ciphertext, note) VALUES (?, 1, ?, ?, ?, ?)", (cursor.lastrowid, created_at, nonce, ciphertext, "Ersterfassung einer Einzelkarte"))
             self._connection.commit(); profile_id = int(cursor.lastrowid)
         return ProfileSummary(id=profile_id, created_at=created_at, iccid=draft.iccid, imsi=draft.imsi,
             ki_configured=True, opc_configured=True, adm_configured=True, revision=1, card_verified=card_verified,
@@ -154,8 +165,8 @@ class ProfileVaultService:
                 (created_at, nonce, ciphertext, revision, profile_id),
             )
             self._connection.execute(
-                "INSERT INTO profile_revisions (profile_id, revision, created_at, nonce, ciphertext) VALUES (?, ?, ?, ?, ?)",
-                (profile_id, revision, created_at, nonce, ciphertext),
+                "INSERT INTO profile_revisions (profile_id, revision, created_at, nonce, ciphertext, note) VALUES (?, ?, ?, ?, ?, ?)",
+                (profile_id, revision, created_at, nonce, ciphertext, "IMSI von Karte übernommen"),
             )
             self._connection.commit()
         return revision
@@ -194,8 +205,8 @@ class ProfileVaultService:
             revision = int(row["revision"]) + 1
             self._connection.execute("UPDATE profiles SET created_at = ?, nonce = ?, ciphertext = ?, revision = ?, card_verified = 1 WHERE id = ?",
                 (created_at, nonce, ciphertext, revision, profile_id))
-            self._connection.execute("INSERT INTO profile_revisions (profile_id, revision, created_at, nonce, ciphertext) VALUES (?, ?, ?, ?, ?)",
-                (profile_id, revision, created_at, nonce, ciphertext))
+            self._connection.execute("INSERT INTO profile_revisions (profile_id, revision, created_at, nonce, ciphertext, note) VALUES (?, ?, ?, ?, ?, ?)",
+                (profile_id, revision, created_at, nonce, ciphertext, _revision_note(adopted, "Von Karte übernommen")))
             self._connection.commit()
         return revision, adopted
 
@@ -303,8 +314,8 @@ class ProfileVaultService:
         with self._lock:
             exists = self._connection.execute("SELECT 1 FROM profiles WHERE id = ?", (profile_id,)).fetchone()
             if exists is None: raise KeyError(profile_id)
-            rows = self._connection.execute("SELECT revision, created_at FROM profile_revisions WHERE profile_id = ? ORDER BY revision DESC", (profile_id,)).fetchall()
-        return [ProfileRevisionSummary(revision=row["revision"], created_at=row["created_at"]) for row in rows]
+            rows = self._connection.execute("SELECT revision, created_at, note FROM profile_revisions WHERE profile_id = ? ORDER BY revision DESC", (profile_id,)).fetchall()
+        return [ProfileRevisionSummary(revision=row["revision"], created_at=row["created_at"], note=row["note"]) for row in rows]
 
     def get_editable(self, profile_id: int) -> ProfileEditableView:
         from cryptography.hazmat.primitives.ciphers.aead import AESGCM
@@ -383,13 +394,15 @@ class ProfileVaultService:
     def commit_change(self, profile_id: int, expected_base_revision: int) -> int:
         created_at = datetime.now(UTC).isoformat()
         with self._lock:
-            row = self._connection.execute("SELECT base_revision, nonce, ciphertext FROM profile_change_drafts WHERE profile_id = ?", (profile_id,)).fetchone()
+            row = self._connection.execute("SELECT base_revision, changed_fields, nonce, ciphertext FROM profile_change_drafts WHERE profile_id = ?", (profile_id,)).fetchone()
             active = self._connection.execute("SELECT revision FROM profiles WHERE id = ?", (profile_id,)).fetchone()
             if row is None or active is None: raise KeyError(profile_id)
             if row["base_revision"] != expected_base_revision or active["revision"] != expected_base_revision: raise ValueError("revision_conflict")
             revision = expected_base_revision + 1
             self._connection.execute("UPDATE profiles SET created_at = ?, nonce = ?, ciphertext = ?, revision = ?, card_verified = 1 WHERE id = ?", (created_at, row["nonce"], row["ciphertext"], revision, profile_id))
-            self._connection.execute("INSERT INTO profile_revisions (profile_id, revision, created_at, nonce, ciphertext) VALUES (?, ?, ?, ?, ?)", (profile_id, revision, created_at, row["nonce"], row["ciphertext"]))
+            fields = json.loads(row["changed_fields"])
+            self._connection.execute("INSERT INTO profile_revisions (profile_id, revision, created_at, nonce, ciphertext, note) VALUES (?, ?, ?, ?, ?, ?)",
+                (profile_id, revision, created_at, row["nonce"], row["ciphertext"], _revision_note(fields)))
             self._connection.execute("DELETE FROM profile_change_drafts WHERE profile_id = ?", (profile_id,))
             self._connection.commit()
         return revision

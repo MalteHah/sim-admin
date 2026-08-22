@@ -45,6 +45,7 @@ class ProfileInventoryUpdateRequest(DomainModel):
 class ProfileRevisionSummary(DomainModel):
     revision: int
     created_at: datetime
+    note: str
 
 
 class ProfileImportResult(DomainModel):

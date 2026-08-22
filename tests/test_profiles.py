@@ -193,6 +193,7 @@ def test_verified_write_commits_new_revision(tmp_path) -> None:
     assert vault.get_draft(profile.id).imsi == "001010987654321"
     assert vault.get_change_summary(profile.id) is None
     assert [item.revision for item in vault.list_revisions(profile.id)] == [2, 1]
+    assert vault.list_revisions(profile.id)[0].note == "Geändert: IMSI"
     assert vault.list_profiles()[0].card_verified is True
 
 
@@ -319,6 +320,7 @@ def test_selected_readable_card_fields_create_revision_without_card_write(tmp_pa
     assert updated.ims_domain == values["ims_domain"]
     assert updated.protection_scheme == 0
     assert updated.routing_indicator == "0000"
+    assert vault.list_revisions(profile.id)[0].note == "Von Karte übernommen: IMPI, IMS-Domain, Routing Indicator, SUCI-Schutzverfahren, HN-Key-ID, HN-Schlüssel"
 
 
 def test_optional_ims_fields_are_encrypted_and_backward_compatible(tmp_path) -> None:

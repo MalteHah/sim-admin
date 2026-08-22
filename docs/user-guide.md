@@ -67,6 +67,11 @@ nur auf einer eindeutig erkannten SysmocomSJA5 geschrieben. Betroffene Dateien
 werden vorab geprüft und nach dem Schreiben unmittelbar zurückgelesen. Eine neue
 Tresorrevision entsteht erst nach vollständigem Erfolg.
 
+Die Revisionshistorie nennt neben Nummer und Zeitpunkt kurz die betroffenen
+Felder oder den Ursprung der Revision, etwa „Ersterfassung“, „Geändert: ACC“
+oder „Von Karte übernommen: IMS-Domain“. Alte und neue Feldwerte sowie
+Geheimnisse werden in dieser Notiz nicht gespeichert.
+
 ICCID und ADM1 sind in Änderungsentwürfen absichtlich nicht veränderbar.
 
 ## SUCI-Heimnetzschlüssel
