@@ -38,6 +38,8 @@ class SIMReadResult(DomainModel):
     acc: str | None = Field(default=None, pattern=r"^[0-9A-Fa-f]{4}$")
     msisdn_readable: bool = False
     msisdn: str | None = Field(default=None, pattern=r"^\+?\d{3,15}$")
+    spn_readable: bool = False
+    spn: str | None = Field(default=None, max_length=16)
     ims_supported: bool = False
     ims_readable: bool = False
     impi: str | None = None

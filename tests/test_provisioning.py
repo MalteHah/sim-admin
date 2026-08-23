@@ -256,6 +256,42 @@ def test_card_comparison_includes_readable_acc_and_msisdn() -> None:
     assert result.current_msisdn == "491701234567"
 
 
+def test_card_comparison_includes_service_provider_name() -> None:
+    class FakeSpnAdapter(FakeCardAdapter):
+        def read_identity(self, reader_index=0):
+            result = super().read_identity(reader_index)
+            result.spn_readable = True
+            result.spn = "Testnetz"
+            return result
+
+    result = CardComparisonService(FakeSpnAdapter()).compare(CardComparisonRequest(
+        reader_index=0, target_iccid="8949012345678901234", target_imsi="001010123456789",
+        compare_standard_fields=True, target_spn="Testnetz",
+    ))
+
+    assert result.spn_readable is True
+    assert result.current_spn == "Testnetz"
+    assert result.spn_matches is True
+
+
+def test_unmanaged_service_provider_name_is_not_a_difference() -> None:
+    class FakeSpnAdapter(FakeCardAdapter):
+        def read_identity(self, reader_index=0):
+            result = super().read_identity(reader_index)
+            result.spn_readable = True
+            result.spn = "Testnetz"
+            return result
+
+    result = CardComparisonService(FakeSpnAdapter()).compare(CardComparisonRequest(
+        reader_index=0, target_iccid="8949012345678901234", target_imsi="001010123456789",
+        compare_standard_fields=True,
+    ))
+
+    assert result.current_spn == "Testnetz"
+    assert result.spn_matches is None
+    assert all("Anbietername" not in warning for warning in result.warnings)
+
+
 def test_null_scheme_does_not_require_suci_ust_services() -> None:
     class FakeNullSchemeAdapter(FakeCardAdapter):
         def read_identity(self, reader_index: int = 0) -> SIMReadResult:

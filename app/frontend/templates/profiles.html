@@ -6,7 +6,7 @@
     <title>Profiltresor – SIM-Admin</title>
     <link rel="stylesheet" href="/static/dashboard.css?v=20260823-32">
     <script src="/static/table-pagination.js" defer></script>
-    <script src="/static/profiles.js?v=20260823-53" defer></script>
+    <script src="/static/profiles.js?v=20260823-54" defer></script>
   </head>
   <body>
     <header class="topbar">
@@ -82,6 +82,7 @@
           <label>Revision – gesperrt<input id="change-revision" readonly aria-readonly="true"></label>
           <label>IMSI<input id="change-imsi" inputmode="numeric" pattern="[0-9]{5,15}" required></label>
           <label>MSISDN<input id="change-msisdn" inputmode="tel" pattern="\+?[0-9]{3,15}" placeholder="optional"></label>
+          <label>Anbietername/SPN<input id="change-spn" maxlength="16" placeholder="optional, maximal 16 ASCII-Zeichen"></label>
           <label>ACC<input id="change-acc" maxlength="4" pattern="[0-9A-Fa-f]{4}" required></label>
           <label>Ki<input id="change-ki" type="password" minlength="32" maxlength="32" pattern="[0-9A-Fa-f]{32}" placeholder="leer = unverändert" autocomplete="off"></label>
           <label>OPc<input id="change-opc" type="password" minlength="32" maxlength="32" pattern="[0-9A-Fa-f]{32}" placeholder="leer = unverändert" autocomplete="off"></label>

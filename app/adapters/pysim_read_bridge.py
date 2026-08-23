@@ -90,6 +90,16 @@ def main() -> None:
                 except Exception:
                     pass
 
+                spn_readable = False
+                spn = None
+                try:
+                    channel.select("MF/ADF.USIM/EF.SPN")
+                    spn_data, _ = channel.read_binary_dec()
+                    spn = (spn_data.get("spn") or "").strip() or None
+                    spn_readable = True
+                except Exception:
+                    pass
+
                 msisdn_readable = False
                 msisdn = None
                 try:
@@ -177,6 +187,8 @@ def main() -> None:
                     "acc": acc,
                     "msisdn_readable": msisdn_readable,
                     "msisdn": msisdn,
+                    "spn_readable": spn_readable,
+                    "spn": spn,
                     "ims_supported": ims_supported,
                     "ims_readable": ims_readable,
                     **ims_state,

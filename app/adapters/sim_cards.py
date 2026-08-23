@@ -30,5 +30,6 @@ class SIMCardAdapter(Protocol):
     def write_standard_fields(self, reader_index: int, expected_iccid: str, imsi: str, acc: str, msisdn: str | None, adm: str, fields: list[str], ki: str | None = None, opc: str | None = None,
         impi: str | None = None, impu: str | None = None, ims_domain: str | None = None, ist: str | None = None,
         routing_indicator: str | None = None, protection_scheme: int | None = None,
-        hn_public_key_id: int | None = None, hn_public_key: str | None = None) -> list[str]:
+        hn_public_key_id: int | None = None, hn_public_key: str | None = None,
+        spn: str | None = None) -> list[str]:
         """Write and verify supported fields after an ICCID and card-model check."""

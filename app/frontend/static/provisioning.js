@@ -70,7 +70,7 @@ function optionalNumber(values, name) {
 
 function profileFields(values) {
   return {
-    iccid: values.get("iccid"), imsi: values.get("imsi"), msisdn: values.get("msisdn") || null,
+    iccid: values.get("iccid"), imsi: values.get("imsi"), msisdn: values.get("msisdn") || null, spn: values.get("spn") || null,
     acc: values.get("acc"), ki: values.get("ki"), opc: values.get("opc"), adm: values.get("adm"),
     impi: values.get("impi") || null, impu: values.get("impu") || null,
     ims_domain: values.get("ims_domain") || null, ist: values.get("ist") || null,
@@ -84,7 +84,7 @@ function profileFields(values) {
 function validationMessage(detail) {
   if (!Array.isArray(detail) || !detail.length) return "Eingaben sind unvollständig oder ungültig.";
   const labels = {
-    iccid: "ICCID", imsi: "IMSI", msisdn: "MSISDN", acc: "ACC", ki: "Ki",
+    iccid: "ICCID", imsi: "IMSI", msisdn: "MSISDN", spn: "Anbietername/SPN", acc: "ACC", ki: "Ki",
     opc: "OPc", adm: "ADM1", impi: "IMPI", impu: "IMPU", ims_domain: "IMS-Domain",
     ist: "IST", routing_indicator: "SUCI Routing Indicator", protection_scheme: "SUCI-Schutzverfahren",
     hn_public_key_id: "HN Public Key ID", hn_public_key: "HN Public Key",

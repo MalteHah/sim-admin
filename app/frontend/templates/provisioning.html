@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Einzelkarte – SIM-Admin</title>
     <link rel="stylesheet" href="/static/dashboard.css?v=20260821-28">
-    <script src="/static/provisioning.js?v=20260821-25" defer></script>
+    <script src="/static/provisioning.js?v=20260823-26" defer></script>
   </head>
   <body>
     <header class="topbar">
@@ -27,6 +27,7 @@
               <label><span id="iccid-label">ICCID – von Karte</span><input name="iccid" inputmode="numeric" minlength="18" maxlength="22" readonly required></label>
               <label><span id="imsi-label">IMSI – von Karte</span><input name="imsi" inputmode="numeric" minlength="5" maxlength="15" readonly required></label>
               <label>MSISDN (optional)<input name="msisdn" inputmode="tel"></label>
+              <label>Anbietername/SPN (optional)<input name="spn" maxlength="16" placeholder="optional, maximal 16 ASCII-Zeichen"></label>
               <label>ACC<input name="acc" value="0001" maxlength="4" required></label>
               <label>Ki (32 Hex-Zeichen)<input name="ki" type="password" minlength="32" maxlength="32" required></label>
               <label>OPc (32 Hex-Zeichen)<input name="opc" type="password" minlength="32" maxlength="32" required></label>

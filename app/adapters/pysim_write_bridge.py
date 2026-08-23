@@ -21,7 +21,7 @@ def main() -> None:
 
     fields = set(payload.get("fields", []))
     fivegs_fields = {"routing_indicator", "suci_calculation_mode", "protection_scheme", "hn_public_key_id", "hn_public_key", "suci_configurations"}
-    if not fields or not fields <= {"imsi", "msisdn", "acc", "ki", "opc", "impi", "impu", "ims_domain", "ist"} | fivegs_fields:
+    if not fields or not fields <= {"imsi", "msisdn", "spn", "acc", "ki", "opc", "impi", "impu", "ims_domain", "ist"} | fivegs_fields:
         emit_error("unsupported_fields", "Der Entwurf enthält noch nicht unterstützte Schreibfelder", 4)
     transport = None
     stage = "initialization"
@@ -76,6 +76,10 @@ def main() -> None:
             channel.read_binary_dec()
             channel.select("MF/ADF.USIM/EF.UST")
             current_ust, _ = channel.read_binary_dec()
+        if "spn" in fields:
+            stage = "spn_preflight"
+            channel.select("MF/ADF.USIM/EF.SPN")
+            channel.read_binary()
 
         verified = []
         if "imsi" in fields:
@@ -97,6 +101,18 @@ def main() -> None:
             value, _ = channel.read_record_dec(1)
             if value.get("dialing_nr", "").rstrip("f") != number: emit_error("verification_failed", "MSISDN konnte nicht bestätigt werden", 7)
             verified.append("msisdn")
+        if "spn" in fields:
+            stage = "spn"
+            channel.select("MF/ADF.USIM/EF.SPN")
+            current_raw, _ = channel.read_binary()
+            display_byte = current_raw[:2].lower() if current_raw[:2].lower() != "ff" else "00"
+            encoded = (payload.get("spn") or "").encode("ascii").hex()
+            target = display_byte + encoded + "ff" * (16 - len(encoded) // 2)
+            channel.update_binary(target)
+            value, _ = channel.read_binary_dec()
+            if (value.get("spn") or "").strip() != (payload.get("spn") or ""):
+                emit_error("verification_failed", "Anbietername konnte nicht bestätigt werden", 7)
+            verified.append("spn")
         if fields & {"ki", "opc"}:
             stage = "authentication_keys"
             key = h2b(payload["ki"]); opc = h2b(payload["opc"])

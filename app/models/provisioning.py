@@ -13,6 +13,7 @@ class ProvisioningDraft(DomainModel):
     iccid: str = Field(pattern=r"^\d{18,22}$")
     imsi: str = Field(pattern=r"^\d{5,15}$")
     msisdn: str | None = Field(default=None, pattern=r"^\+?\d{3,15}$")
+    spn: str | None = Field(default=None, max_length=16, pattern=r"^[\x20-\x7E]+$")
     acc: str = Field(default="0001", pattern=r"^[0-9A-Fa-f]{4}$")
     ki: SecretStr = Field(min_length=32, max_length=32)
     opc: SecretStr = Field(min_length=32, max_length=32)
@@ -116,6 +117,7 @@ class CardComparisonRequest(DomainModel):
     compare_standard_fields: bool = False
     target_acc: str | None = Field(default=None, pattern=r"^[0-9A-Fa-f]{4}$")
     target_msisdn: str | None = Field(default=None, pattern=r"^\+?\d{3,15}$")
+    target_spn: str | None = Field(default=None, max_length=16)
     compare_ims: bool = False
     target_impi: str | None = None
     target_impu: str | None = None
@@ -151,6 +153,9 @@ class CardComparisonResult(DomainModel):
     current_msisdn: str | None = None
     acc_matches: bool | None = None
     msisdn_matches: bool | None = None
+    spn_readable: bool = False
+    current_spn: str | None = None
+    spn_matches: bool | None = None
     ims_compared: bool = False
     ims_readable: bool = False
     current_impi: str | None = None

@@ -293,7 +293,7 @@ def create_single_profile(payload: SingleProfileCreateRequest, request: Request,
         if identity.iccid != payload.iccid or identity.imsi != payload.imsi:
             audit.record("profiles.single_create", "error", "card_changed")
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Die eingelegte Karte hat sich seit dem Einlesen geändert")
-    draft = ProvisioningDraft(iccid=payload.iccid, imsi=payload.imsi, msisdn=payload.msisdn, acc=payload.acc,
+    draft = ProvisioningDraft(iccid=payload.iccid, imsi=payload.imsi, msisdn=payload.msisdn, spn=payload.spn, acc=payload.acc,
         ki=payload.ki, opc=payload.opc, adm=payload.adm, impi=payload.impi, impu=payload.impu,
         ims_domain=payload.ims_domain, ist=payload.ist, routing_indicator=payload.routing_indicator,
         protection_scheme=payload.protection_scheme, hn_public_key_id=payload.hn_public_key_id,
@@ -352,7 +352,7 @@ def prepare_profile_change(profile_id: int, payload: ProfileChangeRequest, reque
             payload.ki.get_secret_value() if payload.ki else None, payload.opc.get_secret_value() if payload.opc else None,
             payload.impi, payload.impu, payload.ims_domain, payload.ist, payload.routing_indicator,
             payload.protection_scheme, payload.suci_calculation_mode, payload.hn_public_key_id, payload.hn_public_key,
-            [item.model_dump() for item in payload.suci_configurations])
+            [item.model_dump() for item in payload.suci_configurations], payload.spn)
     except KeyError as exc: raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profil nicht gefunden") from exc
     except ValueError as exc:
         if str(exc) == "no_changes": raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Es wurden keine Änderungen eingegeben") from exc
@@ -389,7 +389,7 @@ def compare_profile_change_to_card(profile_id: int, vault: Annotated[ProfileVaul
     except KeyError as exc: raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Kein Änderungsentwurf vorhanden") from exc
     try:
         result = comparison.compare(CardComparisonRequest(reader_index=reader_index, target_iccid=draft.iccid, target_imsi=draft.imsi,
-            compare_standard_fields=True, target_acc=draft.acc, target_msisdn=draft.msisdn,
+            compare_standard_fields=True, target_acc=draft.acc, target_msisdn=draft.msisdn, target_spn=draft.spn,
             compare_ims=True, target_impi=draft.impi, target_impu=draft.impu, target_ims_domain=draft.ims_domain, target_ist=draft.ist,
             compare_suci=True, target_routing_indicator=draft.routing_indicator, target_protection_scheme=draft.protection_scheme,
             target_suci_calculation_mode=draft.suci_calculation_mode,
@@ -440,7 +440,7 @@ def compare_stored_profile(profile_id: int, vault: Annotated[ProfileVaultService
     except KeyError as exc: raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profil nicht gefunden") from exc
     try:
         result = comparison.compare(CardComparisonRequest(reader_index=reader_index, target_iccid=draft.iccid, target_imsi=draft.imsi,
-            compare_standard_fields=True, target_acc=draft.acc, target_msisdn=draft.msisdn,
+            compare_standard_fields=True, target_acc=draft.acc, target_msisdn=draft.msisdn, target_spn=draft.spn,
             compare_ims=True, target_impi=draft.impi, target_impu=draft.impu, target_ims_domain=draft.ims_domain, target_ist=draft.ist,
             compare_suci=True, target_routing_indicator=draft.routing_indicator, target_protection_scheme=draft.protection_scheme,
             target_suci_calculation_mode=draft.suci_calculation_mode,
@@ -508,7 +508,9 @@ def adopt_readable_card_fields(profile_id: int, payload: ProfileAdoptReadableFie
             raise ValueError("acc_unreadable")
         if "msisdn" in payload.fields and not identity.msisdn_readable:
             raise ValueError("msisdn_unreadable")
-        values = {"acc": identity.acc, "msisdn": identity.msisdn,
+        if "spn" in payload.fields and not identity.spn_readable:
+            raise ValueError("spn_unreadable")
+        values = {"acc": identity.acc, "msisdn": identity.msisdn, "spn": identity.spn,
             "impi": identity.impi, "impu": identity.impu, "ims_domain": identity.ims_domain, "ist": identity.ist,
             "routing_indicator": identity.routing_indicator, "protection_scheme": identity.protection_scheme,
             "hn_public_key_id": identity.hn_public_key_id, "hn_public_key": identity.hn_public_key}
@@ -524,6 +526,7 @@ def adopt_readable_card_fields(profile_id: int, payload: ProfileAdoptReadableFie
             "no_changes": "Die ausgewählten Kartendaten entsprechen bereits dem Profil.",
             "acc_unreadable": "Der ACC konnte nicht erneut gelesen werden.",
             "msisdn_unreadable": "Die MSISDN konnte nicht erneut gelesen werden.",
+            "spn_unreadable": "Der Anbietername konnte nicht erneut gelesen werden.",
             "ims_unreadable": "Die IMS-Daten konnten nicht erneut gelesen werden.", "suci_unreadable": "Die SUCI-Daten konnten nicht erneut gelesen werden."}
         audit.record("profiles.adopt_readable_fields", "error", code)
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"code": code, "message": messages.get(code, "Kartendaten konnten nicht übernommen werden.")}) from exc

@@ -116,7 +116,7 @@ class ProfileVaultService:
 
     def add_profile(self, draft: ProvisioningDraft, card_verified: bool = False) -> ProfileSummary:
         from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-        record = {"iccid": draft.iccid, "imsi": draft.imsi, "msisdn": draft.msisdn or "", "acc": draft.acc.upper(),
+        record = {"iccid": draft.iccid, "imsi": draft.imsi, "msisdn": draft.msisdn or "", "spn": draft.spn or "", "acc": draft.acc.upper(),
             "ki": draft.ki.get_secret_value().upper(), "opc": draft.opc.get_secret_value().upper(), "adm": draft.adm.get_secret_value(),
             "impi": draft.impi or "", "impu": draft.impu or "", "ims_domain": draft.ims_domain or "", "ist": (draft.ist or "").upper()}
         record.update({"routing_indicator": draft.routing_indicator or "", "protection_scheme": draft.protection_scheme,
@@ -188,7 +188,7 @@ class ProfileVaultService:
     def adopt_readable_card_fields(self, profile_id: int, card_iccid: str, values: dict, fields: list[str]) -> tuple[int, list[str]]:
         """Commit selected, re-read non-secret IMS/SUCI values as a revision."""
         from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-        allowed = {"acc", "msisdn", "impi", "impu", "ims_domain", "ist", "suci"}
+        allowed = {"acc", "msisdn", "spn", "impi", "impu", "ims_domain", "ist", "suci"}
         selected = set(fields)
         if not selected or not selected <= allowed: raise ValueError("unsupported_fields")
         with self._lock:
@@ -204,6 +204,8 @@ class ProfileVaultService:
                 stored_value = (record.get(field) or "").upper() if field == "acc" else (record.get(field) or "").lstrip("+")
                 if field in selected and card_value != stored_value:
                     updated[field] = card_value; adopted.append(field)
+            if "spn" in selected and (record.get("spn") or None) != (values.get("spn") or None):
+                updated["spn"] = values.get("spn") or ""; adopted.append("spn")
             for field in ("impi", "impu", "ims_domain", "ist"):
                 if field in selected and (record.get(field) or None) != (values.get(field) or None):
                     updated[field] = values.get(field) or ""; adopted.append(field)
@@ -213,7 +215,7 @@ class ProfileVaultService:
                     for field in suci_fields: updated[field] = values.get(field)
                     adopted.extend(suci_fields)
             if not adopted: raise ValueError("no_changes")
-            ProvisioningDraft(iccid=updated["iccid"], imsi=updated["imsi"], msisdn=updated.get("msisdn") or None,
+            ProvisioningDraft(iccid=updated["iccid"], imsi=updated["imsi"], msisdn=updated.get("msisdn") or None, spn=updated.get("spn") or None,
                 acc=updated.get("acc") or "0001", ki=updated["ki"], opc=updated["opc"], adm=updated["adm"],
                 impi=updated.get("impi") or None, impu=updated.get("impu") or None, ims_domain=updated.get("ims_domain") or None,
                 ist=updated.get("ist") or None, routing_indicator=updated.get("routing_indicator") or None,
@@ -346,7 +348,7 @@ class ProfileVaultService:
         if pending is not None:
             record = json.loads(AESGCM(self._key).decrypt(pending["nonce"], pending["ciphertext"], AAD))
             changed_fields = json.loads(pending["changed_fields"])
-        return ProfileEditableView(iccid=record["iccid"], imsi=record["imsi"], msisdn=record.get("msisdn") or None, acc=record.get("acc") or "0001", revision=row["revision"], pending_change=pending is not None, changed_fields=changed_fields,
+        return ProfileEditableView(iccid=record["iccid"], imsi=record["imsi"], msisdn=record.get("msisdn") or None, spn=record.get("spn") or None, acc=record.get("acc") or "0001", revision=row["revision"], pending_change=pending is not None, changed_fields=changed_fields,
             impi=record.get("impi") or None, impu=record.get("impu") or None, ims_domain=record.get("ims_domain") or None, ist=record.get("ist") or None,
             routing_indicator=record.get("routing_indicator") or None, suci_calculation_mode=record.get("suci_calculation_mode") or "me", protection_scheme=_optional_int(record.get("protection_scheme")),
             hn_public_key_id=_optional_int(record.get("hn_public_key_id")), hn_public_key=record.get("hn_public_key") or None,
@@ -357,21 +359,21 @@ class ProfileVaultService:
         routing_indicator: str | None = None, protection_scheme: int | None = None,
         suci_calculation_mode: str = "me",
         hn_public_key_id: int | None = None, hn_public_key: str | None = None,
-        suci_configurations: list[dict] | None = None) -> ProfileChangeSummary:
+        suci_configurations: list[dict] | None = None, spn: str | None = None) -> ProfileChangeSummary:
         from cryptography.hazmat.primitives.ciphers.aead import AESGCM
         current = self._get_record(profile_id)
         updated = dict(current)
         normalized_suci = suci_configurations or ([] if protection_scheme is None else [{"priority": 0,
             "protection_scheme": protection_scheme, "hn_public_key_id": hn_public_key_id,
             "hn_public_key": (hn_public_key or "").upper() or None}])
-        proposed = {"imsi": imsi, "msisdn": msisdn or "", "acc": acc.upper(), "impi": impi or "", "impu": impu or "", "ims_domain": ims_domain or "", "ist": (ist or "").upper()}
+        proposed = {"imsi": imsi, "msisdn": msisdn or "", "spn": spn or "", "acc": acc.upper(), "impi": impi or "", "impu": impu or "", "ims_domain": ims_domain or "", "ist": (ist or "").upper()}
         proposed.update({"routing_indicator": routing_indicator or "", "suci_calculation_mode": suci_calculation_mode, "protection_scheme": protection_scheme if protection_scheme is not None else "",
             "hn_public_key_id": hn_public_key_id if hn_public_key_id is not None else "", "hn_public_key": (hn_public_key or "").upper(),
             "suci_configurations": normalized_suci})
         if ki: proposed["ki"] = ki.upper()
         if opc: proposed["opc"] = opc.upper()
         updated.update(proposed)
-        ProvisioningDraft(iccid=current["iccid"], imsi=updated["imsi"], msisdn=updated["msisdn"] or None, acc=updated["acc"], ki=updated["ki"], opc=updated["opc"], adm=current["adm"],
+        ProvisioningDraft(iccid=current["iccid"], imsi=updated["imsi"], msisdn=updated["msisdn"] or None, spn=updated.get("spn") or None, acc=updated["acc"], ki=updated["ki"], opc=updated["opc"], adm=current["adm"],
             impi=updated.get("impi") or None, impu=updated.get("impu") or None, ims_domain=updated.get("ims_domain") or None, ist=updated.get("ist") or None,
             routing_indicator=updated.get("routing_indicator") or None, suci_calculation_mode=updated.get("suci_calculation_mode") or "me", protection_scheme=_optional_int(updated.get("protection_scheme")),
             hn_public_key_id=_optional_int(updated.get("hn_public_key_id")), hn_public_key=updated.get("hn_public_key") or None,
@@ -406,7 +408,7 @@ class ProfileVaultService:
             row = self._connection.execute("SELECT nonce, ciphertext FROM profile_change_drafts WHERE profile_id = ?", (profile_id,)).fetchone()
         if row is None: raise KeyError(profile_id)
         record = json.loads(AESGCM(self._key).decrypt(row["nonce"], row["ciphertext"], AAD))
-        return ProvisioningDraft(iccid=record["iccid"], imsi=record["imsi"], msisdn=record.get("msisdn") or None,
+        return ProvisioningDraft(iccid=record["iccid"], imsi=record["imsi"], msisdn=record.get("msisdn") or None, spn=record.get("spn") or None,
             acc=record.get("acc") or "0001", ki=record["ki"], opc=record["opc"], adm=record["adm"], impi=record.get("impi") or None,
             impu=record.get("impu") or None, ims_domain=record.get("ims_domain") or None, ist=record.get("ist") or None,
             routing_indicator=record.get("routing_indicator") or None, suci_calculation_mode=record.get("suci_calculation_mode") or "me", protection_scheme=_optional_int(record.get("protection_scheme")),
@@ -439,7 +441,7 @@ class ProfileVaultService:
 
     def get_draft(self, profile_id: int) -> ProvisioningDraft:
         record = self._get_record(profile_id)
-        return ProvisioningDraft(iccid=record["iccid"], imsi=record["imsi"], msisdn=record.get("msisdn") or None,
+        return ProvisioningDraft(iccid=record["iccid"], imsi=record["imsi"], msisdn=record.get("msisdn") or None, spn=record.get("spn") or None,
             acc=record.get("acc") or "0001", ki=record["ki"], opc=record["opc"], adm=record["adm"], impi=record.get("impi") or None,
             impu=record.get("impu") or None, ims_domain=record.get("ims_domain") or None, ist=record.get("ist") or None,
             routing_indicator=record.get("routing_indicator") or None, suci_calculation_mode=record.get("suci_calculation_mode") or "me", protection_scheme=_optional_int(record.get("protection_scheme")),
@@ -448,7 +450,7 @@ class ProfileVaultService:
 
     def get_secrets(self, profile_id: int) -> dict[str, str]:
         record = self._get_record(profile_id)
-        public = {"iccid", "imsi", "msisdn", "acc", "impi", "impu", "ims_domain", "ist", "routing_indicator", "protection_scheme", "hn_public_key_id", "hn_public_key"}
+        public = {"iccid", "imsi", "msisdn", "spn", "acc", "impi", "impu", "ims_domain", "ist", "routing_indicator", "protection_scheme", "hn_public_key_id", "hn_public_key"}
         secrets: dict[str, str] = {}
         for key, value in record.items():
             if key in public or not value:

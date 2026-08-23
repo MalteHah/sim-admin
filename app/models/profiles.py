@@ -73,7 +73,7 @@ class ProfileAdoptCardResult(DomainModel):
 class ProfileAdoptReadableFieldsRequest(DomainModel):
     password: SecretStr = Field(min_length=1, max_length=256)
     reader_index: int = Field(default=0, ge=0)
-    fields: list[Literal["acc", "msisdn", "impi", "impu", "ims_domain", "ist", "suci"]] = Field(min_length=1)
+    fields: list[Literal["acc", "msisdn", "spn", "impi", "impu", "ims_domain", "ist", "suci"]] = Field(min_length=1)
 
 
 class ProfileAdoptReadableFieldsResult(DomainModel):
@@ -91,6 +91,7 @@ class ProfileEditableView(DomainModel):
     iccid: str
     imsi: str
     msisdn: str | None = None
+    spn: str | None = None
     acc: str
     revision: int
     pending_change: bool = False
@@ -111,6 +112,7 @@ class ProfileChangeRequest(DomainModel):
     password: SecretStr = Field(min_length=1, max_length=256)
     imsi: str = Field(pattern=r"^\d{5,15}$")
     msisdn: str | None = Field(default=None, pattern=r"^\+?\d{3,15}$")
+    spn: str | None = Field(default=None, max_length=16, pattern=r"^[\x20-\x7E]+$")
     acc: str = Field(pattern=r"^[0-9A-Fa-f]{4}$")
     ki: SecretStr | None = Field(default=None, min_length=32, max_length=32)
     opc: SecretStr | None = Field(default=None, min_length=32, max_length=32)
@@ -159,6 +161,7 @@ class SingleProfileCreateRequest(DomainModel):
     iccid: str = Field(pattern=r"^\d{18,22}$")
     imsi: str = Field(pattern=r"^\d{5,15}$")
     msisdn: str | None = Field(default=None, pattern=r"^\+?\d{3,15}$")
+    spn: str | None = Field(default=None, max_length=16, pattern=r"^[\x20-\x7E]+$")
     acc: str = Field(default="0001", pattern=r"^[0-9A-Fa-f]{4}$")
     ki: SecretStr = Field(min_length=32, max_length=32)
     opc: SecretStr = Field(min_length=32, max_length=32)

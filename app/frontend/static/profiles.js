@@ -311,7 +311,7 @@ function appendStandardFieldComparison(container, data) {
   const status = (readable, matches, value) => !readable
     ? "nicht lesbar"
     : `${value || "leer"} · ${matches === true ? "stimmt überein" : matches === false ? "abweichend" : "nicht verglichen"}`;
-  details.textContent = `ACC ${status(data.acc_readable, data.acc_matches, data.current_acc)} · MSISDN ${status(data.msisdn_readable, data.msisdn_matches, data.current_msisdn)}`;
+  details.textContent = `ACC ${status(data.acc_readable, data.acc_matches, data.current_acc)} · MSISDN ${status(data.msisdn_readable, data.msisdn_matches, data.current_msisdn)} · Anbietername ${status(data.spn_readable, data.spn_matches, data.current_spn)}`;
   container.append(heading, details);
 }
 
@@ -381,6 +381,7 @@ function appendReadableAdoptButton(container, profileId, data) {
   const options = [];
   if (data.acc_readable && data.acc_matches === false) options.push(["acc", "ACC"]);
   if (data.msisdn_readable && data.msisdn_matches === false) options.push(["msisdn", "MSISDN"]);
+  if (data.spn_readable && data.spn_matches === false) options.push(["spn", "Anbietername/SPN"]);
   if (data.ims_readable) {
     const cardHasImsIdentity = Boolean(data.current_impi || data.current_impu || data.current_ims_domain);
     for (const [field, label] of [["impi", "IMPI"], ["impu", "IMPU"], ["ims_domain", "IMS-Domain"], ["ist", "IST"]]) {
@@ -472,6 +473,7 @@ async function openChange(id) {
   document.querySelector("#change-revision").value = `Revision ${profile.revision}`;
   document.querySelector("#change-imsi").value = profile.imsi;
   document.querySelector("#change-msisdn").value = profile.msisdn || "";
+  document.querySelector("#change-spn").value = profile.spn || "";
   document.querySelector("#change-acc").value = profile.acc;
   document.querySelector("#change-impi").value = profile.impi || "";
   document.querySelector("#change-impu").value = profile.impu || "";
@@ -519,6 +521,7 @@ changeForm.addEventListener("submit", async (event) => {
   const payload = {
     imsi: document.querySelector("#change-imsi").value,
     msisdn: document.querySelector("#change-msisdn").value || null,
+    spn: document.querySelector("#change-spn").value || null,
     acc: document.querySelector("#change-acc").value,
     ki: document.querySelector("#change-ki").value || null,
     opc: document.querySelector("#change-opc").value || null,
