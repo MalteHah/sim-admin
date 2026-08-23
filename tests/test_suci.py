@@ -82,6 +82,14 @@ def test_multiple_suci_configurations_reject_duplicate_priority() -> None:
         ])
 
 
+def test_multiple_suci_configurations_reject_duplicate_entries() -> None:
+    with pytest.raises(ValueError, match="duplicate"):
+        build_suci_calc_info_list([
+            {"priority": 0, "protection_scheme": 0},
+            {"priority": 1, "protection_scheme": 0},
+        ])
+
+
 def test_suci_configuration_requires_routing_indicator() -> None:
     with pytest.raises(ValidationError, match="routing_indicator is required"):
         ProvisioningDraft(

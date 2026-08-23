@@ -505,6 +505,8 @@ changeForm.addEventListener("submit", async (event) => {
   }
   const priorities = suciConfigurationList.map(item => item.priority);
   if (new Set(priorities).size !== priorities.length) { changeError.textContent = "Jede SUCI-Konfiguration benötigt eine eindeutige Priorität."; changeError.hidden = false; submit.disabled = false; return; }
+  const identities = suciConfigurationList.map(item => `${item.protection_scheme}|${item.hn_public_key_id ?? ""}|${(item.hn_public_key || "").toUpperCase()}`);
+  if (new Set(identities).size !== identities.length) { changeError.textContent = "Eine identische SUCI-Konfiguration ist bereits vorhanden. Dasselbe Verfahren ist nur mit einem anderen Schlüssel zulässig."; changeError.hidden = false; submit.disabled = false; return; }
   const payload = {
     imsi: document.querySelector("#change-imsi").value,
     msisdn: document.querySelector("#change-msisdn").value || null,

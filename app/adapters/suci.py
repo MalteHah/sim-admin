@@ -11,6 +11,10 @@ def build_suci_calc_info_list(configurations: list[dict]) -> dict:
     priorities = [int(item["priority"]) for item in configurations]
     if len(set(priorities)) != len(priorities) or any(value < 0 or value > 255 for value in priorities):
         raise ValueError("SUCI priorities must be unique bytes")
+    identities = [(int(item["protection_scheme"]), item.get("hn_public_key_id"),
+        (item.get("hn_public_key") or "").replace(" ", "").upper() or None) for item in configurations]
+    if len(identities) != len(set(identities)):
+        raise ValueError("duplicate SUCI configurations are not allowed")
     schemes = []
     keys = []
     key_indexes: dict[tuple[int, str], int] = {}
