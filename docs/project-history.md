@@ -130,9 +130,6 @@ nicht in dieses Dokument.
 ## Noch nicht umgesetzt
 
 - Unterstützung weiterer Kartentypen für Ki und OPc.
-- Hardware-Abnahme mehrerer Protection-Scheme-Einträge auf einer Karte; die
-  Prioritätsverwaltung, Speicherung, der Schreibpfad und der Vergleich sind
-  bereits implementiert.
 - Zusätzliche kartentypabhängig lesbare Felder über ACC und MSISDN hinaus.
 - Produktive Updateausführung mit Vorab-Backup und Rollback.
 
@@ -140,7 +137,8 @@ nicht in dieses Dokument.
 
 - Revision 1 ist funktional umgesetzt: SUCI-Berechnung auf der USIM, mehrere
   SUCI-Konfigurationen mit Prioritäten sowie ACC-/MSISDN-Vergleich und
-  selektive Übernahme. Die Mehrfachkonfiguration benötigt noch Hardware-Abnahme.
+  selektive Übernahme. Die Mehrfachkonfiguration wurde auf Karte 900001 mit
+  Profile B, HN-Key-ID 2 und erfolgreicher Open5GS-Registrierung abgenommen.
 - Revision 2: weitere Kartentypen, S17-spezifische Parameter, weitere
   kartenspezifische SUCI-Varianten, erweiterte IMS-Strukturen,
   Stapelverarbeitung und Wiederaufnahme unterbrochener Schreibvorgänge.

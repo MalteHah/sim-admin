@@ -124,3 +124,6 @@ Hardware- und Bereitstellungstests stehen in `docs/testing-and-roadmap.md`.
 - Kartenfunktionsumfang der Revision 1 abgeschlossen: S17-USIM-Berechnung,
   priorisierte Mehrfachkonfigurationen sowie ACC-/MSISDN-Vergleich und
   selektive Übernahme
+- Hardware-Abnahme einer SUCI-Mehrfachkonfiguration auf Karte 900001:
+  Das Endgerät wählte erfolgreich Profile B mit HN-Key-ID 2 und die
+  Open5GS-Registrierung wurde abgeschlossen

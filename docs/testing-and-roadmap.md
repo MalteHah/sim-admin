@@ -61,13 +61,14 @@ Stand: 23. August 2026, Zielversion 0.2.0 (Vorabstand).
 - SUCI-Berechnung direkt auf der USIM ist auf S17 mit Profile B und UST 124/125
   Ende-zu-Ende gegen Open5GS geprüft.
 - Mehrere Home-Network-Schlüssel und Protection-Scheme-Einträge einschließlich
-  Prioritätsverwaltung sind implementiert; Hardware-Abnahme noch offen.
+  Prioritätsverwaltung sind implementiert und auf Karte 900001 abgenommen. Das
+  Endgerät wählte Profile B mit HN-Key-ID 2; Open5GS schloss die Registrierung
+  erfolgreich ab.
 - ACC und MSISDN werden rein lesend verglichen und können einzeln in eine neue
   Tresorrevision übernommen werden.
 
-Damit ist der geplante Funktionsumfang der Karten-Revision 1 umgesetzt. Offen
-bleibt lediglich der Hardware-Abnahmetest einer Mehrfachkonfiguration auf einer
-geeigneten Karte.
+Damit ist der geplante Funktionsumfang der Karten-Revision 1 einschließlich der
+Hardware-Abnahme umgesetzt.
 
 ### Revision 2 – spätere Kartenfunktionen
 
