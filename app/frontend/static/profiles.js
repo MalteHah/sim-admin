@@ -218,13 +218,18 @@ function applySorting() {
 
 async function previewProfile(id) {
   previewPanel.hidden = false; previewPanel.textContent = "Dry Run wird erstellt …";
-  const response = await fetch(`/api/v1/profiles/${id}/preview`, {method: "POST"});
-  const data = await response.json();
-  if (!response.ok) { previewPanel.textContent = data.detail || "Dry Run fehlgeschlagen."; return; }
-  previewPanel.replaceChildren();
-  const title = document.createElement("h2"); title.textContent = "Dry Run – kein Schreibzugriff";
-  const text = document.createElement("p"); text.textContent = `${data.steps.length} geplante Schritte · Ki, OPc und ADM vorhanden · write_performed: false`;
-  previewPanel.append(title, text);
+  const controller = new AbortController(); const timeout = setTimeout(() => controller.abort(), 10000);
+  try {
+    const response = await fetch(`/api/v1/profiles/${id}/preview`, {method: "POST", cache: "no-store", signal: controller.signal});
+    const data = await response.json();
+    if (!response.ok) { previewPanel.textContent = data.detail || "Dry Run fehlgeschlagen."; return; }
+    previewPanel.replaceChildren();
+    const title = document.createElement("h2"); title.textContent = "Dry Run – kein Schreibzugriff";
+    const text = document.createElement("p"); text.textContent = `${data.steps.length} geplante Schritte · Ki, OPc und ADM vorhanden · write_performed: false`;
+    previewPanel.append(title, text);
+  } catch (error) {
+    previewPanel.textContent = error.name === "AbortError" ? "Dry Run wurde nach 10 Sekunden abgebrochen. Bitte erneut versuchen." : "Dry Run konnte den Server nicht erreichen.";
+  } finally { clearTimeout(timeout); }
 }
 
 async function compareProfile(profile) {
@@ -485,15 +490,19 @@ changeDiscard.addEventListener("click", async () => {
 
 changePreview.addEventListener("click", async () => {
   changePreview.disabled = true; changeError.hidden = true;
+  const controller = new AbortController(); const timeout = setTimeout(() => controller.abort(), 10000);
   try {
-    const response = await fetch(`/api/v1/profiles/${changeProfileId}/change-draft/preview`, {method: "POST", cache: "no-store"});
+    const response = await fetch(`/api/v1/profiles/${changeProfileId}/change-draft/preview`, {method: "POST", cache: "no-store", signal: controller.signal});
     const data = await response.json();
     if (!response.ok) { changeError.textContent = data.detail || "Entwurf konnte nicht geprüft werden."; changeError.hidden = false; return; }
     changeDialog.close(); previewPanel.hidden = false; previewPanel.replaceChildren();
     const title = document.createElement("h2"); title.textContent = "Entwurfsprüfung – kein Schreibzugriff";
     const text = document.createElement("p"); text.textContent = `${data.steps.length} geplante Schritte geprüft. Geheimwerte sind vorhanden und verdeckt; write_performed: false.`;
     previewPanel.append(title, text);
-  } finally { changePreview.disabled = false; }
+  } catch (error) {
+    changeError.textContent = error.name === "AbortError" ? "Entwurfsprüfung wurde nach 10 Sekunden abgebrochen." : "Entwurfsprüfung konnte den Server nicht erreichen.";
+    changeError.hidden = false;
+  } finally { clearTimeout(timeout); changePreview.disabled = false; }
 });
 
 changeCompare.addEventListener("click", async () => {
