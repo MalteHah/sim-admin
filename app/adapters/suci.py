@@ -61,16 +61,16 @@ def enable_suci_by_me(services: list[int] | dict) -> list[int] | dict:
 
 
 def enable_suci_by_usim(services: list[int] | dict) -> list[int] | dict:
-    """Enable on-USIM SUCI calculation (125) and disable ME calculation (124)."""
+    """Enable privacy support (124) and on-USIM SUCI calculation (125)."""
     if isinstance(services, dict):
         result = {key: dict(value) for key, value in services.items()}
-        for number, active in ((124, False), (125, True)):
+        for number, active in ((124, True), (125, True)):
             key = number if number in result else str(number)
             if key not in result:
                 raise ValueError(f"UST service {number} is unavailable")
             result[key]["activated"] = active
         return result
-    return sorted(({int(service) for service in services} | {125}) - {124})
+    return sorted({int(service) for service in services} | {124, 125})
 
 
 def build_s17_usim_suci_calc_info(scheme: int, key_id: int | None, key_hex: str | None) -> dict:

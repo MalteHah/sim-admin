@@ -16,6 +16,8 @@ Hardware- und Bereitstellungstests stehen in `docs/testing-and-roadmap.md`.
 - Explizite Auswahl der SUCI-Berechnung im Endgerät oder auf einer S17-USIM;
   der USIM-Modus prüft `DF.SAIP` vor dem ersten Schreibzugriff und erlaubt nur
   Profile B mit unkomprimiertem P-256-Schlüssel
+- Korrekte UST-Kombination für S17-USIM-Berechnung: Dienste 124 und 125 müssen
+  gemeinsam aktiv sein; der Endgeräte-Modus verwendet 124 aktiv und 125 inaktiv
 - Vollständiges Auslesen und priorisiertes Anzeigen mehrerer Einträge aus
   `EF.SUCI_Calc_Info`; bestehende Einzel-SUCI-Profile bleiben kompatibel
 - Rein lesender Kartenabgleich für ACC und MSISDN mit feldgenauer Anzeige und

@@ -46,8 +46,8 @@ def test_suci_by_me_updates_structured_pysim_ust() -> None:
     assert current[124]["activated"] is False
 
 
-def test_suci_by_usim_enables_125_and_disables_124() -> None:
-    assert enable_suci_by_usim([2, 124, 126]) == [2, 125, 126]
+def test_suci_by_usim_enables_both_124_and_125() -> None:
+    assert enable_suci_by_usim([2, 126]) == [2, 124, 125, 126]
 
 
 def test_s17_usim_accepts_only_uncompressed_profile_b() -> None:

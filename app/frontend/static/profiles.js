@@ -508,7 +508,7 @@ changePreview.addEventListener("click", async () => {
     if (!response.ok) { changeError.textContent = data.detail || "Entwurf konnte nicht geprüft werden."; changeError.hidden = false; return; }
     changeDialog.close(); previewPanel.hidden = false; previewPanel.replaceChildren();
     const title = document.createElement("h2"); title.textContent = "Entwurfsprüfung – kein Schreibzugriff";
-    const calculation = data.suci_calculation_mode === "usim" ? "SUCI-Berechnung: auf der USIM (S17 / UST 125)" : "SUCI-Berechnung: im Endgerät (UST 124)";
+    const calculation = data.suci_calculation_mode === "usim" ? "SUCI-Berechnung: auf der USIM (S17 / UST 124 und 125 aktiv)" : "SUCI-Berechnung: im Endgerät (UST 124 aktiv, 125 inaktiv)";
     const text = document.createElement("p"); text.textContent = `${data.steps.length} geplante Schritte geprüft. ${calculation}. Geheimwerte sind vorhanden und verdeckt; write_performed: false.`;
     previewPanel.append(title, text);
   } catch (error) {
@@ -541,7 +541,7 @@ changeWrite.addEventListener("click", async () => {
   if (writeConfirmationLabel.hidden) {
     writeConfirmationLabel.hidden = false;
     const mode = document.querySelector("#change-suci-calculation-mode").value;
-    const target = mode === "usim" ? "AUF DER USIM (S17 / UST 125)" : "IM ENDGERÄT (UST 124)";
+    const target = mode === "usim" ? "AUF DER USIM (S17 / UST 124 UND 125 AKTIV)" : "IM ENDGERÄT (UST 124 AKTIV, 125 INAKTIV)";
     changeError.textContent = `Zielzustand: SUCI-Berechnung ${target}. Für den tatsächlichen Schreibvorgang jetzt das aktuelle Passwort und SIM SCHREIBEN eingeben.`;
     changeError.hidden = false;
     document.querySelector("#write-confirmation").focus();
@@ -550,7 +550,7 @@ changeWrite.addEventListener("click", async () => {
   const password = document.querySelector("#change-password").value;
   const confirmation = document.querySelector("#write-confirmation").value;
   if (!password || confirmation !== "SIM SCHREIBEN") { changeError.textContent = "Passwort und die exakte Schreibfreigabe SIM SCHREIBEN sind erforderlich."; changeError.hidden = false; return; }
-  const targetMode = document.querySelector("#change-suci-calculation-mode").value === "usim" ? "auf der USIM (S17 / UST 125)" : "im Endgerät (UST 124)";
+  const targetMode = document.querySelector("#change-suci-calculation-mode").value === "usim" ? "auf der USIM (S17 / UST 124 und 125 aktiv)" : "im Endgerät (UST 124 aktiv, 125 inaktiv)";
   if (!window.confirm(`Jetzt tatsächlich auf die eingelegte SIM schreiben? Ziel: SUCI-Berechnung ${targetMode}. Der Vorgang darf nicht unterbrochen werden.`)) return;
   changeWrite.disabled = true;
   try {
