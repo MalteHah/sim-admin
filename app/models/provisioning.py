@@ -143,6 +143,7 @@ class CardComparisonResult(DomainModel):
     suci_compared: bool = False
     suci_managed: bool = False
     suci_readable: bool = False
+    suci_usim_supported: bool = False
     current_routing_indicator: str | None = None
     current_protection_scheme: int | None = None
     current_hn_public_key_id: int | None = None

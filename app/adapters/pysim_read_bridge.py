@@ -104,6 +104,7 @@ def main() -> None:
 
                 suci_supported = False
                 suci_readable = False
+                suci_usim_supported = False
                 suci_state = {}
                 ims_supported = False
                 ims_readable = False
@@ -114,6 +115,14 @@ def main() -> None:
                     ims_supported = suci_supported
                     if suci_supported:
                         from suci import read_suci_card_state
+                        # S17 exposes a second EF.SUCI_Calc_Info below DF.SAIP for
+                        # SUCI calculation on the USIM. Selecting the EF is the
+                        # non-mutating capability check; reading it may require ADM1.
+                        try:
+                            channel.select("MF/ADF.USIM/DF.SAIP/EF.SUCI_Calc_Info")
+                            suci_usim_supported = True
+                        except Exception:
+                            suci_usim_supported = False
                         channel.select("MF/ADF.USIM/DF.5GS/EF.Routing_Indicator")
                         routing_data, _ = channel.read_binary_dec()
                         channel.select("MF/ADF.USIM/DF.5GS/EF.SUCI_Calc_Info")
@@ -160,6 +169,7 @@ def main() -> None:
                     **ims_state,
                     "suci_supported": suci_supported,
                     "suci_readable": suci_readable,
+                    "suci_usim_supported": suci_usim_supported,
                     **suci_state,
                 }
             )

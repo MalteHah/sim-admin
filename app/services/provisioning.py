@@ -191,6 +191,7 @@ class CardComparisonService:
             suci_compared=suci_compared,
             suci_managed=suci_managed,
             suci_readable=current.suci_readable,
+            suci_usim_supported=current.suci_usim_supported,
             current_routing_indicator=current.routing_indicator,
             current_protection_scheme=current.protection_scheme,
             current_hn_public_key_id=current.hn_public_key_id,

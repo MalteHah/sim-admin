@@ -34,6 +34,7 @@ class SIMReadResult(DomainModel):
     ist: str | None = None
     suci_supported: bool = False
     suci_readable: bool = False
+    suci_usim_supported: bool = False
     routing_indicator: str | None = None
     protection_scheme: int | None = None
     hn_public_key_id: int | None = None

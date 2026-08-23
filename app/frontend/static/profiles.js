@@ -264,6 +264,12 @@ function appendSuciComparison(container, data) {
   const keyStatus = data.current_protection_scheme === 0 ? "nicht erforderlich" : data.hn_public_key_matches ? "stimmt überein" : data.suci_managed ? "abweichend" : "nicht im Tresor hinterlegt";
   details.textContent = `Karte: Routing Indicator ${data.current_routing_indicator || "–"} · ${schemes[data.current_protection_scheme] || "Unbekannt"} · HN-Key-ID ${data.current_hn_public_key_id ?? "–"} · öffentlicher Schlüssel ${keyStatus} · UST 124 ${data.suci_service_124_active ? "aktiv" : "inaktiv"} · UST 125 ${data.suci_service_125_active ? "aktiv" : "inaktiv"}`;
   container.append(details);
+  const usimCapability = document.createElement("p");
+  usimCapability.className = data.suci_usim_supported ? "activity-ok" : "form-error";
+  usimCapability.textContent = data.suci_usim_supported
+    ? "S17-Funktion erkannt: Diese Karte unterstützt die SUCI-Berechnung auf der USIM."
+    : "SUCI-Berechnung auf der USIM wird von dieser Karte nicht angeboten. Dieser Modus kann nicht vorbereitet oder geschrieben werden.";
+  container.append(usimCapability);
   if ((data.current_suci_configurations || []).length > 1) {
     const list = document.createElement("ol"); list.className = "suci-priority-list";
     for (const item of data.current_suci_configurations) {

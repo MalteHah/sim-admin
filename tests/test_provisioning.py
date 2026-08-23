@@ -181,6 +181,20 @@ def test_card_comparison_exposes_all_suci_priorities() -> None:
     assert [item["priority"] for item in result.current_suci_configurations] == [0, 1]
 
 
+def test_card_comparison_exposes_usim_suci_capability() -> None:
+    class Reader(FakeSuciCardAdapter):
+        def read_identity(self, reader_index=0):
+            result = super().read_identity(reader_index)
+            result.suci_usim_supported = True
+            return result
+
+    result = CardComparisonService(Reader()).compare(CardComparisonRequest(
+        target_iccid="8949012345678901234", target_imsi="001010123456789",
+        compare_suci=True,
+    ))
+    assert result.suci_usim_supported is True
+
+
 def test_card_comparison_includes_matching_ims_configuration() -> None:
     service = CardComparisonService(FakeSuciCardAdapter())
     result = service.compare(CardComparisonRequest(
