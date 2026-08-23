@@ -47,6 +47,8 @@ class ProvisioningDraft(DomainModel):
             if len(identities) != len(set(identities)): raise ValueError("SUCI configurations must not be duplicated")
             if self.suci_calculation_mode == "usim" and len(self.suci_configurations) != 1:
                 raise ValueError("SUCI calculation on the USIM supports exactly one configuration")
+            if self.suci_calculation_mode == "usim" and self.suci_configurations[0].priority != 0:
+                raise ValueError("SUCI calculation on the USIM requires priority 0")
             first = min(self.suci_configurations, key=lambda item: item.priority)
             object.__setattr__(self, "protection_scheme", first.protection_scheme)
             object.__setattr__(self, "hn_public_key_id", first.hn_public_key_id)

@@ -51,14 +51,21 @@ const inventoryNote = document.querySelector("#inventory-note");
 const inventoryError = document.querySelector("#inventory-error");
 let inventoryProfileId = null;
 let suciKeys = [];
-let primarySuciPriority = 0;
 const suciConfigurations = document.querySelector("#change-suci-configurations");
 const suciPrioritySection = document.querySelector("#change-suci-priority-section");
+const primarySuciPriority = document.querySelector("#change-suci-primary-priority");
+
+function nextFreeSuciPriority() {
+  const used = new Set([Number(primarySuciPriority.value)]);
+  for (const row of suciConfigurations.children) used.add(Number(row.querySelector(".suci-row-priority").value));
+  for (let priority = 0; priority <= 255; priority += 1) if (!used.has(priority)) return priority;
+  return 255;
+}
 
 function addSuciConfigurationRow(configuration = {}) {
   const row = document.createElement("div"); row.className = "suci-config-row";
   const makeLabel = (text, input) => { const label = document.createElement("label"); label.append(document.createTextNode(text), input); return label; };
-  const priority = document.createElement("input"); priority.type = "number"; priority.min = "0"; priority.max = "255"; priority.required = true; priority.className = "suci-row-priority"; priority.value = configuration.priority ?? Math.min(255, suciConfigurations.children.length + 1);
+  const priority = document.createElement("input"); priority.type = "number"; priority.min = "0"; priority.max = "255"; priority.required = true; priority.className = "suci-row-priority"; priority.value = configuration.priority ?? nextFreeSuciPriority();
   const catalogue = document.createElement("select"); const manual = document.createElement("option"); manual.value = ""; manual.textContent = "Manuelle Eingabe"; catalogue.append(manual);
   for (const item of suciKeys) { const option = document.createElement("option"); option.value = String(item.id); option.textContent = `${item.name} · Profile ${item.scheme === 1 ? "A" : "B"} · ID ${item.key_id}`; catalogue.append(option); }
   const scheme = document.createElement("select"); scheme.className = "suci-row-scheme"; scheme.required = true;
@@ -115,6 +122,8 @@ function syncChangeSuciModeAvailability() {
   if (!profileBSelected && mode.value === "usim") mode.value = "me";
   mode.title = profileBSelected ? "" : "Auf der USIM ist bei S17 ausschließlich mit Profile B verfügbar.";
   suciPrioritySection.hidden = mode.value === "usim";
+  primarySuciPriority.disabled = mode.value === "usim";
+  if (mode.value === "usim") primarySuciPriority.value = "0";
 }
 
 function syncChangeSuciMode() {
@@ -455,7 +464,7 @@ async function showHistory(id) {
 document.querySelector("#history-close").addEventListener("click", () => historyDialog.close());
 
 async function openChange(id) {
-  changeProfileId = id; changeError.hidden = true; changeStatus.hidden = true; changeDiscard.hidden = true; changePreview.hidden = true; changeCompare.hidden = true; changeWrite.hidden = true; writeConfirmationLabel.hidden = true; changeForm.reset(); suciConfigurations.replaceChildren(); primarySuciPriority = 0;
+  changeProfileId = id; changeError.hidden = true; changeStatus.hidden = true; changeDiscard.hidden = true; changePreview.hidden = true; changeCompare.hidden = true; changeWrite.hidden = true; writeConfirmationLabel.hidden = true; changeForm.reset(); suciConfigurations.replaceChildren(); primarySuciPriority.value = "0";
   const [response, draftResponse] = await Promise.all([fetch(`/api/v1/profiles/${id}/editable`, {cache: "no-store"}), fetch(`/api/v1/profiles/${id}/change-draft`, {cache: "no-store"})]);
   const profile = await response.json();
   if (!response.ok) { previewPanel.hidden = false; previewPanel.textContent = profile.detail || "Profil konnte nicht geladen werden."; return; }
@@ -476,7 +485,7 @@ async function openChange(id) {
   const configurations = profile.suci_configurations || [];
   if (configurations.length) {
     const ordered = [...configurations].sort((left, right) => left.priority - right.priority);
-    primarySuciPriority = ordered[0].priority;
+    primarySuciPriority.value = String(ordered[0].priority);
     for (const configuration of ordered.slice(1)) addSuciConfigurationRow(configuration);
   }
   syncChangeSuciMode(); syncChangeSuciModeAvailability();
@@ -494,7 +503,7 @@ changeForm.addEventListener("submit", async (event) => {
   const submit = changeForm.querySelector('button[type="submit"]'); submit.disabled = true;
   const primaryScheme = document.querySelector("#change-protection-scheme").value;
   const suciConfigurationList = [];
-  if (primaryScheme !== "") suciConfigurationList.push({priority: primarySuciPriority, protection_scheme: Number(primaryScheme),
+  if (primaryScheme !== "") suciConfigurationList.push({priority: Number(primarySuciPriority.value), protection_scheme: Number(primaryScheme),
     hn_public_key_id: document.querySelector("#change-hn-public-key-id").value === "" ? null : Number(document.querySelector("#change-hn-public-key-id").value),
     hn_public_key: document.querySelector("#change-hn-public-key").value || null});
   if (document.querySelector("#change-suci-calculation-mode").value === "me") for (const row of suciConfigurations.children) {

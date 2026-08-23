@@ -134,6 +134,8 @@ class ProfileChangeRequest(DomainModel):
             if len(identities) != len(set(identities)): raise ValueError("Identische SUCI-Konfigurationen dürfen nicht mehrfach vorkommen")
             if self.suci_calculation_mode == "usim" and len(self.suci_configurations) != 1:
                 raise ValueError("USIM-Berechnung unterstützt genau eine SUCI-Konfiguration")
+            if self.suci_calculation_mode == "usim" and self.suci_configurations[0].priority != 0:
+                raise ValueError("USIM-Berechnung erfordert Priorität 0")
             first = min(self.suci_configurations, key=lambda item: item.priority)
             object.__setattr__(self, "protection_scheme", first.protection_scheme)
             object.__setattr__(self, "hn_public_key_id", first.hn_public_key_id)

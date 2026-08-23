@@ -6,7 +6,7 @@
     <title>Profiltresor – SIM-Admin</title>
     <link rel="stylesheet" href="/static/dashboard.css?v=20260823-32">
     <script src="/static/table-pagination.js" defer></script>
-    <script src="/static/profiles.js?v=20260823-52" defer></script>
+    <script src="/static/profiles.js?v=20260823-53" defer></script>
   </head>
   <body>
     <header class="topbar">
@@ -92,6 +92,7 @@
           <label>HN-Schlüsselprofil für Profile A/B<select id="change-suci-key-profile"><option value="">Kein Katalogeintrag / manuelle Eingabe</option></select></label>
           <label>SUCI Routing Indicator<input id="change-routing-indicator" inputmode="numeric" maxlength="4" pattern="[0-9]{1,4}" placeholder="z. B. 0000"></label>
           <label>SUCI-Berechnung<select id="change-suci-calculation-mode"><option value="me">Im Endgerät (UST 124 aktiv, 125 inaktiv)</option><option value="usim">Auf der USIM – S17 (UST 124 und 125 aktiv)</option></select></label>
+          <label>Priorität des SUCI-Haupteintrags<input id="change-suci-primary-priority" type="number" min="0" max="255" value="0" required></label>
           <label>SUCI-Schutzverfahren<select id="change-protection-scheme"><option value="">Nicht konfigurieren</option><option value="0">Null Scheme</option><option value="1">Profile A – X25519</option><option value="2">Profile B – P-256</option></select></label>
           <label>HN Public Key ID<input id="change-hn-public-key-id" type="number" min="0" max="255" placeholder="optional, 0–255"></label>
           <label>HN Public Key<input id="change-hn-public-key" pattern="(?:[0-9A-Fa-f]{2})+" placeholder="optional, Hex-Bytes"></label>
