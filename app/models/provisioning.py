@@ -1,5 +1,6 @@
 """Models for provisioning drafts and non-writing previews."""
 
+from typing import Literal
 from pydantic import Field, SecretStr, field_validator, model_validator
 
 from app.models.common import DomainModel
@@ -20,6 +21,7 @@ class ProvisioningDraft(DomainModel):
     ims_domain: str | None = Field(default=None, min_length=1, max_length=253, pattern=r"^[A-Za-z0-9](?:[A-Za-z0-9.-]{0,251}[A-Za-z0-9])?$")
     ist: str | None = Field(default=None, pattern=r"^(?:[0-9A-Fa-f]{2})+$")
     routing_indicator: str | None = Field(default=None, pattern=r"^\d{1,4}$")
+    suci_calculation_mode: Literal["me", "usim"] = "me"
     protection_scheme: int | None = Field(default=None, ge=0, le=2)
     hn_public_key_id: int | None = Field(default=None, ge=0, le=255)
     hn_public_key: str | None = Field(default=None, pattern=r"^(?:[0-9A-Fa-f]{2})+$")
@@ -39,6 +41,11 @@ class ProvisioningDraft(DomainModel):
             if self.hn_public_key_id is not None or self.hn_public_key:
                 raise ValueError("protection_scheme is required for a home-network public key")
             return self
+        if self.suci_calculation_mode == "usim":
+            if self.protection_scheme != 2:
+                raise ValueError("SUCI calculation on the USIM requires protection scheme B")
+            if not self.hn_public_key or len(self.hn_public_key) != 130 or not self.hn_public_key.upper().startswith("04"):
+                raise ValueError("SUCI calculation on the USIM requires an uncompressed 65-byte P-256 key")
         if self.protection_scheme == 0:
             if self.hn_public_key_id is not None or self.hn_public_key:
                 raise ValueError("null protection scheme cannot use a home-network public key")

@@ -1,4 +1,4 @@
-"""Pure helpers for the supported SJA5 SUCI-by-ME configuration."""
+"""Pure helpers for SJA5/S17 SUCI configuration."""
 
 import base64
 import hashlib
@@ -58,6 +58,31 @@ def enable_suci_by_me(services: list[int] | dict) -> list[int] | dict:
             result[key]["activated"] = active
         return result
     return sorted(({int(service) for service in services} | {124}) - {125})
+
+
+def enable_suci_by_usim(services: list[int] | dict) -> list[int] | dict:
+    """Enable on-USIM SUCI calculation (125) and disable ME calculation (124)."""
+    if isinstance(services, dict):
+        result = {key: dict(value) for key, value in services.items()}
+        for number, active in ((124, False), (125, True)):
+            key = number if number in result else str(number)
+            if key not in result:
+                raise ValueError(f"UST service {number} is unavailable")
+            result[key]["activated"] = active
+        return result
+    return sorted(({int(service) for service in services} | {125}) - {124})
+
+
+def build_s17_usim_suci_calc_info(scheme: int, key_id: int | None, key_hex: str | None) -> dict:
+    """Build the S17 on-USIM configuration; this card mode supports Profile B only."""
+    key = (key_hex or "").replace(" ", "").upper()
+    if scheme != 2:
+        raise ValueError("S17 SUCI calculation on the USIM requires Profile B")
+    if key_id is None:
+        raise ValueError("S17 SUCI calculation on the USIM requires a key identifier")
+    if len(bytes.fromhex(key)) != 65 or not key.startswith("04"):
+        raise ValueError("S17 SUCI calculation on the USIM requires an uncompressed 65-byte P-256 key")
+    return build_suci_calc_info(2, key_id, key)
 
 
 def read_suci_card_state(routing: dict, calculation: dict, services: list[int] | dict) -> dict:

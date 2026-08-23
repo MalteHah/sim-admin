@@ -13,6 +13,9 @@ Hardware- und Bereitstellungstests stehen in `docs/testing-and-roadmap.md`.
 
 ### Added
 
+- Explizite Auswahl der SUCI-Berechnung im Endgerät oder auf einer S17-USIM;
+  der USIM-Modus prüft `DF.SAIP` vor dem ersten Schreibzugriff und erlaubt nur
+  Profile B mit unkomprimiertem P-256-Schlüssel
 - Vollständiges Auslesen und priorisiertes Anzeigen mehrerer Einträge aus
   `EF.SUCI_Calc_Info`; bestehende Einzel-SUCI-Profile bleiben kompatibel
 - Rein lesender Kartenabgleich für ACC und MSISDN mit feldgenauer Anzeige und

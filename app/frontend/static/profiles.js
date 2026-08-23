@@ -69,6 +69,15 @@ document.querySelector("#change-suci-key-profile").addEventListener("change", (e
   syncChangeSuciFields();
 });
 document.querySelector("#change-protection-scheme").addEventListener("change", () => syncChangeSuciFields(true));
+document.querySelector("#change-suci-calculation-mode").addEventListener("change", syncChangeSuciMode);
+
+function syncChangeSuciMode() {
+  const mode = document.querySelector("#change-suci-calculation-mode").value;
+  const scheme = document.querySelector("#change-protection-scheme");
+  for (const option of scheme.options) option.disabled = mode === "usim" && option.value !== "" && option.value !== "2";
+  if (mode === "usim" && scheme.value !== "2") scheme.value = "2";
+  syncChangeSuciFields(true);
+}
 
 function syncChangeSuciFields(schemeChanged = false) {
   const profile = document.querySelector("#change-suci-key-profile");
@@ -403,10 +412,11 @@ async function openChange(id) {
   document.querySelector("#change-ims-domain").value = profile.ims_domain || "";
   document.querySelector("#change-ist").value = profile.ist || "";
   document.querySelector("#change-routing-indicator").value = profile.routing_indicator || "";
+  document.querySelector("#change-suci-calculation-mode").value = profile.suci_calculation_mode || "me";
   document.querySelector("#change-protection-scheme").value = profile.protection_scheme ?? "";
   document.querySelector("#change-hn-public-key-id").value = profile.hn_public_key_id ?? "";
   document.querySelector("#change-hn-public-key").value = profile.hn_public_key || "";
-  syncChangeSuciFields();
+  syncChangeSuciMode();
   if (draftResponse.ok) {
     const draft = await draftResponse.json();
     if (draft) { changeStatus.textContent = `Vorgemerkt seit ${new Date(draft.created_at).toLocaleString("de-DE")}: ${draft.changed_fields.join(", ").toUpperCase()}. Aktive Revision: ${draft.base_revision}.`; changeStatus.hidden = false; changeDiscard.hidden = false; changePreview.hidden = false; changeCompare.hidden = false; changeWrite.hidden = false; }
@@ -430,6 +440,7 @@ changeForm.addEventListener("submit", async (event) => {
     ims_domain: document.querySelector("#change-ims-domain").value || null,
     ist: document.querySelector("#change-ist").value || null,
     routing_indicator: document.querySelector("#change-routing-indicator").value || null,
+    suci_calculation_mode: document.querySelector("#change-suci-calculation-mode").value,
     protection_scheme: document.querySelector("#change-protection-scheme").value === "" ? null : Number(document.querySelector("#change-protection-scheme").value),
     hn_public_key_id: document.querySelector("#change-hn-public-key-id").value === "" ? null : Number(document.querySelector("#change-hn-public-key-id").value),
     hn_public_key: document.querySelector("#change-hn-public-key").value || null,

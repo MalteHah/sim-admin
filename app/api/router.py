@@ -351,7 +351,7 @@ def prepare_profile_change(profile_id: int, payload: ProfileChangeRequest, reque
         result = vault.prepare_change(profile_id, payload.imsi, payload.msisdn, payload.acc,
             payload.ki.get_secret_value() if payload.ki else None, payload.opc.get_secret_value() if payload.opc else None,
             payload.impi, payload.impu, payload.ims_domain, payload.ist, payload.routing_indicator,
-            payload.protection_scheme, payload.hn_public_key_id, payload.hn_public_key)
+            payload.protection_scheme, payload.suci_calculation_mode, payload.hn_public_key_id, payload.hn_public_key)
     except KeyError as exc: raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profil nicht gefunden") from exc
     except ValueError as exc:
         if str(exc) == "no_changes": raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Es wurden keine Änderungen eingegeben") from exc

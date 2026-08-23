@@ -206,7 +206,7 @@ class CardComparisonService:
 class ProfileWriteService:
     """Write a pending standard-field change and commit it only after verification."""
 
-    SUPPORTED_FIELDS = {"imsi", "msisdn", "acc", "ki", "opc", "impi", "impu", "ims_domain", "ist", "routing_indicator", "protection_scheme", "hn_public_key_id", "hn_public_key"}
+    SUPPORTED_FIELDS = {"imsi", "msisdn", "acc", "ki", "opc", "impi", "impu", "ims_domain", "ist", "routing_indicator", "suci_calculation_mode", "protection_scheme", "hn_public_key_id", "hn_public_key"}
 
     def __init__(self, adapter: SIMCardAdapter, vault: ProfileVaultService) -> None:
         self._adapter = adapter; self._vault = vault
@@ -221,10 +221,13 @@ class ProfileWriteService:
         base_args = (reader_index, draft.iccid, draft.imsi, draft.acc, draft.msisdn,
             draft.adm.get_secret_value(), sorted(changed), draft.ki.get_secret_value(), draft.opc.get_secret_value(),
             draft.impi, draft.impu, draft.ims_domain, draft.ist)
-        fivegs_fields = {"routing_indicator", "protection_scheme", "hn_public_key_id", "hn_public_key"}
+        fivegs_fields = {"routing_indicator", "suci_calculation_mode", "protection_scheme", "hn_public_key_id", "hn_public_key"}
         if changed & fivegs_fields:
-            verified = self._adapter.write_standard_fields(*base_args, draft.routing_indicator, draft.protection_scheme,
-                draft.hn_public_key_id, draft.hn_public_key)
+            fivegs_args = (draft.routing_indicator, draft.protection_scheme, draft.hn_public_key_id, draft.hn_public_key)
+            if draft.suci_calculation_mode == "usim" or "suci_calculation_mode" in changed:
+                verified = self._adapter.write_standard_fields(*base_args, *fivegs_args, draft.suci_calculation_mode)
+            else:
+                verified = self._adapter.write_standard_fields(*base_args, *fivegs_args)
         else:
             verified = self._adapter.write_standard_fields(*base_args)
         if set(verified) != changed: raise ValueError("verification_failed")

@@ -99,6 +99,7 @@ class ProfileEditableView(DomainModel):
     ims_domain: str | None = None
     ist: str | None = None
     routing_indicator: str | None = None
+    suci_calculation_mode: Literal["me", "usim"] = "me"
     protection_scheme: int | None = None
     hn_public_key_id: int | None = None
     hn_public_key: str | None = None
@@ -116,13 +117,14 @@ class ProfileChangeRequest(DomainModel):
     ims_domain: str | None = Field(default=None, min_length=1, max_length=253, pattern=r"^[A-Za-z0-9](?:[A-Za-z0-9.-]{0,251}[A-Za-z0-9])?$")
     ist: str | None = Field(default=None, pattern=r"^(?:[0-9A-Fa-f]{2})+$")
     routing_indicator: str | None = Field(default=None, pattern=r"^\d{1,4}$")
+    suci_calculation_mode: Literal["me", "usim"] = "me"
     protection_scheme: int | None = Field(default=None, ge=0, le=2)
     hn_public_key_id: int | None = Field(default=None, ge=0, le=255)
     hn_public_key: str | None = Field(default=None, pattern=r"^(?:[0-9A-Fa-f]{2})+$")
 
     @model_validator(mode="after")
     def validate_suci_configuration(self):
-        _validate_suci_fields(self.routing_indicator, self.protection_scheme, self.hn_public_key_id, self.hn_public_key)
+        _validate_suci_fields(self.routing_indicator, self.protection_scheme, self.hn_public_key_id, self.hn_public_key, self.suci_calculation_mode)
         return self
 
 
@@ -165,7 +167,7 @@ class ProfileDeleteRequest(DomainModel):
     confirmation_iccid: str = Field(pattern=r"^\d{18,22}$")
 
 
-def _validate_suci_fields(routing_indicator: str | None, scheme: int | None, key_id: int | None, key: str | None) -> None:
+def _validate_suci_fields(routing_indicator: str | None, scheme: int | None, key_id: int | None, key: str | None, mode: str = "me") -> None:
     if scheme is None:
         if key_id is not None or key: raise ValueError("Protection Scheme fehlt")
         return
@@ -173,6 +175,8 @@ def _validate_suci_fields(routing_indicator: str | None, scheme: int | None, key
         if key_id is not None or key: raise ValueError("Null Scheme darf keinen Schlüssel enthalten")
         if not routing_indicator: raise ValueError("SUCI Routing Indicator fehlt")
         return
+    if mode == "usim" and (scheme != 2 or not key or len(key) != 130 or not key.upper().startswith("04")):
+        raise ValueError("USIM-Berechnung benötigt Profile B und einen unkomprimierten 65-Byte-P-256-Schlüssel")
     if not routing_indicator: raise ValueError("SUCI Routing Indicator fehlt")
     if key_id is None or not key: raise ValueError("Schlüssel-ID und Schlüssel fehlen")
     key_bytes = len(key) // 2

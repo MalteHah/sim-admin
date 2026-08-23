@@ -5,7 +5,7 @@ import json
 import sys
 
 from pysim_read_bridge import card_is_present, emit_error
-from suci import build_suci_calc_info, enable_suci_by_me
+from suci import build_s17_usim_suci_calc_info, build_suci_calc_info, enable_suci_by_me, enable_suci_by_usim
 
 
 def main() -> None:
@@ -20,7 +20,7 @@ def main() -> None:
         emit_error("invalid_request", "Schreibauftrag oder pySim ist nicht verfügbar", 3)
 
     fields = set(payload.get("fields", []))
-    fivegs_fields = {"routing_indicator", "protection_scheme", "hn_public_key_id", "hn_public_key"}
+    fivegs_fields = {"routing_indicator", "suci_calculation_mode", "protection_scheme", "hn_public_key_id", "hn_public_key"}
     if not fields or not fields <= {"imsi", "msisdn", "acc", "ki", "opc", "impi", "impu", "ims_domain", "ist"} | fivegs_fields:
         emit_error("unsupported_fields", "Der Entwurf enthält noch nicht unterstützte Schreibfelder", 4)
     transport = None
@@ -54,13 +54,21 @@ def main() -> None:
             stage = "routing_indicator_preflight"
             channel.select("MF/ADF.USIM/DF.5GS/EF.Routing_Indicator")
             current_routing, _ = channel.read_binary_dec()
-        suci_fields = {"protection_scheme", "hn_public_key_id", "hn_public_key"}
+        suci_fields = {"suci_calculation_mode", "protection_scheme", "hn_public_key_id", "hn_public_key"}
         current_ust = None
         target_suci = None
         if fields & suci_fields:
             stage = "suci_preflight"
-            target_suci = build_suci_calc_info(payload.get("protection_scheme"), payload.get("hn_public_key_id"), payload.get("hn_public_key"))
-            channel.select("MF/ADF.USIM/DF.5GS/EF.SUCI_Calc_Info")
+            suci_mode = payload.get("suci_calculation_mode", "me")
+            target_suci = (build_s17_usim_suci_calc_info if suci_mode == "usim" else build_suci_calc_info)(
+                payload.get("protection_scheme"), payload.get("hn_public_key_id"), payload.get("hn_public_key"))
+            target_suci_path = "MF/ADF.USIM/DF.SAIP/EF.SUCI_Calc_Info" if suci_mode == "usim" else "MF/ADF.USIM/DF.5GS/EF.SUCI_Calc_Info"
+            try:
+                channel.select(target_suci_path)
+            except Exception:
+                if suci_mode == "usim":
+                    emit_error("suci_usim_unsupported", "SUCI-Berechnung auf der USIM wird von dieser Karte nicht unterstützt", 14)
+                raise
             channel.read_binary_dec()
             channel.select("MF/ADF.USIM/EF.UST")
             current_ust, _ = channel.read_binary_dec()
@@ -146,12 +154,12 @@ def main() -> None:
         if fields & suci_fields:
             stage = "suci_calc_info"
             target = target_suci
-            channel.select("MF/ADF.USIM/DF.5GS/EF.SUCI_Calc_Info")
+            channel.select(target_suci_path)
             channel.update_binary_dec(target); value, _ = channel.read_binary_dec()
             if value != target: emit_error("verification_failed", "SUCI-Konfiguration konnte nicht bestätigt werden", 7)
             stage = "ust_services"
             channel.select("MF/ADF.USIM/EF.UST")
-            target_ust = enable_suci_by_me(current_ust)
+            target_ust = enable_suci_by_usim(current_ust) if suci_mode == "usim" else enable_suci_by_me(current_ust)
             channel.update_binary_dec(target_ust); value, _ = channel.read_binary_dec()
             if value != target_ust: emit_error("verification_failed", "SUCI-Dienste 124/125 konnten nicht bestätigt werden", 7)
             for field in sorted(fields & suci_fields): verified.append(field)

@@ -6,7 +6,7 @@
     <title>Profiltresor – SIM-Admin</title>
     <link rel="stylesheet" href="/static/dashboard.css?v=20260821-29">
     <script src="/static/table-pagination.js" defer></script>
-    <script src="/static/profiles.js?v=20260823-42" defer></script>
+    <script src="/static/profiles.js?v=20260823-43" defer></script>
   </head>
   <body>
     <header class="topbar">
@@ -91,13 +91,14 @@
           <label>IST<input id="change-ist" pattern="(?:[0-9A-Fa-f]{2})+" placeholder="optional, Hex-Bytes"></label>
           <label>HN-Schlüsselprofil für Profile A/B<select id="change-suci-key-profile"><option value="">Kein Katalogeintrag / manuelle Eingabe</option></select></label>
           <label>SUCI Routing Indicator<input id="change-routing-indicator" inputmode="numeric" maxlength="4" pattern="[0-9]{1,4}" placeholder="z. B. 0000"></label>
-          <label>SUCI-Schutzverfahren (Endgerät)<select id="change-protection-scheme"><option value="">Nicht konfigurieren</option><option value="0">Null Scheme</option><option value="1">Profile A – X25519</option><option value="2">Profile B – P-256</option></select></label>
+          <label>SUCI-Berechnung<select id="change-suci-calculation-mode"><option value="me">Im Endgerät (UST 124)</option><option value="usim">Auf der USIM – S17 (UST 125)</option></select></label>
+          <label>SUCI-Schutzverfahren<select id="change-protection-scheme"><option value="">Nicht konfigurieren</option><option value="0">Null Scheme</option><option value="1">Profile A – X25519</option><option value="2">Profile B – P-256</option></select></label>
           <label>HN Public Key ID<input id="change-hn-public-key-id" type="number" min="0" max="255" placeholder="optional, 0–255"></label>
           <label>HN Public Key<input id="change-hn-public-key" pattern="(?:[0-9A-Fa-f]{2})+" placeholder="optional, Hex-Bytes"></label>
           <label>Aktuelles Anmeldepasswort<input id="change-password" type="password" autocomplete="current-password" required></label>
           <label id="write-confirmation-label" hidden>Freigabe für den tatsächlichen Schreibvorgang<input id="write-confirmation" autocomplete="off" placeholder="SIM SCHREIBEN"></label>
         </div>
-        <p class="immutable-note"><strong>Unveränderbar:</strong> ICCID und ADM1. SUCI Routing Indicator ist nicht das AMF-Feld 8000; für SUCI ist üblicherweise 0000 vorgesehen. IMS- und 5GS-/SUCI-Felder werden nur auf einer eindeutig erkannten SysmocomSJA5 geschrieben und unmittelbar zurückgelesen.</p>
+        <p class="immutable-note"><strong>Unveränderbar:</strong> ICCID und ADM1. Der USIM-Modus wird nur auf einer erkannten S17 mit zugänglicher DF.SAIP-Datei freigegeben und unterstützt dort ausschließlich Profile B mit unkomprimiertem P‑256-Schlüssel.</p>
         <p id="change-error" class="form-error" hidden></p>
         <div class="dialog-actions change-actions"><button type="button" id="change-discard" class="danger-button" hidden>Entwurf verwerfen</button><button type="button" id="change-preview" hidden>Entwurf prüfen</button><button type="button" id="change-compare" hidden>Mit Karte abgleichen</button><button type="button" id="change-write" class="danger-button" hidden>Auf SIM schreiben</button><button type="button" id="change-close">Abbrechen</button><button type="submit">Entwurf speichern</button></div>
       </form>

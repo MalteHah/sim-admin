@@ -3,7 +3,7 @@
 import pytest
 from pydantic import ValidationError
 
-from app.adapters.suci import build_suci_calc_info, build_suci_calc_info_list, enable_suci_by_me
+from app.adapters.suci import build_s17_usim_suci_calc_info, build_suci_calc_info, build_suci_calc_info_list, enable_suci_by_me, enable_suci_by_usim
 from app.models import ProvisioningDraft
 
 
@@ -46,6 +46,19 @@ def test_suci_by_me_updates_structured_pysim_ust() -> None:
     assert current[124]["activated"] is False
 
 
+def test_suci_by_usim_enables_125_and_disables_124() -> None:
+    assert enable_suci_by_usim([2, 124, 126]) == [2, 125, 126]
+
+
+def test_s17_usim_accepts_only_uncompressed_profile_b() -> None:
+    target = build_s17_usim_suci_calc_info(2, 2, "04" + "A1" * 64)
+    assert target["prot_scheme_id_list"][0]["identifier"] == 2
+    with pytest.raises(ValueError, match="Profile B"):
+        build_s17_usim_suci_calc_info(1, 1, "A1" * 32)
+    with pytest.raises(ValueError, match="uncompressed"):
+        build_s17_usim_suci_calc_info(2, 2, "02" + "A1" * 32)
+
+
 def test_multiple_suci_configurations_keep_priority_and_key_indexes() -> None:
     target = build_suci_calc_info_list([
         {"priority": 2, "protection_scheme": 0},
@@ -83,3 +96,12 @@ def test_profile_a_with_routing_indicator_is_valid() -> None:
         hn_public_key_id=1, hn_public_key="A1" * 32,
     )
     assert draft.routing_indicator == "0000"
+
+
+def test_usim_mode_requires_profile_b_and_uncompressed_key() -> None:
+    draft = ProvisioningDraft(**BASE_DRAFT, routing_indicator="0000", suci_calculation_mode="usim",
+        protection_scheme=2, hn_public_key_id=2, hn_public_key="04" + "A1" * 64)
+    assert draft.suci_calculation_mode == "usim"
+    with pytest.raises(ValidationError, match="scheme B"):
+        ProvisioningDraft(**BASE_DRAFT, routing_indicator="0000", suci_calculation_mode="usim",
+            protection_scheme=1, hn_public_key_id=1, hn_public_key="A1" * 32)
