@@ -59,6 +59,8 @@ function addSuciConfigurationRow(configuration = {}) {
   const row = document.createElement("div"); row.className = "suci-config-row";
   const makeLabel = (text, input) => { const label = document.createElement("label"); label.append(document.createTextNode(text), input); return label; };
   const priority = document.createElement("input"); priority.type = "number"; priority.min = "0"; priority.max = "255"; priority.required = true; priority.className = "suci-row-priority"; priority.value = configuration.priority ?? Math.min(255, suciConfigurations.children.length + 1);
+  const catalogue = document.createElement("select"); const manual = document.createElement("option"); manual.value = ""; manual.textContent = "Manuelle Eingabe"; catalogue.append(manual);
+  for (const item of suciKeys) { const option = document.createElement("option"); option.value = String(item.id); option.textContent = `${item.name} · Profile ${item.scheme === 1 ? "A" : "B"} · ID ${item.key_id}`; catalogue.append(option); }
   const scheme = document.createElement("select"); scheme.className = "suci-row-scheme"; scheme.required = true;
   for (const [value, label] of [["0", "Null Scheme"], ["1", "Profile A – X25519"], ["2", "Profile B – P-256"]]) { const option = document.createElement("option"); option.value = value; option.textContent = label; scheme.append(option); }
   scheme.value = String(configuration.protection_scheme ?? 0);
@@ -66,8 +68,9 @@ function addSuciConfigurationRow(configuration = {}) {
   const key = document.createElement("input"); key.className = "suci-row-key"; key.pattern = "(?:[0-9A-Fa-f]{2})+"; key.value = configuration.hn_public_key || "";
   const remove = document.createElement("button"); remove.type = "button"; remove.textContent = "Entfernen"; remove.className = "danger-button"; remove.addEventListener("click", () => row.remove());
   const sync = () => { const disabled = scheme.value === "0"; keyId.disabled = disabled; key.disabled = disabled; if (disabled) { keyId.value = ""; key.value = ""; } };
+  catalogue.addEventListener("change", () => { const selected = suciKeys.find(item => item.id === Number(catalogue.value)); if (!selected) return; scheme.value = String(selected.scheme); keyId.value = String(selected.key_id); key.value = selected.public_key; sync(); });
   scheme.addEventListener("change", sync); sync();
-  row.append(makeLabel("Priorität", priority), makeLabel("Verfahren", scheme), makeLabel("Key-ID", keyId), makeLabel("Public Key (Hex)", key), remove);
+  row.append(makeLabel("Priorität", priority), makeLabel("Schlüsselprofil", catalogue), makeLabel("Verfahren", scheme), makeLabel("Key-ID", keyId), makeLabel("Public Key (Hex)", key), remove);
   suciConfigurations.append(row);
 }
 
