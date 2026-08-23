@@ -107,6 +107,7 @@ class CardComparisonRequest(DomainModel):
     target_ist: str | None = None
     compare_suci: bool = False
     target_routing_indicator: str | None = None
+    target_suci_calculation_mode: Literal["me", "usim"] = "me"
     target_protection_scheme: int | None = None
     target_hn_public_key_id: int | None = None
     target_hn_public_key: str | None = None
@@ -152,6 +153,7 @@ class CardComparisonResult(DomainModel):
     suci_managed: bool = False
     suci_readable: bool = False
     suci_usim_supported: bool = False
+    current_suci_calculation_mode: str | None = None
     current_routing_indicator: str | None = None
     current_protection_scheme: int | None = None
     current_hn_public_key_id: int | None = None

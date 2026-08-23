@@ -285,7 +285,8 @@ function appendSuciComparison(container, data) {
   if (!data.suci_compared) return;
   const heading = document.createElement("h3"); heading.textContent = "SUCI-Konfiguration";
   const text = document.createElement("p");
-  if (!data.suci_readable) text.textContent = "Die SUCI-Daten konnten auf dieser Karte nicht gelesen werden.";
+  if (!data.suci_readable && data.current_suci_calculation_mode === "usim") text.textContent = "Die Karte berechnet SUCI auf der USIM (UST 124 und 125 aktiv). Der geschützte S17-Schlüsselblock ist beim rein lesenden Abgleich ohne ADM1 nicht zugänglich und wird deshalb weder als Abweichung noch zur Übernahme angeboten.";
+  else if (!data.suci_readable) text.textContent = "Die SUCI-Daten konnten auf dieser Karte nicht gelesen werden.";
   else if (!data.suci_managed && data.current_protection_scheme === 0) text.textContent = "Die Karte verwendet Null Scheme ohne HN-Schlüssel. Dieser gültige Standardzustand wird im Tresor nicht eigens verwaltet.";
   else if (!data.suci_managed) text.textContent = "Auf der Karte ist eine geschützte SUCI-Konfiguration vorhanden, die im Tresorprofil nicht hinterlegt ist.";
   else if (data.suci_matches) text.textContent = data.current_protection_scheme === 0
@@ -293,7 +294,12 @@ function appendSuciComparison(container, data) {
     : "Routing Indicator, Schutzverfahren, HN-Schlüssel und UST-Dienste stimmen mit dem Tresorprofil überein.";
   else text.textContent = "Die SUCI-Konfiguration weicht vom Tresorprofil ab.";
   container.append(heading, text);
-  if (!data.suci_readable) return;
+  if (!data.suci_readable) {
+    if (data.current_suci_calculation_mode === "usim") {
+      const details = document.createElement("p"); details.textContent = `Karte: Berechnung auf der USIM · UST 124 ${data.suci_service_124_active ? "aktiv" : "inaktiv"} · UST 125 ${data.suci_service_125_active ? "aktiv" : "inaktiv"}`; container.append(details);
+    }
+    return;
+  }
   const details = document.createElement("p");
   const schemes = {0: "Null Scheme", 1: "Profile A – X25519", 2: "Profile B – P-256"};
   const keyStatus = data.current_protection_scheme === 0 ? "nicht erforderlich" : data.hn_public_key_matches ? "stimmt überein" : data.suci_managed ? "abweichend" : "nicht im Tresor hinterlegt";

@@ -391,6 +391,7 @@ def compare_profile_change_to_card(profile_id: int, vault: Annotated[ProfileVaul
             compare_standard_fields=True, target_acc=draft.acc, target_msisdn=draft.msisdn,
             compare_ims=True, target_impi=draft.impi, target_impu=draft.impu, target_ims_domain=draft.ims_domain, target_ist=draft.ist,
             compare_suci=True, target_routing_indicator=draft.routing_indicator, target_protection_scheme=draft.protection_scheme,
+            target_suci_calculation_mode=draft.suci_calculation_mode,
             target_hn_public_key_id=draft.hn_public_key_id, target_hn_public_key=draft.hn_public_key))
     except SIMReadError as exc:
         audit.record("profiles.change_draft_card_comparison", "error", exc.code)
@@ -440,6 +441,7 @@ def compare_stored_profile(profile_id: int, vault: Annotated[ProfileVaultService
             compare_standard_fields=True, target_acc=draft.acc, target_msisdn=draft.msisdn,
             compare_ims=True, target_impi=draft.impi, target_impu=draft.impu, target_ims_domain=draft.ims_domain, target_ist=draft.ist,
             compare_suci=True, target_routing_indicator=draft.routing_indicator, target_protection_scheme=draft.protection_scheme,
+            target_suci_calculation_mode=draft.suci_calculation_mode,
             target_hn_public_key_id=draft.hn_public_key_id, target_hn_public_key=draft.hn_public_key))
     except SIMReadError as exc:
         audit.record("profiles.card_comparison", "error", exc.code)

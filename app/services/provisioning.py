@@ -158,7 +158,8 @@ class CardComparisonService:
                 "suci_matches": False,
             }
             base_matches = all(value for key, value in suci_values.items() if key != "suci_matches")
-            services_match = True if request.target_protection_scheme == 0 else current.suci_service_124_active is True and current.suci_service_125_active is False
+            services_match = True if request.target_protection_scheme == 0 else (current.suci_service_124_active is True and
+                current.suci_service_125_active is (request.target_suci_calculation_mode == "usim"))
             suci_values["suci_matches"] = base_matches and services_match if suci_managed else None
             if suci_values["suci_matches"] is False:
                 warnings.append("Die SUCI-Konfiguration der Karte weicht vom Tresorprofil ab.")
@@ -194,6 +195,7 @@ class CardComparisonService:
             suci_managed=suci_managed,
             suci_readable=current.suci_readable,
             suci_usim_supported=current.suci_usim_supported,
+            current_suci_calculation_mode=current.suci_calculation_mode,
             current_routing_indicator=current.routing_indicator,
             current_protection_scheme=current.protection_scheme,
             current_hn_public_key_id=current.hn_public_key_id,

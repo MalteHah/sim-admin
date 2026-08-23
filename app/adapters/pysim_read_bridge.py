@@ -125,12 +125,25 @@ def main() -> None:
                             suci_usim_supported = False
                         channel.select("MF/ADF.USIM/DF.5GS/EF.Routing_Indicator")
                         routing_data, _ = channel.read_binary_dec()
-                        channel.select("MF/ADF.USIM/DF.5GS/EF.SUCI_Calc_Info")
-                        calculation_data, _ = channel.read_binary_dec()
                         channel.select("MF/ADF.USIM/EF.UST")
                         service_data, _ = channel.read_binary_dec()
-                        suci_state = read_suci_card_state(routing_data, calculation_data, service_data)
-                        suci_readable = True
+                        def service_active(number):
+                            item = service_data.get(number, service_data.get(str(number), {}))
+                            return bool(item.get("activated", False))
+                        on_usim = service_active(124) and service_active(125)
+                        calculation_path = "MF/ADF.USIM/DF.SAIP/EF.SUCI_Calc_Info" if on_usim else "MF/ADF.USIM/DF.5GS/EF.SUCI_Calc_Info"
+                        suci_state = {"routing_indicator": str(routing_data.get("routing_indicator", "")).zfill(4),
+                            "suci_calculation_mode": "usim" if on_usim else "me",
+                            "suci_service_124_active": service_active(124), "suci_service_125_active": service_active(125)}
+                        try:
+                            channel.select(calculation_path)
+                            calculation_data, _ = channel.read_binary_dec()
+                            suci_state.update(read_suci_card_state(routing_data, calculation_data, service_data))
+                            suci_readable = True
+                        except Exception:
+                            # DF.SAIP is ADM-protected on S17. Never fall back to
+                            # the unrelated ME file while service 125 is active.
+                            suci_readable = False
                 except Exception:
                     suci_readable = False
                 try:

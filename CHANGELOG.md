@@ -18,6 +18,8 @@ Hardware- und Bereitstellungstests stehen in `docs/testing-and-roadmap.md`.
   Profile B mit unkomprimiertem P-256-Schlüssel
 - Korrekte UST-Kombination für S17-USIM-Berechnung: Dienste 124 und 125 müssen
   gemeinsam aktiv sein; der Endgeräte-Modus verwendet 124 aktiv und 125 inaktiv
+- Modeabhängiger SUCI-Kartenabgleich: Bei aktivem S17-USIM-Modus wird nicht mehr
+  irrtümlich die Endgeräte-Datei verglichen oder zur Tresorübernahme angeboten
 - Vollständiges Auslesen und priorisiertes Anzeigen mehrerer Einträge aus
   `EF.SUCI_Calc_Info`; bestehende Einzel-SUCI-Profile bleiben kompatibel
 - Rein lesender Kartenabgleich für ACC und MSISDN mit feldgenauer Anzeige und
