@@ -36,6 +36,9 @@ Stand: 21. August 2026, Zielversion 0.2.0 (Vorabstand).
   mit dem Tresorprofil verglichen und können bei einer Abweichung selektiv als
   neue Tresorrevision übernommen werden. Der automatisierte Stand ist geprüft;
   die Abnahme mit einer realen Karte steht noch aus.
+- Mehrere Protection-Scheme-Einträge und zugehörige HN-Schlüssel werden aus
+  `EF.SUCI_Calc_Info` vollständig aufgelöst und nach Kartenpriorität angezeigt.
+  Die Bearbeitung und der Schreibpfad für diese Liste folgen im nächsten Schritt.
 
 ## Vor einem ersten stabilen Release zwingend zu testen
 

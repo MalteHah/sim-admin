@@ -5,6 +5,15 @@ from pydantic import Field
 from app.models.common import DomainModel
 
 
+class SuciConfiguration(DomainModel):
+    """One ordered protection-scheme entry read from EF.SUCI_Calc_Info."""
+
+    priority: int = Field(ge=0, le=255)
+    protection_scheme: int = Field(ge=0, le=2)
+    hn_public_key_id: int | None = Field(default=None, ge=0, le=255)
+    hn_public_key: str | None = None
+
+
 class SIMReadResult(DomainModel):
     """Non-secret identifiers returned by a read-only card inspection."""
 
@@ -29,5 +38,6 @@ class SIMReadResult(DomainModel):
     protection_scheme: int | None = None
     hn_public_key_id: int | None = None
     hn_public_key: str | None = None
+    suci_configurations: list[SuciConfiguration] = Field(default_factory=list)
     suci_service_124_active: bool | None = None
     suci_service_125_active: bool | None = None

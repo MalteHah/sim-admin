@@ -3,7 +3,7 @@
 import pytest
 from pydantic import ValidationError
 
-from app.adapters.suci import build_suci_calc_info, enable_suci_by_me
+from app.adapters.suci import build_suci_calc_info, build_suci_calc_info_list, enable_suci_by_me
 from app.models import ProvisioningDraft
 
 
@@ -44,6 +44,29 @@ def test_suci_by_me_updates_structured_pysim_ust() -> None:
     assert updated[124]["activated"] is True
     assert updated[125]["activated"] is False
     assert current[124]["activated"] is False
+
+
+def test_multiple_suci_configurations_keep_priority_and_key_indexes() -> None:
+    target = build_suci_calc_info_list([
+        {"priority": 2, "protection_scheme": 0},
+        {"priority": 0, "protection_scheme": 1, "hn_public_key_id": 1, "hn_public_key": "A1" * 32},
+        {"priority": 1, "protection_scheme": 2, "hn_public_key_id": 2, "hn_public_key": "04" + "B2" * 64},
+    ])
+
+    assert target["prot_scheme_id_list"] == [
+        {"priority": 0, "identifier": 1, "key_index": 1},
+        {"priority": 1, "identifier": 2, "key_index": 2},
+        {"priority": 2, "identifier": 0, "key_index": 0},
+    ]
+    assert [item["hnet_pubkey_identifier"] for item in target["hnet_pubkey_list"]] == [1, 2]
+
+
+def test_multiple_suci_configurations_reject_duplicate_priority() -> None:
+    with pytest.raises(ValueError, match="priorities"):
+        build_suci_calc_info_list([
+            {"priority": 0, "protection_scheme": 0},
+            {"priority": 0, "protection_scheme": 0},
+        ])
 
 
 def test_suci_configuration_requires_routing_indicator() -> None:

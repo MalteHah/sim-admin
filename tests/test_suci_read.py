@@ -16,5 +16,24 @@ def test_read_suci_card_state_resolves_key_index_and_ust() -> None:
     assert state == {
         "routing_indicator": "0000", "protection_scheme": 1,
         "hn_public_key_id": 7, "hn_public_key": "A1" * 32,
+        "suci_configurations": [{"priority": 0, "protection_scheme": 1,
+            "hn_public_key_id": 7, "hn_public_key": "A1" * 32}],
         "suci_service_124_active": True, "suci_service_125_active": False,
     }
+
+
+def test_read_suci_card_state_returns_every_priority() -> None:
+    state = read_suci_card_state(
+        {"routing_indicator": "0000"},
+        {"prot_scheme_id_list": [
+            {"priority": 2, "identifier": 0, "key_index": 0},
+            {"priority": 0, "identifier": 1, "key_index": 1},
+        ], "hnet_pubkey_list": [
+            {"hnet_pubkey_identifier": 3, "hnet_pubkey": bytes.fromhex("C3" * 32)},
+        ]},
+        [124],
+    )
+
+    assert [entry["priority"] for entry in state["suci_configurations"]] == [0, 2]
+    assert state["suci_configurations"][0]["hn_public_key_id"] == 3
+    assert state["suci_configurations"][1]["protection_scheme"] == 0

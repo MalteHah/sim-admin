@@ -194,6 +194,7 @@ class CardComparisonService:
             current_routing_indicator=current.routing_indicator,
             current_protection_scheme=current.protection_scheme,
             current_hn_public_key_id=current.hn_public_key_id,
+            current_suci_configurations=[item.model_dump() for item in current.suci_configurations],
             suci_service_124_active=current.suci_service_124_active,
             suci_service_125_active=current.suci_service_125_active,
             **suci_values,

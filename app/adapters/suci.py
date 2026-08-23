@@ -4,22 +4,47 @@ import base64
 import hashlib
 
 
+def build_suci_calc_info_list(configurations: list[dict]) -> dict:
+    """Build ordered protection-scheme and HN-key lists for EF.SUCI_Calc_Info."""
+    if not configurations:
+        raise ValueError("at least one SUCI configuration is required")
+    priorities = [int(item["priority"]) for item in configurations]
+    if len(set(priorities)) != len(priorities) or any(value < 0 or value > 255 for value in priorities):
+        raise ValueError("SUCI priorities must be unique bytes")
+    schemes = []
+    keys = []
+    key_indexes: dict[tuple[int, str], int] = {}
+    for item in sorted(configurations, key=lambda value: int(value["priority"])):
+        scheme = int(item["protection_scheme"])
+        if scheme not in {0, 1, 2}:
+            raise ValueError("unsupported SUCI protection scheme")
+        if scheme == 0:
+            if item.get("hn_public_key_id") is not None or item.get("hn_public_key"):
+                raise ValueError("null scheme cannot use a home-network public key")
+            key_index = 0
+        else:
+            key_id = item.get("hn_public_key_id")
+            key_hex = (item.get("hn_public_key") or "").replace(" ", "").upper()
+            if key_id is None or not key_hex:
+                raise ValueError("protected SUCI requires a home-network public key")
+            raw = bytes.fromhex(key_hex)
+            if scheme == 1 and len(raw) != 32:
+                raise ValueError("protection scheme A requires a 32-byte key")
+            if scheme == 2 and len(raw) not in {33, 65}:
+                raise ValueError("protection scheme B requires a 33- or 65-byte key")
+            key = (int(key_id), key_hex)
+            if key not in key_indexes:
+                keys.append({"hnet_pubkey_identifier": int(key_id), "hnet_pubkey": raw})
+                key_indexes[key] = len(keys)
+            key_index = key_indexes[key]
+        schemes.append({"priority": int(item["priority"]), "identifier": scheme, "key_index": key_index})
+    return {"prot_scheme_id_list": schemes, "hnet_pubkey_list": keys}
+
+
 def build_suci_calc_info(scheme: int, key_id: int | None, key_hex: str | None) -> dict:
-    """Build one protection-scheme entry and its optional HN public key."""
-    if scheme == 0:
-        return {
-            "prot_scheme_id_list": [{"priority": 0, "identifier": 0, "key_index": 0}],
-            "hnet_pubkey_list": [],
-        }
-    if key_id is None or not key_hex:
-        raise ValueError("protected SUCI requires a home-network public key")
-    return {
-        "prot_scheme_id_list": [{"priority": 0, "identifier": scheme, "key_index": 1}],
-        "hnet_pubkey_list": [{
-            "hnet_pubkey_identifier": key_id,
-            "hnet_pubkey": bytes.fromhex(key_hex),
-        }],
-    }
+    """Backward-compatible builder for one priority-zero configuration."""
+    return build_suci_calc_info_list([{"priority": 0, "protection_scheme": scheme,
+        "hn_public_key_id": key_id, "hn_public_key": key_hex}])
 
 
 def enable_suci_by_me(services: list[int] | dict) -> list[int] | dict:
@@ -49,6 +74,23 @@ def read_suci_card_state(routing: dict, calculation: dict, services: list[int] |
     elif key_value is not None:
         key_value = str(key_value).replace(" ", "").upper()
 
+    configurations = []
+    for entry in sorted(schemes, key=lambda item: int(item.get("priority", 255))):
+        entry_scheme = int(entry.get("identifier", 0))
+        entry_key_index = int(entry.get("key_index", 0))
+        entry_key = keys[entry_key_index - 1] if entry_key_index and entry_key_index <= len(keys) else None
+        entry_key_value = entry_key.get("hnet_pubkey") if entry_key else None
+        if isinstance(entry_key_value, bytes):
+            entry_key_value = entry_key_value.hex().upper()
+        elif entry_key_value is not None:
+            entry_key_value = str(entry_key_value).replace(" ", "").upper()
+        configurations.append({
+            "priority": int(entry.get("priority", 255)),
+            "protection_scheme": entry_scheme,
+            "hn_public_key_id": int(entry_key["hnet_pubkey_identifier"]) if entry_key else None,
+            "hn_public_key": entry_key_value,
+        })
+
     def active(number: int) -> bool:
         if isinstance(services, dict):
             entry = services.get(number, services.get(str(number), {}))
@@ -60,6 +102,7 @@ def read_suci_card_state(routing: dict, calculation: dict, services: list[int] |
         "protection_scheme": scheme,
         "hn_public_key_id": int(selected_key["hnet_pubkey_identifier"]) if selected_key else None,
         "hn_public_key": key_value,
+        "suci_configurations": configurations,
         "suci_service_124_active": active(124),
         "suci_service_125_active": active(125),
     }

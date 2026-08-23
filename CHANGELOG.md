@@ -13,6 +13,8 @@ Hardware- und Bereitstellungstests stehen in `docs/testing-and-roadmap.md`.
 
 ### Added
 
+- Vollständiges Auslesen und priorisiertes Anzeigen mehrerer Einträge aus
+  `EF.SUCI_Calc_Info`; bestehende Einzel-SUCI-Profile bleiben kompatibel
 - Rein lesender Kartenabgleich für ACC und MSISDN mit feldgenauer Anzeige und
   selektiver Übernahme in eine neue verschlüsselte Tresorrevision
 - Initiales Python- und FastAPI-Projektgrundgerüst

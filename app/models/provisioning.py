@@ -146,6 +146,7 @@ class CardComparisonResult(DomainModel):
     current_routing_indicator: str | None = None
     current_protection_scheme: int | None = None
     current_hn_public_key_id: int | None = None
+    current_suci_configurations: list[dict] = Field(default_factory=list)
     routing_indicator_matches: bool | None = None
     protection_scheme_matches: bool | None = None
     hn_public_key_id_matches: bool | None = None

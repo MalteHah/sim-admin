@@ -162,6 +162,25 @@ def test_card_comparison_includes_matching_suci_configuration() -> None:
     assert result.suci_service_125_active is False
 
 
+def test_card_comparison_exposes_all_suci_priorities() -> None:
+    adapter = FakeSuciCardAdapter()
+    original = adapter.read_identity
+    def read_with_priorities(reader_index: int = 0) -> SIMReadResult:
+        result = original(reader_index)
+        result.suci_configurations = [
+            {"priority": 0, "protection_scheme": 1, "hn_public_key_id": 1, "hn_public_key": "A1" * 32},
+            {"priority": 1, "protection_scheme": 0},
+        ]
+        return result
+    adapter.read_identity = read_with_priorities
+
+    result = CardComparisonService(adapter).compare(CardComparisonRequest(
+        target_iccid="8949012345678901234", target_imsi="001010123456789",
+    ))
+
+    assert [item["priority"] for item in result.current_suci_configurations] == [0, 1]
+
+
 def test_card_comparison_includes_matching_ims_configuration() -> None:
     service = CardComparisonService(FakeSuciCardAdapter())
     result = service.compare(CardComparisonRequest(
