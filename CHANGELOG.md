@@ -13,6 +13,8 @@ Hardware- und Bereitstellungstests stehen in `docs/testing-and-roadmap.md`.
 
 ### Added
 
+- Rein lesender Kartenabgleich für ACC und MSISDN mit feldgenauer Anzeige und
+  selektiver Übernahme in eine neue verschlüsselte Tresorrevision
 - Initiales Python- und FastAPI-Projektgrundgerüst
 - Minimaler API- und Health-Endpunkt
 - Architekturübersicht für die spätere pySim-Integration

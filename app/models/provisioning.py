@@ -89,6 +89,9 @@ class CardComparisonRequest(DomainModel):
     reader_index: int = Field(default=0, ge=0)
     target_iccid: str = Field(pattern=r"^\d{18,22}$")
     target_imsi: str = Field(pattern=r"^\d{5,15}$")
+    compare_standard_fields: bool = False
+    target_acc: str | None = Field(default=None, pattern=r"^[0-9A-Fa-f]{4}$")
+    target_msisdn: str | None = Field(default=None, pattern=r"^\+?\d{3,15}$")
     compare_ims: bool = False
     target_impi: str | None = None
     target_impu: str | None = None
@@ -115,6 +118,13 @@ class CardComparisonResult(DomainModel):
     target_imsi: str
     iccid_matches: bool
     imsi_matches: bool
+    standard_fields_compared: bool = False
+    acc_readable: bool = False
+    msisdn_readable: bool = False
+    current_acc: str | None = None
+    current_msisdn: str | None = None
+    acc_matches: bool | None = None
+    msisdn_matches: bool | None = None
     ims_compared: bool = False
     ims_readable: bool = False
     current_impi: str | None = None

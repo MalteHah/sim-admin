@@ -174,6 +174,25 @@ def test_card_comparison_includes_matching_ims_configuration() -> None:
     assert result.ims_matches is True
 
 
+def test_card_comparison_includes_readable_acc_and_msisdn() -> None:
+    class FakeStandardFieldAdapter(FakeCardAdapter):
+        def read_identity(self, reader_index: int = 0) -> SIMReadResult:
+            result = super().read_identity(reader_index)
+            result.acc_readable = True; result.acc = "0004"
+            result.msisdn_readable = True; result.msisdn = "491701234567"
+            return result
+
+    result = CardComparisonService(FakeStandardFieldAdapter()).compare(CardComparisonRequest(
+        target_iccid="8949012345678901234", target_imsi="001010123456789",
+        compare_standard_fields=True, target_acc="0004", target_msisdn="+491701234567",
+    ))
+
+    assert result.acc_matches is True
+    assert result.msisdn_matches is True
+    assert result.current_acc == "0004"
+    assert result.current_msisdn == "491701234567"
+
+
 def test_null_scheme_does_not_require_suci_ust_services() -> None:
     class FakeNullSchemeAdapter(FakeCardAdapter):
         def read_identity(self, reader_index: int = 0) -> SIMReadResult:

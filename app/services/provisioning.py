@@ -109,6 +109,18 @@ class CardComparisonService:
             warnings.append("Die Ziel-IMSI weicht von der eingelegten Karte ab.")
         if iccid_matches and imsi_matches:
             warnings.append("ICCID und IMSI entsprechen bereits dem Entwurf.")
+        def normalized_number(value: str | None) -> str:
+            return (value or "").lstrip("+")
+        standard_values = {"acc_matches": None, "msisdn_matches": None}
+        if request.compare_standard_fields:
+            if current.acc_readable:
+                standard_values["acc_matches"] = (current.acc or "").upper() == (request.target_acc or "").upper()
+                if standard_values["acc_matches"] is False:
+                    warnings.append("Der ACC der Karte weicht vom Tresorprofil ab.")
+            if current.msisdn_readable:
+                standard_values["msisdn_matches"] = normalized_number(current.msisdn) == normalized_number(request.target_msisdn)
+                if standard_values["msisdn_matches"] is False:
+                    warnings.append("Die MSISDN der Karte weicht vom Tresorprofil ab.")
         ims_managed = {"impi_managed": request.target_impi is not None, "impu_managed": request.target_impu is not None,
             "ims_domain_managed": request.target_ims_domain is not None, "ist_managed": request.target_ist is not None}
         ims_values = {
@@ -162,6 +174,12 @@ class CardComparisonService:
             target_imsi=request.target_imsi,
             iccid_matches=iccid_matches,
             imsi_matches=imsi_matches,
+            standard_fields_compared=request.compare_standard_fields,
+            acc_readable=current.acc_readable,
+            msisdn_readable=current.msisdn_readable,
+            current_acc=current.acc,
+            current_msisdn=current.msisdn,
+            **standard_values,
             ims_compared=request.compare_ims,
             ims_readable=current.ims_readable,
             current_impi=current.impi,

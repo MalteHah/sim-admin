@@ -80,6 +80,28 @@ def main() -> None:
                     channel.select("MF/DF.GSM/EF.IMSI")
                 imsi_data, _ = channel.read_binary_dec()
 
+                acc_readable = False
+                acc = None
+                try:
+                    channel.select("MF/ADF.USIM/EF.ACC")
+                    acc_raw, _ = channel.read_binary()
+                    acc = acc_raw.upper()
+                    acc_readable = True
+                except Exception:
+                    pass
+
+                msisdn_readable = False
+                msisdn = None
+                try:
+                    channel.select("MF/DF.TELECOM/EF.MSISDN")
+                    msisdn_data, _ = channel.read_record_dec(1)
+                    msisdn = msisdn_data.get("dialing_nr") or msisdn_data.get("msisdn") or None
+                    if msisdn:
+                        msisdn = str(msisdn).rstrip("fF")
+                    msisdn_readable = True
+                except Exception:
+                    pass
+
                 suci_supported = False
                 suci_readable = False
                 suci_state = {}
@@ -129,6 +151,10 @@ def main() -> None:
                     "atr": transport.get_atr().upper(),
                     "iccid": iccid_data["iccid"],
                     "imsi": imsi_data["imsi"],
+                    "acc_readable": acc_readable,
+                    "acc": acc,
+                    "msisdn_readable": msisdn_readable,
+                    "msisdn": msisdn,
                     "ims_supported": ims_supported,
                     "ims_readable": ims_readable,
                     **ims_state,

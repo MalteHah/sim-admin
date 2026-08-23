@@ -220,6 +220,7 @@ async function compareProfile(profile) {
   else if (data.iccid_matches) text.textContent = "Die ICCID wurde sicher zugeordnet. Die IMSI der Karte weicht vom Tresorprofil ab.";
   else text.textContent = "Die ICCID stimmt nicht überein. Die Karte wurde diesem Profil nicht zugeordnet.";
   previewPanel.append(title, text);
+  appendStandardFieldComparison(previewPanel, data);
   appendImsComparison(previewPanel, data);
   appendSuciComparison(previewPanel, data);
   appendReadableAdoptButton(previewPanel, profile.id, data);
@@ -233,6 +234,15 @@ async function compareProfile(profile) {
     previewPanel.append(adoptButton);
   }
   if (data.iccid_matches) await loadProfiles();
+}
+
+function appendStandardFieldComparison(container, data) {
+  if (!data.standard_fields_compared) return;
+  const heading = document.createElement("h3"); heading.textContent = "Weitere Kartendaten";
+  const details = document.createElement("p");
+  const status = (readable, matches, value) => !readable ? "nicht lesbar" : `${value || "leer"} · ${matches ? "stimmt überein" : "abweichend"}`;
+  details.textContent = `ACC ${status(data.acc_readable, data.acc_matches, data.current_acc)} · MSISDN ${status(data.msisdn_readable, data.msisdn_matches, data.current_msisdn)}`;
+  container.append(heading, details);
 }
 
 function appendSuciComparison(container, data) {
@@ -278,6 +288,8 @@ function appendImsComparison(container, data) {
 
 function appendReadableAdoptButton(container, profileId, data) {
   const options = [];
+  if (data.acc_readable && data.acc_matches === false) options.push(["acc", "ACC"]);
+  if (data.msisdn_readable && data.msisdn_matches === false) options.push(["msisdn", "MSISDN"]);
   if (data.ims_readable) {
     const cardHasImsIdentity = Boolean(data.current_impi || data.current_impu || data.current_ims_domain);
     for (const [field, label] of [["impi", "IMPI"], ["impu", "IMPU"], ["ims_domain", "IMS-Domain"], ["ist", "IST"]]) {

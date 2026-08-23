@@ -174,7 +174,7 @@ class ProfileVaultService:
     def adopt_readable_card_fields(self, profile_id: int, card_iccid: str, values: dict, fields: list[str]) -> tuple[int, list[str]]:
         """Commit selected, re-read non-secret IMS/SUCI values as a revision."""
         from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-        allowed = {"impi", "impu", "ims_domain", "ist", "suci"}
+        allowed = {"acc", "msisdn", "impi", "impu", "ims_domain", "ist", "suci"}
         selected = set(fields)
         if not selected or not selected <= allowed: raise ValueError("unsupported_fields")
         with self._lock:
@@ -185,6 +185,11 @@ class ProfileVaultService:
             record = json.loads(AESGCM(self._key).decrypt(row["nonce"], row["ciphertext"], AAD))
             if record["iccid"] != card_iccid: raise ValueError("iccid_mismatch")
             updated = dict(record); adopted: list[str] = []
+            for field in ("acc", "msisdn"):
+                card_value = (values.get(field) or "").upper() if field == "acc" else (values.get(field) or "").lstrip("+")
+                stored_value = (record.get(field) or "").upper() if field == "acc" else (record.get(field) or "").lstrip("+")
+                if field in selected and card_value != stored_value:
+                    updated[field] = card_value; adopted.append(field)
             for field in ("impi", "impu", "ims_domain", "ist"):
                 if field in selected and (record.get(field) or None) != (values.get(field) or None):
                     updated[field] = values.get(field) or ""; adopted.append(field)

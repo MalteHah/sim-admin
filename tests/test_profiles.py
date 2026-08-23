@@ -323,6 +323,22 @@ def test_selected_readable_card_fields_create_revision_without_card_write(tmp_pa
     assert vault.list_revisions(profile.id)[0].note == "Von Karte übernommen: IMPI, IMS-Domain, Routing Indicator, SUCI-Schutzverfahren, HN-Key-ID, HN-Schlüssel"
 
 
+def test_selected_acc_and_msisdn_create_revision(tmp_path) -> None:
+    vault = ProfileVaultService(str(tmp_path / "profiles.db"), str(tmp_path / "profile.key")); vault.import_csv(CSV)
+    profile = vault.list_profiles()[0]
+
+    revision, adopted = vault.adopt_readable_card_fields(
+        profile.id, profile.iccid, {"acc": "0004", "msisdn": "+491701234567"}, ["acc", "msisdn"]
+    )
+
+    updated = vault.get_draft(profile.id)
+    assert revision == 2
+    assert adopted == ["acc", "msisdn"]
+    assert updated.acc == "0004"
+    assert updated.msisdn == "491701234567"
+    assert vault.list_revisions(profile.id)[0].note == "Von Karte übernommen: ACC, MSISDN"
+
+
 def test_optional_ims_fields_are_encrypted_and_backward_compatible(tmp_path) -> None:
     database = tmp_path / "profiles.db"
     vault = ProfileVaultService(str(database), str(tmp_path / "profile.key"))

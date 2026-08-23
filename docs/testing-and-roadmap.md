@@ -32,6 +32,10 @@ Stand: 21. August 2026, Zielversion 0.2.0 (Vorabstand).
   abweichenden IMS-Domain praktisch geprüft: Nur das betroffene Feld wurde nach
   erneuter Karten- und Passwortprüfung als Revision 2 übernommen; die SIM blieb
   beim Übernahmevorgang unverändert.
+- ACC und MSISDN werden zusätzlich rein lesend aus der Karte ermittelt, einzeln
+  mit dem Tresorprofil verglichen und können bei einer Abweichung selektiv als
+  neue Tresorrevision übernommen werden. Der automatisierte Stand ist geprüft;
+  die Abnahme mit einer realen Karte steht noch aus.
 
 ## Vor einem ersten stabilen Release zwingend zu testen
 
@@ -52,8 +56,8 @@ Stand: 21. August 2026, Zielversion 0.2.0 (Vorabstand).
 - SUCI-Berechnung direkt auf der USIM.
 - Mehrere Home-Network-Schlüssel und Protection-Scheme-Einträge gleichzeitig
   auf einer Karte, einschließlich Prioritätsverwaltung.
-- Weitere technisch auslesbare Kartenfelder in Vergleich und selektive
-  Übernahme aufnehmen.
+- Weitere technisch auslesbare Kartenfelder über ACC und MSISDN hinaus in
+  Vergleich und selektive Übernahme aufnehmen.
 
 ### Revision 2 – spätere Kartenfunktionen
 
