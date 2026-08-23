@@ -237,10 +237,11 @@ async function compareProfile(profile) {
 }
 
 function appendStandardFieldComparison(container, data) {
-  if (!data.standard_fields_compared) return;
   const heading = document.createElement("h3"); heading.textContent = "Weitere Kartendaten";
   const details = document.createElement("p");
-  const status = (readable, matches, value) => !readable ? "nicht lesbar" : `${value || "leer"} · ${matches ? "stimmt überein" : "abweichend"}`;
+  const status = (readable, matches, value) => !readable
+    ? "nicht lesbar"
+    : `${value || "leer"} · ${matches === true ? "stimmt überein" : matches === false ? "abweichend" : "nicht verglichen"}`;
   details.textContent = `ACC ${status(data.acc_readable, data.acc_matches, data.current_acc)} · MSISDN ${status(data.msisdn_readable, data.msisdn_matches, data.current_msisdn)}`;
   container.append(heading, details);
 }
