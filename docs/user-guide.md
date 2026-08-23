@@ -1,6 +1,6 @@
-# Vorläufige Bedienungsanleitung
+# Bedienungsanleitung
 
-Diese Anleitung beschreibt den Funktionsstand der Vorabversion 0.2.0. Für reale
+Diese Anleitung beschreibt den Funktionsstand der Version 1.0.0. Für reale
 SIM-Daten sollte vor jedem Schreibtest ein aktuelles USB-Backup vorhanden sein.
 
 ## Anmeldung und Übersicht
@@ -74,6 +74,11 @@ Geheimnisse werden in dieser Notiz nicht gespeichert.
 
 ICCID und ADM1 sind in Änderungsentwürfen absichtlich nicht veränderbar.
 
+Der optionale **Anbietername/SPN** umfasst höchstens 16 ASCII-Zeichen. Beim
+Schreiben bleibt die vorhandene Anzeigevorgabe der Karte erhalten; nur der Name
+wird geändert und anschließend zurückgelesen. Ein Karten-SPN gilt nur dann als
+Abweichung, wenn im Tresor bewusst ein SPN verwaltet wird.
+
 ## SUCI-Heimnetzschlüssel
 
 Unter **Einstellungen → SUCI-Heimnetzschlüssel** können öffentliche Open5GS-
@@ -86,6 +91,11 @@ In Einzelkarte und Profiländerung kann ein aktiver Katalogeintrag ausgewählt
 werden. Routing Indicator `0000` wird dabei als sinnvoller Ausgangswert
 vorbelegt. Verwendete Schlüssel können deaktiviert, aber nicht gelöscht werden;
 bereits gespeicherte Profilrevisionen bleiben vollständig nachvollziehbar.
+
+Bei Berechnung im Endgerät können bis zu acht Schutzverfahren mit eindeutigen
+Prioritäten hinterlegt werden; kleinere Werte werden bevorzugt. Auf einer S17
+kann Profile B alternativ direkt auf der USIM berechnet werden. Dieser Modus
+verwendet genau einen Eintrag mit Priorität 0.
 
 Beim **Kartenabgleich** eines entsprechend konfigurierten Tresorprofils liest die
 Anwendung Routing Indicator, Schutzverfahren, HN-Key-ID, öffentlichen Schlüssel
@@ -102,7 +112,9 @@ Bei abweichenden, auslesbaren Werten erscheint **Abweichende Kartendaten
 Schutzverfahren, HN-Key-ID und öffentlicher Schlüssel werden aus Konsistenzgründen
 nur gemeinsam als SUCI-Block übernommen. Nach erneuter Karten- und Passwortprüfung
 entsteht eine verschlüsselte Tresorrevision. Die SIM-Karte wird nicht verändert;
-ICCID, Ki, OPc und ADM1 sind von dieser Funktion ausgeschlossen.
+ICCID, Ki, OPc und ADM1 sind von dieser Funktion ausgeschlossen. ACC, MSISDN
+und ein bewusst verwalteter abweichender SPN können ebenfalls einzeln übernommen
+werden.
 
 ## Aktivitätsprotokoll
 

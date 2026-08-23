@@ -106,7 +106,7 @@ nicht in dieses Dokument.
 
 ## Bereitstellung und Wartung
 
-- GitHub-Repository, Releasebau und vorläufige Dokumentation sind vorhanden.
+- GitHub-Repository, Releasebau und versionierte Dokumentation sind vorhanden.
 - Das reproduzierbare Neuinstallationsskript ist implementiert; der VM-Test ist offen.
 - Signierte Offline-Pakete und deren rein lesende USB-Prüfung sind implementiert.
 - Vor Updates automatisch sichern, Version und Schema prüfen und bei Fehlern zur
@@ -188,3 +188,19 @@ nicht in dieses Dokument.
   und Passwortprüfung wurde nur die IMS-Domain als neue Tresorrevision übernommen.
 - Der Übernahmevorgang selbst führte keinen Schreibzugriff auf die SIM aus;
   ICCID, Ki, OPc und ADM1 blieben grundsätzlich ausgeschlossen.
+
+## 2026-08-23 – Freigabe 1.0.0
+
+- Kartenrevision 1 mit S17-USIM-SUCI, priorisierten Mehrfachkonfigurationen und
+  selektiver Übernahme weiterer lesbarer Kartendaten abgeschlossen.
+- SUCI-Mehrfachkonfiguration auf Karte 900001 bis zur erfolgreichen
+  Open5GS-Registrierung hardwareseitig abgenommen.
+- Optionalen Service Provider Name (SPN) mit verschlüsselter Speicherung,
+  Kartenvergleich, Übernahme sowie kontrolliertem Schreib- und Rücklesepfad
+  ergänzt und auf einer Karte geprüft.
+- Realistisches verschlüsseltes USB-Backup mit Profilen, Revisionen,
+  Bestandsdaten, SUCI-Schlüsselkatalog, Aktivitätsprotokoll, Tresorschlüssel und
+  SPN vollständig auf Integrität und Entschlüsselbarkeit geprüft.
+- Version 1.0.0 als stabile Freigabe des bestehenden Standalone-Kartenbetriebs
+  dokumentiert. Neuinstallation und produktive Offline-Updates bleiben bis zur
+  gesonderten VM-Abnahme ausdrücklich nicht freigegeben.

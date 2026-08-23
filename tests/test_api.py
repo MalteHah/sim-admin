@@ -2,6 +2,7 @@
 
 from fastapi.testclient import TestClient
 
+from app.core.version import application_version
 from app.main import app
 
 client = TestClient(app)
@@ -22,7 +23,7 @@ def test_dashboard() -> None:
 
     assert response.status_code == 200
     assert "SIM-Admin" in response.text
-    assert "SIM-Admin 0.2.0" in response.text
+    assert f"SIM-Admin {application_version()}" in response.text
     assert "Kartenleser" in response.text
 
 
@@ -37,7 +38,7 @@ def test_api_information() -> None:
     response = authenticated_client().get("/api/v1")
 
     assert response.status_code == 200
-    assert response.json() == {"application": "sim-admin", "version": "0.2.0"}
+    assert response.json() == {"application": "sim-admin", "version": application_version()}
 
 
 def test_health() -> None:

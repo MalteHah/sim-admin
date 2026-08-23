@@ -1,8 +1,8 @@
 # Installation auf einem Standalone-System
 
 Das Installationsskript unterstützt Prüfung, Vorschau und eine geschützte
-Neuinstallation. Die Neuinstallation ist implementiert, muss aber vor dem ersten
-stabilen Release noch auf der vorbereiteten Test-VM abgenommen werden. Für
+Neuinstallation. Die Neuinstallation ist implementiert, für Version 1.0.0 aber
+noch nicht auf der vorbereiteten Test-VM abgenommen. Für
 bestehende Installationen ist derzeit nur die signierte, nicht verändernde
 Offline-Updateprüfung freigegeben.
 
@@ -55,7 +55,7 @@ Paketquelle zurückgreifen.
 Ein signiertes Release-Paket wird zunächst ausschließlich geprüft:
 
 ```bash
-./scripts/offline-update.sh /pfad/zum/sim-admin-0.2.0.tar.gz
+./scripts/offline-update.sh /pfad/zum/sim-admin-1.0.0.tar.gz
 ```
 
 Neben dem Archiv müssen dessen `.sha256`- und `.sig`-Dateien liegen. Der Prüfer

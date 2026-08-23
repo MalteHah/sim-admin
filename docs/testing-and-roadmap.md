@@ -1,6 +1,6 @@
 # Offene Punkte und Abnahmetests
 
-Stand: 23. August 2026, Zielversion 0.2.0 (Vorabstand).
+Stand: 23. August 2026, freigegebene Kartenrevision 1 / Version 1.0.0.
 
 ## Erfolgreich geprüft
 
@@ -34,15 +34,20 @@ Stand: 23. August 2026, Zielversion 0.2.0 (Vorabstand).
   beim Übernahmevorgang unverändert.
 - ACC und MSISDN werden zusätzlich rein lesend aus der Karte ermittelt, einzeln
   mit dem Tresorprofil verglichen und können bei einer Abweichung selektiv als
-  neue Tresorrevision übernommen werden. Der automatisierte Stand ist geprüft;
-  die Abnahme mit einer realen Karte steht noch aus.
+  neue Tresorrevision übernommen werden.
 - Mehrere Protection-Scheme-Einträge und zugehörige HN-Schlüssel werden aus
   `EF.SUCI_Calc_Info` vollständig aufgelöst und nach Kartenpriorität angezeigt.
   Die Bearbeitung, Validierung und der gemeinsame Schreibpfad für bis zu acht
-  priorisierte Einträge sind implementiert; der reale Mehrfacheintrag-Kartentest
-  steht noch aus.
+  priorisierte Einträge sind implementiert. Eine Mehrfachkonfiguration wurde auf
+  Karte 900001 geschrieben; das Endgerät wählte Profile B mit HN-Key-ID 2 und
+  Open5GS schloss die Registrierung erfolgreich ab.
+- Ein optionaler SPN wurde geschrieben, zurückgelesen und im Kartenabgleich
+  korrekt behandelt. Nicht verwaltete Karten-SPNs lösen kein Übernahmeangebot aus.
+- Ein verschlüsseltes USB-Backup mit 20 Profilen, 42 Revisionen, sechs
+  Bestandsdatensätzen, zwei SUCI-Schlüsselprofilen, 373 Aktivitäten und einem
+  SPN-Datensatz wurde vollständig entschlüsselt und gegen alle Prüfsummen geprüft.
 
-## Vor einem ersten stabilen Release zwingend zu testen
+## Nach Version 1.0.0 noch offene Betriebstests
 
 - Neuinstallation aus einem vollständig offline gebauten Release-Paket auf der
   vorbereiteten Test-VM.
@@ -50,9 +55,8 @@ Stand: 23. August 2026, Zielversion 0.2.0 (Vorabstand).
   vom USB-Stick.
 - Vollständige Updateausführung einschließlich automatischem Vorab-Backup und
   Rückkehr zur vorherigen Version. Dieser Teil ist noch nicht implementiert.
-- Backup und Restore eines realistischen Profiltresors auf einem zweiten
-  Datenträger; danach Anmeldung, Historie und Entschlüsselung stichprobenartig
-  prüfen.
+- Wiederherstellung des geprüften realistischen Backups auf einer zweiten
+  Installation; danach Anmeldung, Historie und Entschlüsselung prüfen.
 
 ## Karten-Roadmap
 
@@ -93,7 +97,7 @@ Hardware-Abnahme umgesetzt.
 - Produktiver Offline-Updatepfad mit Sicherung, atomarem Austausch,
   Datenbankschema-Prüfung und Rollback.
 - Bedienoberfläche und Fehlermeldungen nach den Hardwaretests nachschärfen.
-- Finales Release-Paket, signierter Tag und abschließende Release Notes.
+- Abgenommener Installations- und Updatepfad für die nächste Version.
 
 Netzseitige IMS-Systeme sind ausdrücklich nicht Bestandteil dieser Karten-
 Roadmap und werden in einem getrennten Projektblock behandelt.

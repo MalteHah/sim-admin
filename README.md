@@ -16,8 +16,11 @@ entwickelt.
 - verschlüsselte Änderungsentwürfe und append-only Revisionen
 - Dry Run und read-only Kartenabgleich
 - kontrolliertes Schreiben von IMSI, ACC und MSISDN
+- optionaler Service Provider Name (SPN) mit Vergleich und Rückprüfung
 - kartentypspezifisches Ki-/OPc-Schreiben für SysmocomSJA5
 - optionale IMS- und 5GS-/SUCI-Profildaten in Import und Einzelkartenerfassung
+- SUCI-Berechnung im Endgerät oder auf einer S17-USIM sowie bis zu acht
+  priorisierte Schutzverfahren
 - vorab lesend geprüfte und zurückgelesene IMS-/5GS-Schreibpfade für SysmocomSJA5
 - metadatenbasiertes Aktivitätsprotokoll ohne SIM-Geheimnisse
 - AES-256-GCM-verschlüsselte USB-Backups und Wiederherstellung
@@ -63,12 +66,12 @@ uvicorn app.main:app --reload
 
 ## Dokumentation
 
-- [Vorläufige Bedienungsanleitung](docs/user-guide.md)
-- [Vorläufige Administrationsanleitung](docs/administration.md)
+- [Bedienungsanleitung](docs/user-guide.md)
+- [Administrationsanleitung](docs/administration.md)
 - [Standalone-Installation](docs/standalone/installation.md)
 - [Backup und Wiederherstellung](docs/standalone/backup-restore.md)
-- [Offene Punkte und Abnahmetests](docs/testing-and-roadmap.md)
-- [Vorläufige Release Notes 0.2.0](docs/release-notes-0.2.0.md)
+- [Roadmap und Abnahmestand](docs/testing-and-roadmap.md)
+- [Release Notes 1.0.0](docs/release-notes-1.0.0.md)
 - [Architektur](docs/architecture/overview.md)
 - [Projektchronik](docs/project-history.md)
 - [Änderungsprotokoll](CHANGELOG.md)
@@ -78,7 +81,7 @@ uvicorn app.main:app --reload
 ## Releases
 
 Die Datei `VERSION` bestimmt die Anwendungsversion. Ein Tag mit derselben Version
-(`v0.2.0`) startet nach erfolgreichen Tests den GitHub-Releaseprozess. Lokal kann
+(`v1.0.0`) startet nach erfolgreichen Tests den GitHub-Releaseprozess. Lokal kann
 das reproduzierbare Archiv samt SHA-256-Prüfsumme so gebaut werden:
 
 ```bash
@@ -91,7 +94,7 @@ bereits als vertrauenswürdiger Release-Schlüssel hinterlegt sein:
 
 ```bash
 ./scripts/build-release.sh --signing-key /sicherer/ort/release-signing-key.pem
-./scripts/verify-release.sh dist/sim-admin-0.2.0.tar.gz \
+./scripts/verify-release.sh dist/sim-admin-1.0.0.tar.gz \
   --public-key /etc/sim-admin/release-signing-key.pub.pem
 ```
 
@@ -122,9 +125,10 @@ vorgesehenen Testkarten und einem vorhandenen Backup erfolgen.
 
 ## Projektstatus
 
-`0.2.0` ist ein dokumentierter Vorabstand. Ein stabiler GitHub-Release-Tag wird
-erst nach Hardware-, Neuinstallations-, Offline-Update- und Restore-Abnahme
-erstellt. Kamailio-IMS wird als eigener Integrationsblock separat bearbeitet.
+`1.0.0` ist die erste stabile Freigabe des auf der bestehenden Standalone-VM
+abgenommenen Kartenverwaltungs- und Personalisierungsumfangs. Neuinstallation
+und produktive Offline-Updates sind noch nicht freigegeben. Netzseitige
+IMS-Systeme sind nicht Bestandteil dieses Projekts.
 
 ## Lizenz
 

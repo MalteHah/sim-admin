@@ -40,9 +40,11 @@ Backups können ausschließlich auf aktuell eingebundene Datenträger unter
 den freigegebenen Mount-Pfaden geschrieben werden. Das Format `.sab` enthält
 ein mit AES-256-GCM verschlüsseltes ZIP-Paket. Der Schlüssel wird mit scrypt
 aus einem mindestens zwölf Zeichen langen, nicht gespeicherten Passwort
-abgeleitet. Das Manifest enthält Formatversion und SHA-256-Prüfsummen. Aktuell
-wird ein konsistenter Snapshot des Aktivitätsprotokolls gesichert. Vor einer
-Wiederherstellung werden Authentizität, Formatversion und Prüfsumme kontrolliert;
+abgeleitet. Das Manifest enthält Formatversion und SHA-256-Prüfsummen. Gesichert
+werden konsistente Snapshots von Aktivitätsprotokoll und Profiltresor sowie der
+zugehörige Tresorschlüssel. Damit sind Profile, Revisionen, Entwürfe,
+Bestandsdaten, SPN und SUCI-Schlüsselkatalog enthalten. Vor einer
+Wiederherstellung werden Authentizität, Formatversion und Prüfsummen kontrolliert;
 das Ersetzen erfolgt erst nach einer getrennten Sicherheitsbestätigung.
 
 ## Reader-Adapter
@@ -89,6 +91,11 @@ Profilrecords enthalten. Fehlende Schlüssel werden beim Lesen älterer Records 
 „nicht gesetzt“ behandelt. Auf eindeutig erkannten SysmocomSJA5-Karten können sie
 nach ICCID- und ADM1-Prüfung geschrieben und unmittelbar zurückgelesen werden.
 
+Der Service Provider Name (SPN) ist ein optionales Feld mit höchstens 16
+ASCII-Zeichen. Der Schreibadapter erhält das vorhandene Anzeige-Byte der Karte
+und ersetzt ausschließlich den Namen. Vergleich und Übernahme unterscheiden
+bewusst zwischen „nicht verwaltet“ und „abweichend“.
+
 Routing Indicator, Protection Scheme, Home-Network Public Key ID und Public Key
 sind ebenfalls optionale Bestandteile derselben verschlüsselten Profilrecords.
 Für SJA5 stehen zwei SUCI-Berechnungsarten zur Verfügung. Die Berechnung im
@@ -116,16 +123,17 @@ geändert, entsperrt oder geschrieben.
 
 ## pySim-Integration
 
-pySim wird später ausschließlich hinter einem Adapter angesprochen. Die übrige
+pySim wird ausschließlich hinter einem Adapter angesprochen. Die übrige
 Anwendung arbeitet mit eigenen Fachmodellen und kennt weder pySim-Kommandos noch
 dessen interne Datenstrukturen. Hardwarezugriffe lassen sich dadurch isoliert
 testen und bei Bedarf austauschen.
 
 ## Sicherheitsgrundsatz
 
-Künftige Schlüssel- und Zugangsdaten wie Ki, OPc, ADM, PIN oder PUK dürfen
-nicht protokolliert werden. Speicherung, Export und Backup dieser Werte müssen
-vor ihrer Implementierung ein eigenes Sicherheitskonzept erhalten.
+Schlüssel- und Zugangsdaten wie Ki, OPc, ADM, PIN oder PUK dürfen nicht
+protokolliert werden. Sie werden im Profiltresor gerätegebunden verschlüsselt;
+Exporte bleiben redigiert und USB-Backups werden zusätzlich mit einem separaten
+Passwort vollständig verschlüsselt.
 
 Der produktive Dienst verwendet HTTPS mit einem lokalen Zertifikat. Port 8000
 nimmt keine Anmeldedaten oder API-Aufrufe mehr an, sondern leitet ausschließlich

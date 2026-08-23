@@ -1,4 +1,4 @@
-# Vorläufige Administrationsanleitung
+# Administrationsanleitung
 
 ## Betriebsmodell
 
@@ -68,8 +68,8 @@ USB-Backup erfasst, erzeugen aber keine neue SIM-Profilrevision.
 
 Nur signierte Pakete verwenden. Die Offline-Prüfung verändert keine Dateien und
 ist vor jedem späteren Update verpflichtend. Der eigentliche Austausch einer
-bestehenden Installation ist im Vorabstand noch nicht freigegeben und muss erst
-auf der Test-VM abgenommen werden.
+bestehenden Installation ist in Version 1.0.0 noch nicht freigegeben und muss
+erst auf der Test-VM abgenommen werden.
 
 ## Störungsfall
 

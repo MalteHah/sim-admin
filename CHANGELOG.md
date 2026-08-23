@@ -2,10 +2,13 @@
 
 Alle wesentlichen Änderungen an diesem Projekt werden hier dokumentiert.
 
-## Unreleased – Zielversion 0.2.0
+## Unreleased
 
-Der aktuelle Stand ist noch nicht als stabiles Release freigegeben. Offene
-Hardware- und Bereitstellungstests stehen in `docs/testing-and-roadmap.md`.
+## 1.0.0 – 2026-08-23
+
+Erste stabile Freigabe des auf der Standalone-VM betriebenen Kartenverwaltungs-
+und Personalisierungsumfangs. Noch nicht freigegebene Installations- und
+Updatefunktionen stehen in `docs/testing-and-roadmap.md`.
 
 ### Changed
 
@@ -127,3 +130,9 @@ Hardware- und Bereitstellungstests stehen in `docs/testing-and-roadmap.md`.
 - Hardware-Abnahme einer SUCI-Mehrfachkonfiguration auf Karte 900001:
   Das Endgerät wählte erfolgreich Profile B mit HN-Key-ID 2 und die
   Open5GS-Registrierung wurde abgeschlossen
+- Optionaler Service Provider Name (SPN) mit rein lesendem Kartenabgleich,
+  verschlüsselter Speicherung, selektiver Übernahme und kontrolliertem,
+  zurückgelesenem Schreibpfad
+- Erfolgreiche Inhaltsprüfung eines realistischen USB-Backups mit 20 Profilen,
+  42 Revisionen, Bestandsdaten, SUCI-Schlüsselkatalog, Aktivitätsprotokoll,
+  Profiltresorschlüssel und verschlüsseltem SPN-Datensatz

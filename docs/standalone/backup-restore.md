@@ -10,6 +10,11 @@ gesamte Paket ist mit AES-256-GCM verschlüsselt und enthält:
 - zugehörigen Geräte-/Profiltresorschlüssel,
 - Manifest mit SHA-256-Prüfsummen.
 
+Die Profildatenbank umfasst aktive Profile einschließlich SPN, IMS und SUCI,
+sämtliche Revisionen, offene Änderungsentwürfe, Bestandsverwaltung und den
+verschlüsselten SUCI-Schlüsselkatalog. Nicht enthalten sind Betriebssystem,
+Anmeldepasswort, TLS-Schlüssel, Release-Vertrauensanker und Programmdateien.
+
 Der USB-Stick selbst muss dafür nicht vollständig verschlüsselt sein. Ohne das
 mindestens zwölf Zeichen lange Backup-Passwort ist die `.sab`-Datei dennoch nicht
 lesbar. Das Passwort wird weder in der Anwendung noch im Backup gespeichert.
@@ -59,3 +64,8 @@ Backups behalten. Backup-Passwörter getrennt von den Datenträgern verwahren.
 Inventar-CSV-Dateien sind redigierte Arbeitsunterlagen und keine
 Wiederherstellungssicherung.
 
+Für Version 1.0.0 wurde ein realistisches Backup mit 20 Profilen, 42 Revisionen,
+Bestandsdaten, zwei SUCI-Schlüsselprofilen, Aktivitätsprotokoll und einem
+SPN-Datensatz vollständig entschlüsselt und gegen alle Manifest-Prüfsummen
+geprüft. Die Wiederherstellung auf einer zweiten Testinstallation bleibt ein
+separater Betriebstest.
