@@ -61,22 +61,32 @@ async function loadSuciKeyProfiles() {
 
 document.querySelector("#change-suci-key-profile").addEventListener("change", (event) => {
   const key = suciKeys.find(item => item.id === Number(event.target.value));
-  if (!key) { syncChangeSuciFields(); return; }
+  if (!key) { syncChangeSuciFields(); syncChangeSuciModeAvailability(); return; }
   document.querySelector("#change-protection-scheme").value = String(key.scheme);
   document.querySelector("#change-hn-public-key-id").value = String(key.key_id);
   document.querySelector("#change-hn-public-key").value = key.public_key;
   if (!document.querySelector("#change-routing-indicator").value) document.querySelector("#change-routing-indicator").value = "0000";
-  syncChangeSuciFields();
+  syncChangeSuciFields(); syncChangeSuciModeAvailability();
 });
-document.querySelector("#change-protection-scheme").addEventListener("change", () => syncChangeSuciFields(true));
+document.querySelector("#change-protection-scheme").addEventListener("change", () => { syncChangeSuciFields(true); syncChangeSuciModeAvailability(); });
 document.querySelector("#change-suci-calculation-mode").addEventListener("change", syncChangeSuciMode);
+
+function syncChangeSuciModeAvailability() {
+  const scheme = document.querySelector("#change-protection-scheme");
+  const mode = document.querySelector("#change-suci-calculation-mode");
+  const usimOption = mode.querySelector('option[value="usim"]');
+  const profileBSelected = scheme.value === "2";
+  usimOption.disabled = !profileBSelected;
+  if (!profileBSelected && mode.value === "usim") mode.value = "me";
+  mode.title = profileBSelected ? "" : "Auf der USIM ist bei S17 ausschließlich mit Profile B verfügbar.";
+}
 
 function syncChangeSuciMode() {
   const mode = document.querySelector("#change-suci-calculation-mode").value;
   const scheme = document.querySelector("#change-protection-scheme");
   for (const option of scheme.options) option.disabled = mode === "usim" && option.value !== "" && option.value !== "2";
   if (mode === "usim" && scheme.value !== "2") scheme.value = "2";
-  syncChangeSuciFields(true);
+  syncChangeSuciFields(true); syncChangeSuciModeAvailability();
 }
 
 function syncChangeSuciFields(schemeChanged = false) {
@@ -416,7 +426,7 @@ async function openChange(id) {
   document.querySelector("#change-protection-scheme").value = profile.protection_scheme ?? "";
   document.querySelector("#change-hn-public-key-id").value = profile.hn_public_key_id ?? "";
   document.querySelector("#change-hn-public-key").value = profile.hn_public_key || "";
-  syncChangeSuciMode();
+  syncChangeSuciMode(); syncChangeSuciModeAvailability();
   if (draftResponse.ok) {
     const draft = await draftResponse.json();
     if (draft) { changeStatus.textContent = `Vorgemerkt seit ${new Date(draft.created_at).toLocaleString("de-DE")}: ${draft.changed_fields.join(", ").toUpperCase()}. Aktive Revision: ${draft.base_revision}.`; changeStatus.hidden = false; changeDiscard.hidden = false; changePreview.hidden = false; changeCompare.hidden = false; changeWrite.hidden = false; }
