@@ -77,3 +77,13 @@ Bei einem Fehler keine wiederholten Schreibversuche auf derselben Karte starten.
 Zuerst Aktivitätsprotokoll und Dienststatus prüfen, Kartenleser neu verbinden und
 den Kartenstand erneut ausschließlich lesen. Fehlermeldungen und Metadaten dürfen
 dokumentiert werden; Geheimwerte gehören niemals in Issues oder Chatverläufe.
+
+### Keine Registrierung im Core sichtbar
+
+Enthält ein Mitschnitt auf der N2-Schnittstelle ausschließlich SCTP-Heartbeats,
+aber keine `InitialUEMessage`, keinen Registration Request und keine SUCI oder
+IMSI, hat der Registrierungsversuch Open5GS nicht erreicht. Dann zuerst die
+Funk- und Mobilfunkeinstellungen des Endgeräts prüfen, insbesondere versteckte
+oder herstellerspezifische Schalter für 5G. Ki, OPc und der Subscriber-Datensatz
+sind zu diesem Zeitpunkt noch nicht beteiligt. Erst wenn NGAP-Nutzdaten sichtbar
+sind, ist eine weitere Analyse im Core sinnvoll.
