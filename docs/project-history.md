@@ -130,16 +130,17 @@ nicht in dieses Dokument.
 ## Noch nicht umgesetzt
 
 - Unterstützung weiterer Kartentypen für Ki und OPc.
-- Unterstützung weiterer SUCI-Schlüssel und mehrerer Protection-Scheme-Prioritäten.
-- Feldweiser Kartenvergleich mit selektiver Übernahme aller technisch auslesbaren
-  Werte; ICCID bleibt Zuordnungsmerkmal und nicht auslesbare Geheimnisse wie Ki,
-  OPc und ADM1 werden nicht angeboten.
+- Hardware-Abnahme mehrerer Protection-Scheme-Einträge auf einer Karte; die
+  Prioritätsverwaltung, Speicherung, der Schreibpfad und der Vergleich sind
+  bereits implementiert.
+- Zusätzliche kartentypabhängig lesbare Felder über ACC und MSISDN hinaus.
 - Produktive Updateausführung mit Vorab-Backup und Rollback.
 
 ## Priorisierte Karten-Roadmap
 
-- Revision 1: SUCI-Berechnung auf der USIM, mehrere SUCI-Konfigurationen mit
-  Prioritäten und weitere auslesbare Felder für Vergleich und Übernahme.
+- Revision 1 ist funktional umgesetzt: SUCI-Berechnung auf der USIM, mehrere
+  SUCI-Konfigurationen mit Prioritäten sowie ACC-/MSISDN-Vergleich und
+  selektive Übernahme. Die Mehrfachkonfiguration benötigt noch Hardware-Abnahme.
 - Revision 2: weitere Kartentypen, S17-spezifische Parameter, weitere
   kartenspezifische SUCI-Varianten, erweiterte IMS-Strukturen,
   Stapelverarbeitung und Wiederaufnahme unterbrochener Schreibvorgänge.

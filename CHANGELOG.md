@@ -10,6 +10,11 @@ Hardware- und Bereitstellungstests stehen in `docs/testing-and-roadmap.md`.
 ### Changed
 
 - Projektlizenz auf GPL-3.0-or-later festgelegt
+- Priorität des SUCI-Haupteintrags in der Änderungsmaske sichtbar und
+  bearbeitbar gemacht; zusätzliche Verfahren erhalten automatisch den nächsten
+  freien Prioritätswert, während der S17-USIM-Modus fest Priorität 0 verwendet
+- Optionale IMS-Eingabefelder in Einzelkarte und Profiländerung einheitlich als
+  optional gekennzeichnet
 
 ### Added
 
@@ -116,3 +121,6 @@ Hardware- und Bereitstellungstests stehen in `docs/testing-and-roadmap.md`.
 - Erfolgreicher Hardwaretest der selektiven Übernahme einer abweichenden IMS-Domain als neue Tresorrevision ohne SIM-Schreibzugriff
 - Karten-Roadmap in Revision 1 und Revision 2 priorisiert und ADM1-Änderungen verbindlich aus dem Funktionsumfang ausgeschlossen
 - Kurze, nicht sensible Änderungsnotiz je Profilrevision; bestehende Revisionen werden neutral gekennzeichnet
+- Kartenfunktionsumfang der Revision 1 abgeschlossen: S17-USIM-Berechnung,
+  priorisierte Mehrfachkonfigurationen sowie ACC-/MSISDN-Vergleich und
+  selektive Übernahme

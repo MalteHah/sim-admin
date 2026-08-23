@@ -91,28 +91,30 @@ nach ICCID- und ADM1-Prüfung geschrieben und unmittelbar zurückgelesen werden.
 
 Routing Indicator, Protection Scheme, Home-Network Public Key ID und Public Key
 sind ebenfalls optionale Bestandteile derselben verschlüsselten Profilrecords.
-Die erste Ausbaustufe verwendet auf allen SJA5-Varianten die SUCI-Berechnung im
-Endgerät: `DF.5GS/EF.Routing_Indicator`, `DF.5GS/EF.SUCI_Calc_Info`, aktivierter
-UST-Service 124 und deaktivierter Service 125. Der Listenindex des Public Keys
-bleibt dabei von der Open5GS-HN-Key-ID getrennt. Alle Ziele werden vor der ersten
-Mutation gelesen; ein Revisions-Commit folgt erst nach Readback. Die
-S17-spezifische Berechnung auf der USIM über `DF.SAIP` bleibt zurückgestellt.
+Für SJA5 stehen zwei SUCI-Berechnungsarten zur Verfügung. Die Berechnung im
+Endgerät verwendet `DF.5GS/EF.Routing_Indicator`,
+`DF.5GS/EF.SUCI_Calc_Info`, UST 124 aktiv und UST 125 inaktiv. Bis zu acht
+Protection-Scheme-Einträge können mit eindeutigen Prioritäten verwaltet werden.
+Auf S17 kann alternativ Profile B über `DF.SAIP` direkt auf der USIM berechnet
+werden; dafür sind UST 124 und 125 gemeinsam aktiv und die Priorität ist 0. Der
+Listenindex des Public Keys bleibt von der Open5GS-HN-Key-ID getrennt. Alle Ziele
+werden vor der ersten Mutation gelesen; ein Revisions-Commit folgt erst nach
+erfolgreichem Readback.
 
 Geheime Werte werden mit Pydantics `SecretStr` gekapselt, damit sie nicht
-versehentlich in Standarddarstellungen und Logs im Klartext erscheinen. Das
-ersetzt noch keine spätere Verschlüsselung bei Speicherung oder Export.
+versehentlich in Standarddarstellungen und Logs im Klartext erscheinen. Im
+Profiltresor und in Änderungsentwürfen werden sie zusätzlich gerätegebunden mit
+AES-256-GCM verschlüsselt gespeichert; Exporte bleiben grundsätzlich redigiert.
 
 ## Aktuelle Abgrenzung
 
-Der aktuelle Stand enthält weiterhin keine:
+Der aktuelle Stand unterstützt ausschließlich eindeutig erkannte und getestete
+Kartenpfade. Weitere Hersteller und Kartentypen, eine Stapelverarbeitung sowie
+die Wiederaufnahme unterbrochener Schreibvorgänge gehören zur Revision 2. ADM1
+wird ausschließlich zur Schreibautorisierung geprüft und niemals gelesen,
+geändert, entsperrt oder geschrieben.
 
-- pySim-Abhängigkeit,
-- Schreiben von SIM-Inhalten,
-- Persistenz von SIM- oder Provisionierungsdaten,
-- Import-, Export- oder Backup-Logik,
-- Benutzerverwaltung.
-
-## Vorgesehene pySim-Integration
+## pySim-Integration
 
 pySim wird später ausschließlich hinter einem Adapter angesprochen. Die übrige
 Anwendung arbeitet mit eigenen Fachmodellen und kennt weder pySim-Kommandos noch

@@ -1,6 +1,6 @@
 # Offene Punkte und Abnahmetests
 
-Stand: 21. August 2026, Zielversion 0.2.0 (Vorabstand).
+Stand: 23. August 2026, Zielversion 0.2.0 (Vorabstand).
 
 ## Erfolgreich geprüft
 
@@ -56,14 +56,18 @@ Stand: 21. August 2026, Zielversion 0.2.0 (Vorabstand).
 
 ## Karten-Roadmap
 
-### Revision 1 – nächste Kartenfunktionen
+### Revision 1 – implementiert
 
 - SUCI-Berechnung direkt auf der USIM ist auf S17 mit Profile B und UST 124/125
   Ende-zu-Ende gegen Open5GS geprüft.
 - Mehrere Home-Network-Schlüssel und Protection-Scheme-Einträge einschließlich
   Prioritätsverwaltung sind implementiert; Hardware-Abnahme noch offen.
-- Weitere technisch auslesbare Kartenfelder über ACC und MSISDN hinaus in
-  Vergleich und selektive Übernahme aufnehmen.
+- ACC und MSISDN werden rein lesend verglichen und können einzeln in eine neue
+  Tresorrevision übernommen werden.
+
+Damit ist der geplante Funktionsumfang der Karten-Revision 1 umgesetzt. Offen
+bleibt lediglich der Hardware-Abnahmetest einer Mehrfachkonfiguration auf einer
+geeigneten Karte.
 
 ### Revision 2 – spätere Kartenfunktionen
 
