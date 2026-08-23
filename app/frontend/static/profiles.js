@@ -52,6 +52,17 @@ const inventoryError = document.querySelector("#inventory-error");
 let inventoryProfileId = null;
 let suciKeys = [];
 
+function validationMessage(detail, fallback) {
+  if (typeof detail === "string") return detail;
+  if (detail?.message) return detail.message;
+  if (Array.isArray(detail)) return detail.map(item => {
+    const field = (item.loc || []).filter(part => part !== "body").join(".");
+    const message = String(item.msg || "Eingabe ungültig").replace(/^Value error,\s*/i, "");
+    return field ? `${field}: ${message}` : message;
+  }).join(" · ");
+  return fallback;
+}
+
 async function loadSuciKeyProfiles() {
   const response = await fetch("/api/v1/settings/suci-keys", {cache: "no-store"}); if (!response.ok) return;
   suciKeys = (await response.json()).filter(key => key.active);
@@ -464,7 +475,7 @@ changeForm.addEventListener("submit", async (event) => {
   try {
     const response = await fetch(`/api/v1/profiles/${changeProfileId}/change-draft`, {method: "POST", headers: {"Content-Type": "application/json", "Cache-Control": "no-store"}, body: JSON.stringify(payload), cache: "no-store"});
     const data = await response.json();
-    if (!response.ok) { changeError.textContent = typeof data.detail === "string" ? data.detail : "Entwurf konnte nicht gespeichert werden."; changeError.hidden = false; return; }
+    if (!response.ok) { changeError.textContent = validationMessage(data.detail, "Entwurf konnte nicht gespeichert werden."); changeError.hidden = false; return; }
     changeDialog.close(); previewPanel.hidden = false; previewPanel.replaceChildren();
     const title = document.createElement("h2"); title.textContent = "Änderungsentwurf gespeichert";
     const text = document.createElement("p"); text.textContent = `Vorgemerkt: ${data.changed_fields.join(", ").toUpperCase()}. Das aktive Profil bleibt auf Revision ${data.base_revision}; es wurde nichts auf die SIM geschrieben.`;
