@@ -176,6 +176,12 @@ button:disabled { cursor: wait; opacity: .65; }
 .secret-values code { overflow-wrap: anywhere; user-select: all; }
 .dialog-actions { display: flex; justify-content: end; gap: 10px; }
 .change-actions { flex-wrap: wrap; }
+.suci-priority-editor { display: grid; gap: 10px; padding: 14px; border: 1px solid var(--border); border-radius: 12px; }
+.suci-priority-heading { display: flex; align-items: start; justify-content: space-between; gap: 12px; }
+.suci-priority-heading p { margin: 4px 0 0; color: var(--muted); }
+.suci-config-row { display: grid; grid-template-columns: 90px minmax(150px, 1fr) 110px minmax(200px, 2fr) auto; gap: 8px; align-items: end; margin-top: 8px; }
+.suci-config-row label { display: grid; gap: 4px; }
+@media (max-width: 900px) { .suci-config-row { grid-template-columns: 1fr 1fr; } }
 .dialog-actions button:last-child { color: white; background: var(--accent); }
 .history-dialog > div { display: grid; gap: 12px; }
 .history-values { display: grid; border: 1px solid var(--border); border-radius: 10px; }

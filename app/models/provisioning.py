@@ -4,6 +4,7 @@ from typing import Literal
 from pydantic import Field, SecretStr, field_validator, model_validator
 
 from app.models.common import DomainModel
+from app.models.card import SuciConfiguration
 
 
 class ProvisioningDraft(DomainModel):
@@ -25,6 +26,7 @@ class ProvisioningDraft(DomainModel):
     protection_scheme: int | None = Field(default=None, ge=0, le=2)
     hn_public_key_id: int | None = Field(default=None, ge=0, le=255)
     hn_public_key: str | None = Field(default=None, pattern=r"^(?:[0-9A-Fa-f]{2})+$")
+    suci_configurations: list[SuciConfiguration] = Field(default_factory=list, max_length=8)
 
     @field_validator("ki", "opc")
     @classmethod
@@ -37,6 +39,16 @@ class ProvisioningDraft(DomainModel):
 
     @model_validator(mode="after")
     def validate_suci_configuration(self):
+        if self.suci_configurations:
+            priorities = [item.priority for item in self.suci_configurations]
+            if len(priorities) != len(set(priorities)):
+                raise ValueError("SUCI priorities must be unique")
+            if self.suci_calculation_mode == "usim" and len(self.suci_configurations) != 1:
+                raise ValueError("SUCI calculation on the USIM supports exactly one configuration")
+            first = min(self.suci_configurations, key=lambda item: item.priority)
+            object.__setattr__(self, "protection_scheme", first.protection_scheme)
+            object.__setattr__(self, "hn_public_key_id", first.hn_public_key_id)
+            object.__setattr__(self, "hn_public_key", first.hn_public_key)
         if self.protection_scheme is None:
             if self.hn_public_key_id is not None or self.hn_public_key:
                 raise ValueError("protection_scheme is required for a home-network public key")
@@ -111,6 +123,7 @@ class CardComparisonRequest(DomainModel):
     target_protection_scheme: int | None = None
     target_hn_public_key_id: int | None = None
     target_hn_public_key: str | None = None
+    target_suci_configurations: list[SuciConfiguration] = Field(default_factory=list)
 
 
 class CardComparisonResult(DomainModel):
@@ -165,6 +178,7 @@ class CardComparisonResult(DomainModel):
     suci_service_124_active: bool | None = None
     suci_service_125_active: bool | None = None
     suci_matches: bool | None = None
+    suci_configurations_match: bool | None = None
     warnings: list[str]
 
 

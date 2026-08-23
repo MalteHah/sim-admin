@@ -351,7 +351,8 @@ def prepare_profile_change(profile_id: int, payload: ProfileChangeRequest, reque
         result = vault.prepare_change(profile_id, payload.imsi, payload.msisdn, payload.acc,
             payload.ki.get_secret_value() if payload.ki else None, payload.opc.get_secret_value() if payload.opc else None,
             payload.impi, payload.impu, payload.ims_domain, payload.ist, payload.routing_indicator,
-            payload.protection_scheme, payload.suci_calculation_mode, payload.hn_public_key_id, payload.hn_public_key)
+            payload.protection_scheme, payload.suci_calculation_mode, payload.hn_public_key_id, payload.hn_public_key,
+            [item.model_dump() for item in payload.suci_configurations])
     except KeyError as exc: raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profil nicht gefunden") from exc
     except ValueError as exc:
         if str(exc) == "no_changes": raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Es wurden keine Änderungen eingegeben") from exc
@@ -392,7 +393,8 @@ def compare_profile_change_to_card(profile_id: int, vault: Annotated[ProfileVaul
             compare_ims=True, target_impi=draft.impi, target_impu=draft.impu, target_ims_domain=draft.ims_domain, target_ist=draft.ist,
             compare_suci=True, target_routing_indicator=draft.routing_indicator, target_protection_scheme=draft.protection_scheme,
             target_suci_calculation_mode=draft.suci_calculation_mode,
-            target_hn_public_key_id=draft.hn_public_key_id, target_hn_public_key=draft.hn_public_key))
+            target_hn_public_key_id=draft.hn_public_key_id, target_hn_public_key=draft.hn_public_key,
+            target_suci_configurations=draft.suci_configurations))
     except SIMReadError as exc:
         audit.record("profiles.change_draft_card_comparison", "error", exc.code)
         raise HTTPException(status_code=status.HTTP_409_CONFLICT if exc.code == "no_card" else status.HTTP_503_SERVICE_UNAVAILABLE, detail={"code": exc.code, "message": str(exc)}) from exc
@@ -442,7 +444,8 @@ def compare_stored_profile(profile_id: int, vault: Annotated[ProfileVaultService
             compare_ims=True, target_impi=draft.impi, target_impu=draft.impu, target_ims_domain=draft.ims_domain, target_ist=draft.ist,
             compare_suci=True, target_routing_indicator=draft.routing_indicator, target_protection_scheme=draft.protection_scheme,
             target_suci_calculation_mode=draft.suci_calculation_mode,
-            target_hn_public_key_id=draft.hn_public_key_id, target_hn_public_key=draft.hn_public_key))
+            target_hn_public_key_id=draft.hn_public_key_id, target_hn_public_key=draft.hn_public_key,
+            target_suci_configurations=draft.suci_configurations))
     except SIMReadError as exc:
         audit.record("profiles.card_comparison", "error", exc.code)
         raise HTTPException(status_code=status.HTTP_409_CONFLICT if exc.code == "no_card" else status.HTTP_503_SERVICE_UNAVAILABLE, detail={"code": exc.code, "message": str(exc)}) from exc

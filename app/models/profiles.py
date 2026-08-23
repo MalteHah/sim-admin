@@ -4,6 +4,7 @@ from datetime import date, datetime
 from typing import Literal
 from pydantic import Field, SecretStr, model_validator
 from app.models.common import DomainModel
+from app.models.card import SuciConfiguration
 
 
 class ProfileSummary(DomainModel):
@@ -103,6 +104,7 @@ class ProfileEditableView(DomainModel):
     protection_scheme: int | None = None
     hn_public_key_id: int | None = None
     hn_public_key: str | None = None
+    suci_configurations: list[SuciConfiguration] = Field(default_factory=list)
 
 
 class ProfileChangeRequest(DomainModel):
@@ -121,9 +123,19 @@ class ProfileChangeRequest(DomainModel):
     protection_scheme: int | None = Field(default=None, ge=0, le=2)
     hn_public_key_id: int | None = Field(default=None, ge=0, le=255)
     hn_public_key: str | None = Field(default=None, pattern=r"^(?:[0-9A-Fa-f]{2})+$")
+    suci_configurations: list[SuciConfiguration] = Field(default_factory=list, max_length=8)
 
     @model_validator(mode="after")
     def validate_suci_configuration(self):
+        if self.suci_configurations:
+            priorities = [item.priority for item in self.suci_configurations]
+            if len(priorities) != len(set(priorities)): raise ValueError("SUCI-Prioritäten müssen eindeutig sein")
+            if self.suci_calculation_mode == "usim" and len(self.suci_configurations) != 1:
+                raise ValueError("USIM-Berechnung unterstützt genau eine SUCI-Konfiguration")
+            first = min(self.suci_configurations, key=lambda item: item.priority)
+            object.__setattr__(self, "protection_scheme", first.protection_scheme)
+            object.__setattr__(self, "hn_public_key_id", first.hn_public_key_id)
+            object.__setattr__(self, "hn_public_key", first.hn_public_key)
         _validate_suci_fields(self.routing_indicator, self.protection_scheme, self.hn_public_key_id, self.hn_public_key, self.suci_calculation_mode)
         return self
 

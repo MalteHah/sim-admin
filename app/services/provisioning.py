@@ -148,6 +148,7 @@ class CardComparisonService:
         suci_values = {
             "routing_indicator_matches": None, "protection_scheme_matches": None,
             "hn_public_key_id_matches": None, "hn_public_key_matches": None, "suci_matches": None,
+            "suci_configurations_match": None,
         }
         if suci_compared and current.suci_readable:
             suci_values = {
@@ -155,9 +156,13 @@ class CardComparisonService:
                 "protection_scheme_matches": current.protection_scheme == request.target_protection_scheme,
                 "hn_public_key_id_matches": current.hn_public_key_id == request.target_hn_public_key_id,
                 "hn_public_key_matches": (current.hn_public_key or "").upper() == (request.target_hn_public_key or "").upper(),
+                "suci_configurations_match": None,
                 "suci_matches": False,
             }
-            base_matches = all(value for key, value in suci_values.items() if key != "suci_matches")
+            if request.target_suci_configurations:
+                normalize = lambda items: sorted([{**item.model_dump(), "hn_public_key": (item.hn_public_key or "").upper() or None} for item in items], key=lambda item: item["priority"])
+                suci_values["suci_configurations_match"] = normalize(current.suci_configurations) == normalize(request.target_suci_configurations)
+            base_matches = all(value for key, value in suci_values.items() if key != "suci_matches" and value is not None)
             services_match = True if request.target_protection_scheme == 0 else (current.suci_service_124_active is True and
                 current.suci_service_125_active is (request.target_suci_calculation_mode == "usim"))
             suci_values["suci_matches"] = base_matches and services_match if suci_managed else None
@@ -210,7 +215,7 @@ class CardComparisonService:
 class ProfileWriteService:
     """Write a pending standard-field change and commit it only after verification."""
 
-    SUPPORTED_FIELDS = {"imsi", "msisdn", "acc", "ki", "opc", "impi", "impu", "ims_domain", "ist", "routing_indicator", "suci_calculation_mode", "protection_scheme", "hn_public_key_id", "hn_public_key"}
+    SUPPORTED_FIELDS = {"imsi", "msisdn", "acc", "ki", "opc", "impi", "impu", "ims_domain", "ist", "routing_indicator", "suci_calculation_mode", "protection_scheme", "hn_public_key_id", "hn_public_key", "suci_configurations"}
 
     def __init__(self, adapter: SIMCardAdapter, vault: ProfileVaultService) -> None:
         self._adapter = adapter; self._vault = vault
@@ -225,11 +230,15 @@ class ProfileWriteService:
         base_args = (reader_index, draft.iccid, draft.imsi, draft.acc, draft.msisdn,
             draft.adm.get_secret_value(), sorted(changed), draft.ki.get_secret_value(), draft.opc.get_secret_value(),
             draft.impi, draft.impu, draft.ims_domain, draft.ist)
-        fivegs_fields = {"routing_indicator", "suci_calculation_mode", "protection_scheme", "hn_public_key_id", "hn_public_key"}
+        fivegs_fields = {"routing_indicator", "suci_calculation_mode", "protection_scheme", "hn_public_key_id", "hn_public_key", "suci_configurations"}
         if changed & fivegs_fields:
             fivegs_args = (draft.routing_indicator, draft.protection_scheme, draft.hn_public_key_id, draft.hn_public_key)
             if draft.suci_calculation_mode == "usim" or "suci_calculation_mode" in changed:
-                verified = self._adapter.write_standard_fields(*base_args, *fivegs_args, draft.suci_calculation_mode)
+                verified = self._adapter.write_standard_fields(*base_args, *fivegs_args, draft.suci_calculation_mode,
+                    [item.model_dump() for item in draft.suci_configurations])
+            elif "suci_configurations" in changed:
+                verified = self._adapter.write_standard_fields(*base_args, *fivegs_args, draft.suci_calculation_mode,
+                    [item.model_dump() for item in draft.suci_configurations])
             else:
                 verified = self._adapter.write_standard_fields(*base_args, *fivegs_args)
         else:

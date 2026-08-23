@@ -51,6 +51,27 @@ const inventoryNote = document.querySelector("#inventory-note");
 const inventoryError = document.querySelector("#inventory-error");
 let inventoryProfileId = null;
 let suciKeys = [];
+let primarySuciPriority = 0;
+const suciConfigurations = document.querySelector("#change-suci-configurations");
+const suciPrioritySection = document.querySelector("#change-suci-priority-section");
+
+function addSuciConfigurationRow(configuration = {}) {
+  const row = document.createElement("div"); row.className = "suci-config-row";
+  const makeLabel = (text, input) => { const label = document.createElement("label"); label.append(document.createTextNode(text), input); return label; };
+  const priority = document.createElement("input"); priority.type = "number"; priority.min = "0"; priority.max = "255"; priority.required = true; priority.className = "suci-row-priority"; priority.value = configuration.priority ?? Math.min(255, suciConfigurations.children.length + 1);
+  const scheme = document.createElement("select"); scheme.className = "suci-row-scheme"; scheme.required = true;
+  for (const [value, label] of [["0", "Null Scheme"], ["1", "Profile A – X25519"], ["2", "Profile B – P-256"]]) { const option = document.createElement("option"); option.value = value; option.textContent = label; scheme.append(option); }
+  scheme.value = String(configuration.protection_scheme ?? 0);
+  const keyId = document.createElement("input"); keyId.type = "number"; keyId.min = "0"; keyId.max = "255"; keyId.className = "suci-row-key-id"; keyId.value = configuration.hn_public_key_id ?? "";
+  const key = document.createElement("input"); key.className = "suci-row-key"; key.pattern = "(?:[0-9A-Fa-f]{2})+"; key.value = configuration.hn_public_key || "";
+  const remove = document.createElement("button"); remove.type = "button"; remove.textContent = "Entfernen"; remove.className = "danger-button"; remove.addEventListener("click", () => row.remove());
+  const sync = () => { const disabled = scheme.value === "0"; keyId.disabled = disabled; key.disabled = disabled; if (disabled) { keyId.value = ""; key.value = ""; } };
+  scheme.addEventListener("change", sync); sync();
+  row.append(makeLabel("Priorität", priority), makeLabel("Verfahren", scheme), makeLabel("Key-ID", keyId), makeLabel("Public Key (Hex)", key), remove);
+  suciConfigurations.append(row);
+}
+
+document.querySelector("#change-suci-add").addEventListener("click", () => addSuciConfigurationRow());
 
 function validationMessage(detail, fallback) {
   if (typeof detail === "string") return detail;
@@ -90,6 +111,7 @@ function syncChangeSuciModeAvailability() {
   usimOption.disabled = !profileBSelected;
   if (!profileBSelected && mode.value === "usim") mode.value = "me";
   mode.title = profileBSelected ? "" : "Auf der USIM ist bei S17 ausschließlich mit Profile B verfügbar.";
+  suciPrioritySection.hidden = mode.value === "usim";
 }
 
 function syncChangeSuciMode() {
@@ -430,7 +452,7 @@ async function showHistory(id) {
 document.querySelector("#history-close").addEventListener("click", () => historyDialog.close());
 
 async function openChange(id) {
-  changeProfileId = id; changeError.hidden = true; changeStatus.hidden = true; changeDiscard.hidden = true; changePreview.hidden = true; changeCompare.hidden = true; changeWrite.hidden = true; writeConfirmationLabel.hidden = true; changeForm.reset();
+  changeProfileId = id; changeError.hidden = true; changeStatus.hidden = true; changeDiscard.hidden = true; changePreview.hidden = true; changeCompare.hidden = true; changeWrite.hidden = true; writeConfirmationLabel.hidden = true; changeForm.reset(); suciConfigurations.replaceChildren(); primarySuciPriority = 0;
   const [response, draftResponse] = await Promise.all([fetch(`/api/v1/profiles/${id}/editable`, {cache: "no-store"}), fetch(`/api/v1/profiles/${id}/change-draft`, {cache: "no-store"})]);
   const profile = await response.json();
   if (!response.ok) { previewPanel.hidden = false; previewPanel.textContent = profile.detail || "Profil konnte nicht geladen werden."; return; }
@@ -448,6 +470,12 @@ async function openChange(id) {
   document.querySelector("#change-protection-scheme").value = profile.protection_scheme ?? "";
   document.querySelector("#change-hn-public-key-id").value = profile.hn_public_key_id ?? "";
   document.querySelector("#change-hn-public-key").value = profile.hn_public_key || "";
+  const configurations = profile.suci_configurations || [];
+  if (configurations.length) {
+    const ordered = [...configurations].sort((left, right) => left.priority - right.priority);
+    primarySuciPriority = ordered[0].priority;
+    for (const configuration of ordered.slice(1)) addSuciConfigurationRow(configuration);
+  }
   syncChangeSuciMode(); syncChangeSuciModeAvailability();
   if (draftResponse.ok) {
     const draft = await draftResponse.json();
@@ -461,6 +489,19 @@ changeDialog.addEventListener("close", () => { changeForm.reset(); changeError.h
 changeForm.addEventListener("submit", async (event) => {
   event.preventDefault(); changeError.hidden = true;
   const submit = changeForm.querySelector('button[type="submit"]'); submit.disabled = true;
+  const primaryScheme = document.querySelector("#change-protection-scheme").value;
+  const suciConfigurationList = [];
+  if (primaryScheme !== "") suciConfigurationList.push({priority: primarySuciPriority, protection_scheme: Number(primaryScheme),
+    hn_public_key_id: document.querySelector("#change-hn-public-key-id").value === "" ? null : Number(document.querySelector("#change-hn-public-key-id").value),
+    hn_public_key: document.querySelector("#change-hn-public-key").value || null});
+  if (document.querySelector("#change-suci-calculation-mode").value === "me") for (const row of suciConfigurations.children) {
+    const scheme = Number(row.querySelector(".suci-row-scheme").value);
+    suciConfigurationList.push({priority: Number(row.querySelector(".suci-row-priority").value), protection_scheme: scheme,
+      hn_public_key_id: scheme === 0 || row.querySelector(".suci-row-key-id").value === "" ? null : Number(row.querySelector(".suci-row-key-id").value),
+      hn_public_key: scheme === 0 ? null : row.querySelector(".suci-row-key").value || null});
+  }
+  const priorities = suciConfigurationList.map(item => item.priority);
+  if (new Set(priorities).size !== priorities.length) { changeError.textContent = "Jede SUCI-Konfiguration benötigt eine eindeutige Priorität."; changeError.hidden = false; submit.disabled = false; return; }
   const payload = {
     imsi: document.querySelector("#change-imsi").value,
     msisdn: document.querySelector("#change-msisdn").value || null,
@@ -476,6 +517,7 @@ changeForm.addEventListener("submit", async (event) => {
     protection_scheme: document.querySelector("#change-protection-scheme").value === "" ? null : Number(document.querySelector("#change-protection-scheme").value),
     hn_public_key_id: document.querySelector("#change-hn-public-key-id").value === "" ? null : Number(document.querySelector("#change-hn-public-key-id").value),
     hn_public_key: document.querySelector("#change-hn-public-key").value || null,
+    suci_configurations: suciConfigurationList,
     password: document.querySelector("#change-password").value,
   };
   try {

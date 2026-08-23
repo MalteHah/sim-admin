@@ -83,13 +83,13 @@ class PySimCardAdapter:
         impi: str | None = None, impu: str | None = None, ims_domain: str | None = None, ist: str | None = None,
         routing_indicator: str | None = None, protection_scheme: int | None = None,
         hn_public_key_id: int | None = None, hn_public_key: str | None = None,
-        suci_calculation_mode: str = "me") -> list[str]:
+        suci_calculation_mode: str = "me", suci_configurations: list[dict] | None = None) -> list[str]:
         environment = os.environ.copy(); environment["PYTHONPATH"] = self._pysim_source
         payload = json.dumps({"expected_iccid": expected_iccid, "imsi": imsi, "acc": acc, "msisdn": msisdn, "adm": adm, "fields": fields, "ki": ki, "opc": opc,
             "impi": impi, "impu": impu, "ims_domain": ims_domain, "ist": ist,
             "routing_indicator": routing_indicator, "protection_scheme": protection_scheme,
             "hn_public_key_id": hn_public_key_id, "hn_public_key": hn_public_key,
-            "suci_calculation_mode": suci_calculation_mode})
+            "suci_calculation_mode": suci_calculation_mode, "suci_configurations": suci_configurations or []})
         try:
             with self._lock:
                 result = subprocess.run([self._python, str(WRITE_BRIDGE_SCRIPT), "--reader", str(reader_index)], input=payload, capture_output=True, check=False, env=environment, text=True, timeout=self._timeout_seconds)

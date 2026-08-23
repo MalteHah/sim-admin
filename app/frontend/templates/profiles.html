@@ -4,9 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Profiltresor – SIM-Admin</title>
-    <link rel="stylesheet" href="/static/dashboard.css?v=20260821-29">
+    <link rel="stylesheet" href="/static/dashboard.css?v=20260823-30">
     <script src="/static/table-pagination.js" defer></script>
-    <script src="/static/profiles.js?v=20260823-49" defer></script>
+    <script src="/static/profiles.js?v=20260823-50" defer></script>
   </head>
   <body>
     <header class="topbar">
@@ -98,6 +98,10 @@
           <label>Aktuelles Anmeldepasswort<input id="change-password" type="password" autocomplete="current-password" required></label>
           <label id="write-confirmation-label" hidden>Freigabe für den tatsächlichen Schreibvorgang<input id="write-confirmation" autocomplete="off" placeholder="SIM SCHREIBEN"></label>
         </div>
+        <section id="change-suci-priority-section" class="suci-priority-editor">
+          <div class="suci-priority-heading"><div><h3>Weitere SUCI-Verfahren</h3><p>Nur für die Berechnung im Endgerät. Kleinere Prioritätswerte werden bevorzugt.</p></div><button type="button" id="change-suci-add">Verfahren hinzufügen</button></div>
+          <div id="change-suci-configurations"></div>
+        </section>
         <p class="immutable-note"><strong>Unveränderbar:</strong> ICCID und ADM1. Der USIM-Modus wird nur auf einer erkannten S17 mit zugänglicher DF.SAIP-Datei freigegeben und unterstützt dort ausschließlich Profile B mit unkomprimiertem P‑256-Schlüssel.</p>
         <p id="change-error" class="form-error" hidden></p>
         <div class="dialog-actions change-actions"><button type="button" id="change-discard" class="danger-button" hidden>Entwurf verwerfen</button><button type="button" id="change-preview" hidden>Entwurf prüfen</button><button type="button" id="change-compare" hidden>Mit Karte abgleichen</button><button type="button" id="change-write" class="danger-button" hidden>Auf SIM schreiben</button><button type="button" id="change-close">Abbrechen</button><button type="submit">Entwurf speichern</button></div>

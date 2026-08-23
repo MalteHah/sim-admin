@@ -13,6 +13,9 @@ Hardware- und Bereitstellungstests stehen in `docs/testing-and-roadmap.md`.
 
 ### Added
 
+- Bearbeitbare SUCI-Prioritätenliste mit bis zu acht Einträgen, gemeinsamer
+  Validierung, verschlüsselter Speicherung, vollständigem Schreibpfad und
+  Listenvergleich; der S17-USIM-Modus bleibt auf einen Profile-B-Eintrag begrenzt
 - Explizite Auswahl der SUCI-Berechnung im Endgerät oder auf einer S17-USIM;
   der USIM-Modus prüft `DF.SAIP` vor dem ersten Schreibzugriff und erlaubt nur
   Profile B mit unkomprimiertem P-256-Schlüssel

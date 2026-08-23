@@ -38,7 +38,9 @@ Stand: 21. August 2026, Zielversion 0.2.0 (Vorabstand).
   die Abnahme mit einer realen Karte steht noch aus.
 - Mehrere Protection-Scheme-Einträge und zugehörige HN-Schlüssel werden aus
   `EF.SUCI_Calc_Info` vollständig aufgelöst und nach Kartenpriorität angezeigt.
-  Die Bearbeitung und der Schreibpfad für diese Liste folgen im nächsten Schritt.
+  Die Bearbeitung, Validierung und der gemeinsame Schreibpfad für bis zu acht
+  priorisierte Einträge sind implementiert; der reale Mehrfacheintrag-Kartentest
+  steht noch aus.
 
 ## Vor einem ersten stabilen Release zwingend zu testen
 
@@ -56,9 +58,10 @@ Stand: 21. August 2026, Zielversion 0.2.0 (Vorabstand).
 
 ### Revision 1 – nächste Kartenfunktionen
 
-- SUCI-Berechnung direkt auf der USIM.
-- Mehrere Home-Network-Schlüssel und Protection-Scheme-Einträge gleichzeitig
-  auf einer Karte, einschließlich Prioritätsverwaltung.
+- SUCI-Berechnung direkt auf der USIM ist auf S17 mit Profile B und UST 124/125
+  Ende-zu-Ende gegen Open5GS geprüft.
+- Mehrere Home-Network-Schlüssel und Protection-Scheme-Einträge einschließlich
+  Prioritätsverwaltung sind implementiert; Hardware-Abnahme noch offen.
 - Weitere technisch auslesbare Kartenfelder über ACC und MSISDN hinaus in
   Vergleich und selektive Übernahme aufnehmen.
 

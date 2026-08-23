@@ -105,3 +105,16 @@ def test_usim_mode_requires_profile_b_and_uncompressed_key() -> None:
     with pytest.raises(ValidationError, match="scheme B"):
         ProvisioningDraft(**BASE_DRAFT, routing_indicator="0000", suci_calculation_mode="usim",
             protection_scheme=1, hn_public_key_id=1, hn_public_key="A1" * 32)
+
+
+def test_me_mode_accepts_multiple_ordered_configurations() -> None:
+    draft = ProvisioningDraft(**BASE_DRAFT, routing_indicator="0000", suci_configurations=[
+        {"priority": 2, "protection_scheme": 0},
+        {"priority": 0, "protection_scheme": 1, "hn_public_key_id": 1, "hn_public_key": "A1" * 32},
+    ])
+    assert draft.protection_scheme == 1
+    assert len(draft.suci_configurations) == 2
+    with pytest.raises(ValidationError, match="exactly one"):
+        ProvisioningDraft(**BASE_DRAFT, routing_indicator="0000", suci_calculation_mode="usim",
+            suci_configurations=[{"priority": 0, "protection_scheme": 2, "hn_public_key_id": 2, "hn_public_key": "04" + "A1" * 64},
+                {"priority": 1, "protection_scheme": 0}])

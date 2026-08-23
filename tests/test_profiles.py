@@ -432,12 +432,14 @@ def test_verified_fivegs_write_commits_encrypted_revision(tmp_path) -> None:
     class FakeFiveGsAdapter:
         def write_standard_fields(self, reader_index, expected_iccid, imsi, acc, msisdn, adm, fields, ki, opc,
             impi=None, impu=None, ims_domain=None, ist=None, routing_indicator=None, protection_scheme=None,
-            hn_public_key_id=None, hn_public_key=None):
-            assert fields == ["hn_public_key", "hn_public_key_id", "protection_scheme", "routing_indicator"]
+            hn_public_key_id=None, hn_public_key=None, suci_calculation_mode="me", suci_configurations=None):
+            assert fields == ["hn_public_key", "hn_public_key_id", "protection_scheme", "routing_indicator", "suci_configurations"]
             assert routing_indicator == "1234"
             assert protection_scheme == 1
             assert hn_public_key_id == 7
             assert hn_public_key == public_key
+            assert suci_configurations == [{"priority": 0, "protection_scheme": 1,
+                "hn_public_key_id": 7, "hn_public_key": public_key}]
             return fields
 
     database = tmp_path / "profiles.db"
@@ -457,4 +459,4 @@ def test_verified_fivegs_write_commits_encrypted_revision(tmp_path) -> None:
     revision, verified = ProfileWriteService(FakeFiveGsAdapter(), vault).execute(profile.id)
 
     assert revision == 2
-    assert verified == ["hn_public_key", "hn_public_key_id", "protection_scheme", "routing_indicator"]
+    assert verified == ["hn_public_key", "hn_public_key_id", "protection_scheme", "routing_indicator", "suci_configurations"]

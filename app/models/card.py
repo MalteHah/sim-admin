@@ -1,6 +1,6 @@
 """Read-only card identification models."""
 
-from pydantic import Field
+from pydantic import Field, model_validator
 
 from app.models.common import DomainModel
 
@@ -12,6 +12,18 @@ class SuciConfiguration(DomainModel):
     protection_scheme: int = Field(ge=0, le=2)
     hn_public_key_id: int | None = Field(default=None, ge=0, le=255)
     hn_public_key: str | None = None
+
+    @model_validator(mode="after")
+    def validate_key(self):
+        if self.protection_scheme == 0:
+            if self.hn_public_key_id is not None or self.hn_public_key: raise ValueError("Null Scheme darf keinen Schlüssel enthalten")
+            return self
+        if self.hn_public_key_id is None or not self.hn_public_key: raise ValueError("Geschützte SUCI benötigt Schlüssel und Key-ID")
+        try: length = len(bytes.fromhex(self.hn_public_key))
+        except ValueError as exc: raise ValueError("SUCI-Schlüssel muss Hex enthalten") from exc
+        if self.protection_scheme == 1 and length != 32: raise ValueError("Profile A benötigt einen 32-Byte-Schlüssel")
+        if self.protection_scheme == 2 and length not in {33, 65}: raise ValueError("Profile B benötigt einen 33- oder 65-Byte-Schlüssel")
+        return self
 
 
 class SIMReadResult(DomainModel):
