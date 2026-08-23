@@ -497,7 +497,8 @@ changePreview.addEventListener("click", async () => {
     if (!response.ok) { changeError.textContent = data.detail || "Entwurf konnte nicht geprüft werden."; changeError.hidden = false; return; }
     changeDialog.close(); previewPanel.hidden = false; previewPanel.replaceChildren();
     const title = document.createElement("h2"); title.textContent = "Entwurfsprüfung – kein Schreibzugriff";
-    const text = document.createElement("p"); text.textContent = `${data.steps.length} geplante Schritte geprüft. Geheimwerte sind vorhanden und verdeckt; write_performed: false.`;
+    const calculation = data.suci_calculation_mode === "usim" ? "SUCI-Berechnung: auf der USIM (S17 / UST 125)" : "SUCI-Berechnung: im Endgerät (UST 124)";
+    const text = document.createElement("p"); text.textContent = `${data.steps.length} geplante Schritte geprüft. ${calculation}. Geheimwerte sind vorhanden und verdeckt; write_performed: false.`;
     previewPanel.append(title, text);
   } catch (error) {
     changeError.textContent = error.name === "AbortError" ? "Entwurfsprüfung wurde nach 10 Sekunden abgebrochen." : "Entwurfsprüfung konnte den Server nicht erreichen.";
@@ -528,7 +529,9 @@ changeWrite.addEventListener("click", async () => {
   changeError.hidden = true;
   if (writeConfirmationLabel.hidden) {
     writeConfirmationLabel.hidden = false;
-    changeError.textContent = "Für den tatsächlichen Schreibvorgang jetzt das aktuelle Passwort und SIM SCHREIBEN eingeben.";
+    const mode = document.querySelector("#change-suci-calculation-mode").value;
+    const target = mode === "usim" ? "AUF DER USIM (S17 / UST 125)" : "IM ENDGERÄT (UST 124)";
+    changeError.textContent = `Zielzustand: SUCI-Berechnung ${target}. Für den tatsächlichen Schreibvorgang jetzt das aktuelle Passwort und SIM SCHREIBEN eingeben.`;
     changeError.hidden = false;
     document.querySelector("#write-confirmation").focus();
     return;
@@ -536,7 +539,8 @@ changeWrite.addEventListener("click", async () => {
   const password = document.querySelector("#change-password").value;
   const confirmation = document.querySelector("#write-confirmation").value;
   if (!password || confirmation !== "SIM SCHREIBEN") { changeError.textContent = "Passwort und die exakte Schreibfreigabe SIM SCHREIBEN sind erforderlich."; changeError.hidden = false; return; }
-  if (!window.confirm("Jetzt tatsächlich auf die eingelegte SIM schreiben? Der Vorgang darf nicht unterbrochen werden.")) return;
+  const targetMode = document.querySelector("#change-suci-calculation-mode").value === "usim" ? "auf der USIM (S17 / UST 125)" : "im Endgerät (UST 124)";
+  if (!window.confirm(`Jetzt tatsächlich auf die eingelegte SIM schreiben? Ziel: SUCI-Berechnung ${targetMode}. Der Vorgang darf nicht unterbrochen werden.`)) return;
   changeWrite.disabled = true;
   try {
     const response = await fetch(`/api/v1/profiles/${changeProfileId}/change-draft/write`, {method: "POST", headers: {"Content-Type": "application/json", "Cache-Control": "no-store"}, body: JSON.stringify({password, confirmation, reader_index: 0}), cache: "no-store"});
@@ -544,7 +548,9 @@ changeWrite.addEventListener("click", async () => {
     if (!response.ok) { changeError.textContent = data.detail?.message || data.detail || "SIM-Schreibvorgang fehlgeschlagen."; changeError.hidden = false; return; }
     changeDialog.close(); previewPanel.hidden = false; previewPanel.replaceChildren();
     const title = document.createElement("h2"); title.textContent = "SIM erfolgreich geschrieben und geprüft";
-    const text = document.createElement("p"); text.textContent = `Bestätigt: ${data.verified_fields.join(", ").toUpperCase()}. Das Profil ist jetzt Revision ${data.revision}.`;
+    const modeVerified = data.verified_fields.includes("suci_calculation_mode");
+    const modeText = modeVerified ? ` Berechnungsort ${targetMode} wurde ausdrücklich bestätigt.` : "";
+    const text = document.createElement("p"); text.textContent = `Bestätigt: ${data.verified_fields.join(", ").toUpperCase()}.${modeText} Das Profil ist jetzt Revision ${data.revision}.`;
     previewPanel.append(title, text); await loadProfiles();
   } finally { changeWrite.disabled = false; document.querySelector("#change-password").value = ""; document.querySelector("#write-confirmation").value = ""; }
 });

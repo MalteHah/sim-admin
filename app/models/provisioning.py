@@ -86,6 +86,7 @@ class ProvisioningPreview(DomainModel):
     ki_configured: bool
     opc_configured: bool
     adm_configured: bool
+    suci_calculation_mode: Literal["me", "usim"] = "me"
     steps: list[ProvisioningStep]
     warnings: list[str]
 

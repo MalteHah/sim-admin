@@ -67,11 +67,12 @@ class ProvisioningPreviewService:
                 risk="Nur verschlüsselte Profilspeicherung; kein SIM-Schreibpfad",
             ))
         if draft.routing_indicator or draft.protection_scheme is not None or draft.hn_public_key_id is not None or draft.hn_public_key:
+            on_usim = draft.suci_calculation_mode == "usim"
             steps.append(ProvisioningStep(
                 order=len(steps) + 1,
-                target="ADF.USIM/5GS",
-                action="5GS-/SUCI-Profildaten vormerken",
-                fields=[field for field, value in (("Routing Indicator", draft.routing_indicator), ("Protection Scheme", draft.protection_scheme), ("HN Public Key ID", draft.hn_public_key_id), ("HN Public Key", draft.hn_public_key)) if value is not None and value != ""],
+                target="ADF.USIM/DF.SAIP" if on_usim else "ADF.USIM/DF.5GS",
+                action="SUCI-Berechnung auf der USIM vorbereiten" if on_usim else "SUCI-Berechnung im Endgerät vorbereiten",
+                fields=["Berechnungsort: USIM" if on_usim else "Berechnungsort: Endgerät"] + [field for field, value in (("Routing Indicator", draft.routing_indicator), ("Protection Scheme", draft.protection_scheme), ("HN Public Key ID", draft.hn_public_key_id), ("HN Public Key", draft.hn_public_key)) if value is not None and value != ""],
                 risk="Nur verschlüsselte Profilspeicherung; kein SIM-Schreibpfad",
             ))
 
@@ -83,6 +84,7 @@ class ProvisioningPreviewService:
             ki_configured=bool(draft.ki.get_secret_value()),
             opc_configured=bool(draft.opc.get_secret_value()),
             adm_configured=bool(draft.adm.get_secret_value()),
+            suci_calculation_mode=draft.suci_calculation_mode,
             steps=steps,
             warnings=[
                 "Dry-Run: Es wurden keine Daten auf eine SIM geschrieben.",

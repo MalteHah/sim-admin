@@ -74,7 +74,18 @@ def test_single_card_preview_includes_optional_ims_and_fivegs_steps() -> None:
     assert response.status_code == 200
     actions = [step["action"] for step in response.json()["steps"]]
     assert "IMS-Profildaten vormerken" in actions
-    assert "5GS-/SUCI-Profildaten vormerken" in actions
+    assert "SUCI-Berechnung im Endgerät vorbereiten" in actions
+    assert response.json()["suci_calculation_mode"] == "me"
+
+
+def test_preview_names_s17_usim_target_explicitly() -> None:
+    login()
+    draft = valid_draft() | {"routing_indicator": "0000", "suci_calculation_mode": "usim",
+        "protection_scheme": 2, "hn_public_key_id": 2, "hn_public_key": "04" + "A1" * 64}
+    response = client.post("/api/v1/provisioning/preview", json=draft)
+    assert response.status_code == 200
+    assert response.json()["suci_calculation_mode"] == "usim"
+    assert any(step["target"] == "ADF.USIM/DF.SAIP" for step in response.json()["steps"])
 
 
 class FakeCardAdapter:
