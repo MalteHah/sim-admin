@@ -23,7 +23,8 @@ def test_external_pysim_files_exclude_repository_metadata(tmp_path: Path) -> Non
 
 
 def test_install_script_has_valid_posix_shell_syntax() -> None:
+    install_script = Path(__file__).resolve().parents[1] / "scripts" / "install.sh"
     result = subprocess.run(
-        ["sh", "-n", "scripts/install.sh"], capture_output=True, text=True
+        ["sh", "-n", str(install_script)], capture_output=True, text=True
     )
     assert result.returncode == 0, result.stderr

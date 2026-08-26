@@ -229,3 +229,11 @@ nicht in dieses Dokument.
 - Die auf dem Debian-13-Minirechner geprüfte PC/SC-Polkit-Freigabe und der
   gezielte Zugriff des Dienstkontos auf benutzerbezogene USB-Mounts wurden in
   die Betriebsdokumentation aufgenommen.
+
+## 2026-08-26 – Installationsabnahme 1.0.3
+
+- Die vollständige Testsuite wird während der Neuinstallation ausdrücklich aus
+  dem installierten Anwendungsverzeichnis gestartet.
+- Der Syntaxtest des Installationsskripts bestimmt dessen Pfad anhand der
+  Testdatei und ist damit nicht mehr vom ursprünglichen Aufrufverzeichnis des
+  Installers abhängig.

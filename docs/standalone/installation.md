@@ -1,7 +1,7 @@
 # Installation auf einem Standalone-System
 
 Das Installationsskript unterstützt Prüfung, Vorschau und eine geschützte
-Neuinstallation. Version 1.0.2 enthält den vollständigen Offline-pySim-Pfad und
+Neuinstallation. Version 1.0.3 enthält den vollständigen Offline-pySim-Pfad und
 korrigiert den SUCI-Preflight beim Wechsel auf Null Scheme; die
 Neuinstallation wird auf einem separaten Debian-13-Minirechner abgenommen. Für
 bestehende Installationen ist derzeit nur die signierte, nicht verändernde
@@ -58,7 +58,7 @@ Paketquelle zurückgreifen.
 Ein signiertes Release-Paket wird zunächst ausschließlich geprüft:
 
 ```bash
-./scripts/offline-update.sh /pfad/zum/sim-admin-1.0.2.tar.gz
+./scripts/offline-update.sh /pfad/zum/sim-admin-1.0.3.tar.gz
 ```
 
 Neben dem Archiv müssen dessen `.sha256`- und `.sig`-Dateien liegen. Der Prüfer

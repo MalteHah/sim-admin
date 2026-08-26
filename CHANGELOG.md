@@ -4,6 +4,14 @@ Alle wesentlichen Änderungen an diesem Projekt werden hier dokumentiert.
 
 ## Unreleased
 
+## 1.0.3 – 2026-08-26
+
+### Fixed
+
+- Die Installationsabnahme wird unabhängig vom Aufrufverzeichnis im installierten
+  Anwendungsverzeichnis ausgeführt; auch der POSIX-Syntaxtest des Installers
+  verwendet jetzt einen aus seiner eigenen Dateiposition bestimmten Pfad.
+
 ## 1.0.2 – 2026-08-26
 
 ### Fixed

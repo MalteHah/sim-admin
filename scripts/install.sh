@@ -196,7 +196,7 @@ RestartSec=3
 [Install]
 WantedBy=multi-user.target
 EOF
-    "$RUNUSER" -u "$SERVICE_USER" -- "$APP_ROOT/.venv/bin/python" -m pytest -q "$APP_ROOT/tests"
+    "$RUNUSER" -u "$SERVICE_USER" -- sh -c 'cd "$1" && exec "$1/.venv/bin/python" -m pytest -q tests' sh "$APP_ROOT"
     systemctl daemon-reload
     systemctl enable --now pcscd.socket sim-admin.service sim-admin-redirect.service
     trap - EXIT HUP INT TERM
