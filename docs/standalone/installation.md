@@ -117,12 +117,22 @@ runuser -u sim-admin -- /opt/sim-admin/venv/bin/python -c \
 Ein Neustart von `pcscd` oder SIM-Admin ist nur nötig, wenn die Regel nicht
 automatisch wirksam wird.
 
+### Gemounteter USB-Stick nicht sichtbar
+
+Ein Desktop-Automounter kann den Stick korrekt unter
+`/media/<benutzer>/<datenträger>` einhängen, während das Elternverzeichnis für
+das Dienstkonto gesperrt bleibt. Die Diagnose und eine eng begrenzte ACL-Lösung
+sind in der
+[Backup-Anleitung](backup-restore.md#eingebundener-usb-stick-wird-nicht-angezeigt)
+dokumentiert. Datenträgernamen sind nicht fest vorgegeben.
+
 ## Voraussetzungen
 
 - Debian-basiertes Linux
 - Python 3.11 oder neuer
 - `python3`, `python3-venv`, `openssl`, `tar` und systemd
 - `pcscd`, `libpcsclite1` und `libccid`
+- `acl`, wenn USB-Datenträger benutzerbezogen unter `/media` eingehängt werden
 - kompatibler USB-Kartenleser
 - lokales TLS-Zertifikat
 

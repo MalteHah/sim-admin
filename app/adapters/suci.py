@@ -4,6 +4,15 @@ import base64
 import hashlib
 
 
+def preflight_suci_calc_info(channel, path: str) -> str:
+    """Prove that a target SUCI EF is readable without decoding stale contents."""
+    channel.select(path)
+    raw, _ = channel.read_binary()
+    if not raw:
+        raise ValueError("SUCI calculation file is empty or unreadable")
+    return raw
+
+
 def build_suci_calc_info_list(configurations: list[dict]) -> dict:
     """Build ordered protection-scheme and HN-key lists for EF.SUCI_Calc_Info."""
     if not configurations:

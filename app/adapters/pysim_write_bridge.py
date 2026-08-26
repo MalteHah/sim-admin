@@ -5,7 +5,7 @@ import json
 import sys
 
 from pysim_read_bridge import card_is_present, emit_error
-from suci import build_s17_usim_suci_calc_info, build_suci_calc_info, build_suci_calc_info_list, enable_suci_by_me, enable_suci_by_usim
+from suci import build_s17_usim_suci_calc_info, build_suci_calc_info, build_suci_calc_info_list, enable_suci_by_me, enable_suci_by_usim, preflight_suci_calc_info
 
 
 def main() -> None:
@@ -67,13 +67,14 @@ def main() -> None:
             else:
                 target_suci = build_suci_calc_info(payload.get("protection_scheme"), payload.get("hn_public_key_id"), payload.get("hn_public_key"))
             target_suci_path = "MF/ADF.USIM/DF.SAIP/EF.SUCI_Calc_Info" if suci_mode == "usim" else "MF/ADF.USIM/DF.5GS/EF.SUCI_Calc_Info"
+            stage = "suci_target_file_preflight"
             try:
-                channel.select(target_suci_path)
+                preflight_suci_calc_info(channel, target_suci_path)
             except Exception:
                 if suci_mode == "usim":
                     emit_error("suci_usim_unsupported", "SUCI-Berechnung auf der USIM wird von dieser Karte nicht unterstützt", 14)
                 raise
-            channel.read_binary_dec()
+            stage = "suci_ust_preflight"
             channel.select("MF/ADF.USIM/EF.UST")
             current_ust, _ = channel.read_binary_dec()
         if "spn" in fields:

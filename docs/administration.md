@@ -64,6 +64,13 @@ Bestandsstatus, Ausgabeempfänger, Datum und Bemerkung liegen separat
 gerätegebunden verschlüsselt in der Profildatenbank. Sie werden vom regulären
 USB-Backup erfasst, erzeugen aber keine neue SIM-Profilrevision.
 
+Wird ein gemounteter USB-Stick in SIM-Admin nicht angeboten, sind Einhängepunkt
+und alle Elternverzeichnisse unter dem Dienstkonto zu prüfen. Die
+[Backup-Anleitung](standalone/backup-restore.md#eingebundener-usb-stick-wird-nicht-angezeigt)
+beschreibt die Diagnose und eine gezielte ACL für `sim-admin`. Der Name des
+Datenträgers ist dabei unerheblich; globale Schreib- oder Leserechte sind nicht
+erforderlich.
+
 ## Versions- und Updatebetrieb
 
 Nur signierte Pakete verwenden. Die Offline-Prüfung verändert keine Dateien und

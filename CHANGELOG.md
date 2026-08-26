@@ -4,9 +4,17 @@ Alle wesentlichen Änderungen an diesem Projekt werden hier dokumentiert.
 
 ## Unreleased
 
+- Der SUCI-Preflight liest den Inhalt einer bislang inaktiven
+  `EF.SUCI_Calc_Info` roh statt ihn vor dem Überschreiben zu dekodieren. Dadurch
+  kann insbesondere von SUCI-Berechnung auf der USIM sicher auf Null Scheme im
+  Endgerät gewechselt werden; Datei- und UST-Preflight haben getrennte
+  Fehlerstufen.
 - Debian-13-Polkit-Freigabe und Diagnose für das nicht interaktive
   `sim-admin`-Dienstkonto dokumentiert; die Regel wird normalerweise ohne
   Dienstneustart wirksam.
+- USB-Mount-Diagnose für benutzerbezogene `/media`-Pfade und eine gezielte ACL
+  für das Dienstkonto dokumentiert; beliebige Datenträgernamen werden
+  unterstützt.
 
 ## 1.0.1 – 2026-08-26
 

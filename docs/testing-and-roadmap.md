@@ -51,7 +51,8 @@ Stand: 26. August 2026, freigegebene Kartenrevision 1 / Installer 1.0.1.
 
 - Neuinstallation von Version 1.0.1 samt gebündeltem pySim auf dem separaten
   Debian-13-Minirechner; Paketprüfung, Fehlerbereinigung und die automatische
-  Einrichtung der erforderlichen PC/SC-Polkit-Regel sind Teil der Abnahme.
+  Einrichtung der erforderlichen PC/SC-Polkit-Regel sowie des eng begrenzten
+  USB-Mount-Zugriffs sind Teil der Abnahme.
 - Signatur-, Prüfsummen-, Versions- und Speicherplatzprüfung eines Updatepakets
   vom USB-Stick.
 - Vollständige Updateausführung einschließlich automatischem Vorab-Backup und

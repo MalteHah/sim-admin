@@ -3,7 +3,7 @@
 import pytest
 from pydantic import ValidationError
 
-from app.adapters.suci import build_s17_usim_suci_calc_info, build_suci_calc_info, build_suci_calc_info_list, enable_suci_by_me, enable_suci_by_usim
+from app.adapters.suci import build_s17_usim_suci_calc_info, build_suci_calc_info, build_suci_calc_info_list, enable_suci_by_me, enable_suci_by_usim, preflight_suci_calc_info
 from app.models import ProvisioningDraft
 
 
@@ -14,6 +14,30 @@ BASE_DRAFT = {
     "opc": "FFEEDDCCBBAA99887766554433221100",
     "adm": "DEADBEEF",
 }
+
+
+def test_suci_preflight_reads_raw_inactive_file_without_decoding() -> None:
+    class Channel:
+        def __init__(self) -> None:
+            self.selected = None
+            self.decoded_read = False
+
+        def select(self, path: str) -> None:
+            self.selected = path
+
+        def read_binary(self):
+            return "ffffffff", "9000"
+
+        def read_binary_dec(self):
+            self.decoded_read = True
+            raise AssertionError("inactive SUCI contents must not be decoded")
+
+    channel = Channel()
+    path = "MF/ADF.USIM/DF.5GS/EF.SUCI_Calc_Info"
+
+    assert preflight_suci_calc_info(channel, path) == "ffffffff"
+    assert channel.selected == path
+    assert channel.decoded_read is False
 
 
 def test_profile_a_uses_list_index_one_and_keeps_open5gs_key_id() -> None:

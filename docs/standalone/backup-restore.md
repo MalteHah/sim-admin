@@ -33,6 +33,36 @@ Nur tatsächlich eingebundene Datenträger unter den konfigurierten
 Wechseldatenträgerpfaden werden akzeptiert. Eine frei eingegebene Pfadangabe ist
 nicht möglich.
 
+### Eingebundener USB-Stick wird nicht angezeigt
+
+SIM-Admin sucht standardmäßig rekursiv unter `/media`, `/run/media` und `/mnt`.
+Der Name des Datenträgers ist beliebig; Bezeichnungen wie `OHNE TITEL` sind nur
+ein mögliches Beispiel. Entscheidend ist, dass das Dienstkonto `sim-admin` alle
+Verzeichnisse bis zum tatsächlichen Einhängepunkt betreten und den Datenträger
+lesen kann.
+
+Einhängepunkt und Rechte werden so geprüft:
+
+```bash
+findmnt -rno TARGET,SOURCE,FSTYPE,OPTIONS | grep -E '^/(media|run/media|mnt)'
+namei -l "/media/<benutzer>/<datenträger>"
+/usr/sbin/runuser -u sim-admin -- ls -la "/media/<benutzer>/<datenträger>"
+```
+
+Ist beispielsweise das benutzerspezifische Elternverzeichnis für das
+Dienstkonto gesperrt, wird gezielt nur diesem Konto Lese- und
+Durchquerungszugriff gewährt:
+
+```bash
+apt install acl
+setfacl -m u:sim-admin:rx "/media/<benutzer>"
+```
+
+Es werden weder pauschale Schreibrechte noch Rechte für alle Benutzer vergeben.
+Die ACL gilt für wechselnde Namen der darunter eingehängten USB-Sticks. Auf dem
+Debian-13-Testrechner wurde sie ohne Dienstneustart wirksam; danach genügte ein
+Neuladen der Backup-Seite.
+
 ## Backup prüfen
 
 1. USB-Datenträger einstecken und **Backup** öffnen.
