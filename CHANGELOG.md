@@ -4,6 +4,10 @@ Alle wesentlichen Änderungen an diesem Projekt werden hier dokumentiert.
 
 ## Unreleased
 
+- Debian-13-Polkit-Freigabe und Diagnose für das nicht interaktive
+  `sim-admin`-Dienstkonto dokumentiert; die Regel wird normalerweise ohne
+  Dienstneustart wirksam.
+
 ## 1.0.1 – 2026-08-26
 
 ### Fixed

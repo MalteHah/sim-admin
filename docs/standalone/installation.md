@@ -79,6 +79,44 @@ Danach im Browser anmelden, Kartenleserstatus prüfen, ein Testbackup erstellen
 und ausschließlich mit einer vorgesehenen Testkarte einen Read-only-Abgleich
 durchführen. Schreibtests sind ein separater Abnahmeschritt.
 
+### Reader unter Debian 13 nicht sichtbar
+
+Wenn `pcscd` den Prozess des Dienstkontos mit `Rejected unauthorized PC/SC
+client` beziehungsweise `NOT authorized for action: access_pcsc` ablehnt,
+blockiert Polkit den nicht interaktiv angemeldeten Benutzer `sim-admin`. In
+diesem Fall wird folgende, ausschließlich auf dieses Dienstkonto und die beiden
+PC/SC-Aktionen begrenzte Regel benötigt:
+
+```javascript
+polkit.addRule(function(action, subject) {
+    if (
+        subject.user === "sim-admin" &&
+        (
+            action.id === "org.debian.pcsc-lite.access_pcsc" ||
+            action.id === "org.debian.pcsc-lite.access_card"
+        )
+    ) {
+        return polkit.Result.YES;
+    }
+
+    return polkit.Result.NOT_HANDLED;
+});
+```
+
+Die Datei wird als
+`/etc/polkit-1/rules.d/60-sim-admin-pcsc.rules` mit Modus `0644` gespeichert.
+Polkit erkennt neue beziehungsweise geänderte Regeln normalerweise automatisch;
+auf dem Debian-13-Testrechner war kein Dienstneustart erforderlich. Danach kann
+der Zugriff unter dem tatsächlichen Dienstkonto geprüft werden:
+
+```bash
+runuser -u sim-admin -- /opt/sim-admin/venv/bin/python -c \
+  'from smartcard.System import readers; print(readers())'
+```
+
+Ein Neustart von `pcscd` oder SIM-Admin ist nur nötig, wenn die Regel nicht
+automatisch wirksam wird.
+
 ## Voraussetzungen
 
 - Debian-basiertes Linux

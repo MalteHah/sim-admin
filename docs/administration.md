@@ -78,6 +78,17 @@ Zuerst Aktivitätsprotokoll und Dienststatus prüfen, Kartenleser neu verbinden 
 den Kartenstand erneut ausschließlich lesen. Fehlermeldungen und Metadaten dürfen
 dokumentiert werden; Geheimwerte gehören niemals in Issues oder Chatverläufe.
 
+### Reader nur für SIM-Admin nicht sichtbar
+
+Erscheint der Reader in `pcsc_scan`, während `/api/v1/readers` mit HTTP 503
+antwortet, ist das `pcscd`-Journal zu prüfen. Die Meldungen `Rejected
+unauthorized PC/SC client` und `NOT authorized for action: access_pcsc` weisen
+auf eine fehlende Polkit-Freigabe für das Dienstkonto hin. Die erforderliche,
+auf `sim-admin` beschränkte Regel und der Testbefehl sind in der
+[Installationsanleitung](standalone/installation.md#reader-unter-debian-13-nicht-sichtbar)
+dokumentiert. Polkit lädt die Regel normalerweise ohne Neustart; ein Neustart
+der Dienste ist nur eine Ausweichmaßnahme.
+
 ### Keine Registrierung im Core sichtbar
 
 Enthält ein Mitschnitt auf der N2-Schnittstelle ausschließlich SCTP-Heartbeats,
