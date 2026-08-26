@@ -75,7 +75,7 @@ erforderlich.
 
 Nur signierte Pakete verwenden. Die Offline-Prüfung verändert keine Dateien und
 ist vor jedem späteren Update verpflichtend. Der eigentliche Austausch einer
-bestehenden Installation ist in Version 1.0.1 noch nicht freigegeben und muss
+bestehenden Installation ist in Version 1.0.2 noch nicht freigegeben und muss
 erst auf der Test-VM abgenommen werden.
 
 ## Störungsfall

@@ -1,6 +1,6 @@
 # Offene Punkte und Abnahmetests
 
-Stand: 26. August 2026, freigegebene Kartenrevision 1 / Installer 1.0.1.
+Stand: 26. August 2026, freigegebene Kartenrevision 1 / Version 1.0.2.
 
 ## Erfolgreich geprüft
 
@@ -49,7 +49,7 @@ Stand: 26. August 2026, freigegebene Kartenrevision 1 / Installer 1.0.1.
 
 ## Noch offene Betriebstests
 
-- Neuinstallation von Version 1.0.1 samt gebündeltem pySim auf dem separaten
+- Neuinstallation von Version 1.0.2 samt gebündeltem pySim auf dem separaten
   Debian-13-Minirechner; Paketprüfung, Fehlerbereinigung und die automatische
   Einrichtung der erforderlichen PC/SC-Polkit-Regel sowie des eng begrenzten
   USB-Mount-Zugriffs sind Teil der Abnahme.

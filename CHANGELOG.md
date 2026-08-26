@@ -4,6 +4,10 @@ Alle wesentlichen Änderungen an diesem Projekt werden hier dokumentiert.
 
 ## Unreleased
 
+## 1.0.2 – 2026-08-26
+
+### Fixed
+
 - Der SUCI-Preflight liest den Inhalt einer bislang inaktiven
   `EF.SUCI_Calc_Info` roh statt ihn vor dem Überschreiben zu dekodieren. Dadurch
   kann insbesondere von SUCI-Berechnung auf der USIM sicher auf Null Scheme im

@@ -217,3 +217,15 @@ nicht in dieses Dokument.
   reproduzierbaren Release-Bau aufgenommen.
 - Automatische getrennte pySim-Installation und Bereinigung abgebrochener
   Erstinstallationen ergänzt.
+
+## 2026-08-26 – SUCI-Preflight-Korrektur 1.0.2
+
+- Beim Wechsel von SUCI-Berechnung auf der USIM zu Null Scheme wird die bislang
+  inaktive Zieldatei vor dem Überschreiben roh auf Lesbarkeit geprüft. Ein darin
+  vorhandener leerer oder veralteter Inhalt muss nicht mehr erfolgreich als
+  aktive SUCI-Konfiguration decodiert werden.
+- Zieldatei- und UST-Prüfung erhalten getrennte Fehlerstufen, damit ein Abbruch
+  vor jedem Schreibzugriff eindeutig zugeordnet werden kann.
+- Die auf dem Debian-13-Minirechner geprüfte PC/SC-Polkit-Freigabe und der
+  gezielte Zugriff des Dienstkontos auf benutzerbezogene USB-Mounts wurden in
+  die Betriebsdokumentation aufgenommen.
