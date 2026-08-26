@@ -1,6 +1,6 @@
 # Bedienungsanleitung
 
-Diese Anleitung beschreibt den Funktionsstand der Version 1.0.0. Für reale
+Diese Anleitung beschreibt den Kartenfunktionsstand der Versionen 1.0.x. Für reale
 SIM-Daten sollte vor jedem Schreibtest ein aktuelles USB-Backup vorhanden sein.
 
 ## Anmeldung und Übersicht

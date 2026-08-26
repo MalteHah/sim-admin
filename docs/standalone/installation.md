@@ -1,8 +1,8 @@
 # Installation auf einem Standalone-System
 
 Das Installationsskript unterstützt Prüfung, Vorschau und eine geschützte
-Neuinstallation. Die Neuinstallation ist implementiert, für Version 1.0.0 aber
-noch nicht auf der vorbereiteten Test-VM abgenommen. Für
+Neuinstallation. Version 1.0.1 ergänzt den vollständigen Offline-pySim-Pfad; die
+Neuinstallation wird auf einem separaten Debian-13-Minirechner abgenommen. Für
 bestehende Installationen ist derzeit nur die signierte, nicht verändernde
 Offline-Updateprüfung freigegeben.
 
@@ -37,9 +37,11 @@ sudo ./scripts/install.sh --install
 
 Die Neuinstallation fragt verdeckt nach einem mindestens zwölf Zeichen langen
 Anmeldepasswort. Sie legt ein eigenes, nicht interaktives Systemkonto an, kopiert
-die Anwendung nach `/opt/sim-admin/application`, erstellt die Python-Umgebung,
-Zugangsdaten und ein lokales TLS-Zertifikat und richtet die beiden systemd-Dienste
-ein. Vor deren Aktivierung wird die komplette Testsuite ausgeführt.
+die Anwendung nach `/opt/sim-admin/application`, pySim nach
+`/opt/sim-admin/pysim`, erstellt beide getrennten Python-Umgebungen, Zugangsdaten
+und ein lokales TLS-Zertifikat und richtet die beiden systemd-Dienste ein. Vor
+deren Aktivierung werden pySim-Importtests und die komplette Anwendungstestsuite
+ausgeführt. Ein fehlgeschlagener Erstlauf entfernt seine unvollständigen Dateien.
 
 Eine vorhandene Installation wird ausdrücklich nicht überschrieben. Dafür ist
 später ausschließlich der gesicherte Offline-Updatepfad vorgesehen.
@@ -55,7 +57,7 @@ Paketquelle zurückgreifen.
 Ein signiertes Release-Paket wird zunächst ausschließlich geprüft:
 
 ```bash
-./scripts/offline-update.sh /pfad/zum/sim-admin-1.0.0.tar.gz
+./scripts/offline-update.sh /pfad/zum/sim-admin-1.0.1.tar.gz
 ```
 
 Neben dem Archiv müssen dessen `.sha256`- und `.sig`-Dateien liegen. Der Prüfer
@@ -81,9 +83,19 @@ durchführen. Schreibtests sind ein separater Abnahmeschritt.
 
 - Debian-basiertes Linux
 - Python 3.11 oder neuer
-- PC/SC-Dienst und kompatibler USB-Kartenleser
-- separat installierte pySim-Umgebung
+- `python3`, `python3-venv`, `openssl`, `tar` und systemd
+- `pcscd`, `libpcsclite1` und `libccid`
+- kompatibler USB-Kartenleser
 - lokales TLS-Zertifikat
+
+Das offizielle Release-Asset enthält die Python-Wheels sowie den getesteten
+pySim-Commit aus `PYSIM_REVISION`. Daher werden `build-essential`, `swig`,
+`pkg-config` und `libpcsclite-dev` nur benötigt, wenn bewusst ohne das
+Offline-Wheelpaket aus einem Quellbaum installiert wird. `install.sh --check`
+nennt jedes fehlende Debian-Paket einzeln und nimmt keine Änderungen vor.
+Direkte Git-Abhängigkeiten des festgelegten pySim-Stands werden ausschließlich
+beim signierten Release-Bau aufgelöst. Das Zielsystem installiert danach nur die
+mitgelieferten Wheels anhand einer eingefrorenen Offline-Anforderungsliste.
 
 ## Anwendung
 
@@ -103,3 +115,9 @@ echte Werte gehören nicht in das Repository.
 pySim wird nicht in den Webprozess importiert. Kartenoperationen laufen über
 separate Bridge-Prozesse in einer eigenen Python-Umgebung. Pfade werden über
 `SIM_ADMIN_PYSIM_PYTHON` und `SIM_ADMIN_PYSIM_SOURCE` konfiguriert.
+
+Seit Version 1.0.1 installiert das Standalone-Skript den im Release enthaltenen,
+auf der Referenz-VM getesteten pySim-Stand automatisch nach
+`/opt/sim-admin/pysim`. Seine getrennte Python-Umgebung liegt unter
+`/opt/sim-admin/venv`. Die Installation endet nur erfolgreich, wenn sich die
+benötigten pySim-, PC/SC- und Smartcard-Module importieren lassen.

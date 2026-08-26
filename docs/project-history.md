@@ -204,3 +204,16 @@ nicht in dieses Dokument.
 - Version 1.0.0 als stabile Freigabe des bestehenden Standalone-Kartenbetriebs
   dokumentiert. Neuinstallation und produktive Offline-Updates bleiben bis zur
   gesonderten VM-Abnahme ausdrücklich nicht freigegeben.
+
+## 2026-08-26 – Installationskorrektur 1.0.1
+
+- Beim ersten Test auf einem separaten Debian-13-Minirechner fehlende und
+  zusammengefasste Paketvoraussetzungen sichtbar gemacht.
+- Voraussetzungstest auf eindeutige Debian-Paketnamen und unterschiedliche
+  Anforderungen für vollständige Offline-Releases beziehungsweise Quellbauten
+  umgestellt.
+- Den auf der Referenz-VM getesteten pySim-Commit
+  `9c77e4ed948e97584680a0b1c1a630bc7fa6bfcd` samt eingefrorenen Wheels in den
+  reproduzierbaren Release-Bau aufgenommen.
+- Automatische getrennte pySim-Installation und Bereinigung abgebrochener
+  Erstinstallationen ergänzt.

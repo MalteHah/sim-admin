@@ -71,6 +71,7 @@ uvicorn app.main:app --reload
 - [Standalone-Installation](docs/standalone/installation.md)
 - [Backup und Wiederherstellung](docs/standalone/backup-restore.md)
 - [Roadmap und Abnahmestand](docs/testing-and-roadmap.md)
+- [Release Notes 1.0.1](docs/release-notes-1.0.1.md)
 - [Release Notes 1.0.0](docs/release-notes-1.0.0.md)
 - [Architektur](docs/architecture/overview.md)
 - [Projektchronik](docs/project-history.md)
@@ -81,7 +82,7 @@ uvicorn app.main:app --reload
 ## Releases
 
 Die Datei `VERSION` bestimmt die Anwendungsversion. Ein Tag mit derselben Version
-(`v1.0.0`) startet nach erfolgreichen Tests den GitHub-Releaseprozess. Lokal kann
+(`v1.0.1`) startet nach erfolgreichen Tests den GitHub-Releaseprozess. Lokal kann
 das reproduzierbare Archiv samt SHA-256-Prüfsumme so gebaut werden:
 
 ```bash
@@ -94,7 +95,7 @@ bereits als vertrauenswürdiger Release-Schlüssel hinterlegt sein:
 
 ```bash
 ./scripts/build-release.sh --signing-key /sicherer/ort/release-signing-key.pem
-./scripts/verify-release.sh dist/sim-admin-1.0.0.tar.gz \
+./scripts/verify-release.sh dist/sim-admin-1.0.1.tar.gz \
   --public-key /etc/sim-admin/release-signing-key.pub.pem
 ```
 
@@ -125,9 +126,10 @@ vorgesehenen Testkarten und einem vorhandenen Backup erfolgen.
 
 ## Projektstatus
 
-`1.0.0` ist die erste stabile Freigabe des auf der bestehenden Standalone-VM
-abgenommenen Kartenverwaltungs- und Personalisierungsumfangs. Neuinstallation
-und produktive Offline-Updates sind noch nicht freigegeben. Netzseitige
+`1.0.1` ergänzt die erste stabile Freigabe um einen vollständigen
+Offline-Installationspfad mit fest gepinntem pySim. Die Neuinstallation wird auf
+einem separaten Minirechner abgenommen; produktive Offline-Updates sind noch
+nicht freigegeben. Netzseitige
 IMS-Systeme sind nicht Bestandteil dieses Projekts.
 
 ## Lizenz

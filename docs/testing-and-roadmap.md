@@ -1,6 +1,6 @@
 # Offene Punkte und Abnahmetests
 
-Stand: 23. August 2026, freigegebene Kartenrevision 1 / Version 1.0.0.
+Stand: 26. August 2026, freigegebene Kartenrevision 1 / Installer 1.0.1.
 
 ## Erfolgreich geprüft
 
@@ -47,10 +47,10 @@ Stand: 23. August 2026, freigegebene Kartenrevision 1 / Version 1.0.0.
   Bestandsdatensätzen, zwei SUCI-Schlüsselprofilen, 373 Aktivitäten und einem
   SPN-Datensatz wurde vollständig entschlüsselt und gegen alle Prüfsummen geprüft.
 
-## Nach Version 1.0.0 noch offene Betriebstests
+## Noch offene Betriebstests
 
-- Neuinstallation aus einem vollständig offline gebauten Release-Paket auf der
-  vorbereiteten Test-VM.
+- Neuinstallation von Version 1.0.1 samt gebündeltem pySim auf dem separaten
+  Debian-13-Minirechner; Paketprüfung und Fehlerbereinigung sind Teil der Abnahme.
 - Signatur-, Prüfsummen-, Versions- und Speicherplatzprüfung eines Updatepakets
   vom USB-Stick.
 - Vollständige Updateausführung einschließlich automatischem Vorab-Backup und
@@ -97,7 +97,7 @@ Hardware-Abnahme umgesetzt.
 - Produktiver Offline-Updatepfad mit Sicherung, atomarem Austausch,
   Datenbankschema-Prüfung und Rollback.
 - Bedienoberfläche und Fehlermeldungen nach den Hardwaretests nachschärfen.
-- Abgenommener Installations- und Updatepfad für die nächste Version.
+- Abgenommener produktiver Updatepfad für eine spätere Version.
 
 Netzseitige IMS-Systeme sind ausdrücklich nicht Bestandteil dieser Karten-
 Roadmap und werden in einem getrennten Projektblock behandelt.

@@ -4,6 +4,22 @@ Alle wesentlichen Änderungen an diesem Projekt werden hier dokumentiert.
 
 ## Unreleased
 
+## 1.0.1 – 2026-08-26
+
+### Fixed
+
+- Der Standalone-Installer nennt fehlende Debian-Pakete jetzt eindeutig und
+  unterscheidet Laufzeitvoraussetzungen von nur bei Online-Bauten benötigten
+  Entwicklungswerkzeugen.
+- Ein fehlgeschlagener Installationslauf entfernt seine unvollständigen
+  Installationsdateien, statt den nächsten Versuch als bestehende Installation
+  zu blockieren.
+- Das offizielle Offline-Release enthält nun den auf der Referenz-VM getesteten
+  pySim-Commit `9c77e4ed948e97584680a0b1c1a630bc7fa6bfcd` und dessen Python-Abhängigkeiten.
+- pySim wird automatisch getrennt von der Webanwendung unter
+  `/opt/sim-admin/pysim` und `/opt/sim-admin/venv` installiert und per
+  Importtest geprüft.
+
 ## 1.0.0 – 2026-08-23
 
 Erste stabile Freigabe des auf der Standalone-VM betriebenen Kartenverwaltungs-

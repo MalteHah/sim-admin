@@ -14,6 +14,7 @@ done
 INSTALL_ROOT="${SIM_ADMIN_INSTALL_ROOT:-/opt/sim-admin}"
 APP_ROOT="$INSTALL_ROOT/application"
 PYSIM_ROOT="${SIM_ADMIN_PYSIM_SOURCE:-$INSTALL_ROOT/pysim}"
+PYSIM_VENV="${SIM_ADMIN_PYSIM_VENV:-$INSTALL_ROOT/venv}"
 SERVICE_USER="${SIM_ADMIN_SERVICE_USER:-sim-admin}"
 LOGIN_USER="${SIM_ADMIN_LOGIN_USER:-admin}"
 SOURCE_ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
@@ -25,6 +26,7 @@ ok() { printf 'OK     %s\n' "$1"; }
 warn() { printf 'HINWEIS %s\n' "$1"; }
 fail() { printf 'FEHLER %s\n' "$1"; ERRORS=$((ERRORS + 1)); }
 plan() { printf 'PLAN   %s\n' "$1"; }
+package_installed() { dpkg-query -W -f='${Status}' "$1" 2>/dev/null | grep -q '^install ok installed$'; }
 
 preflight() {
     printf 'SIM-Admin Installationsprüfung\nZiel: %s\n\n' "$INSTALL_ROOT"
@@ -46,10 +48,24 @@ preflight() {
     done
     if [ -x "$USERADD" ] && [ -x "$RUNUSER" ]; then ok "Systemkonto-Werkzeuge vorhanden"; else fail "useradd oder runuser fehlt"; fi
     if [ -f "$SOURCE_ROOT/requirements.txt" ] && [ -f "$SOURCE_ROOT/app/main.py" ]; then ok "Vollständiges Release-Paket erkannt"; else fail "Das Skript muss aus einem vollständigen SIM-Admin-Release gestartet werden"; fi
-    if command -v pcscd >/dev/null 2>&1 || [ -x /usr/sbin/pcscd ] || systemctl cat pcscd.socket >/dev/null 2>&1; then ok "PC/SC-Dienst installiert"; else fail "pcscd fehlt"; fi
-    if command -v pkg-config >/dev/null 2>&1 && pkg-config --exists libpcsclite 2>/dev/null; then ok "PC/SC-Entwicklungsbibliothek vorhanden"; else fail "libpcsclite-Entwicklungsbibliothek fehlt"; fi
+    if command -v pcscd >/dev/null 2>&1 || [ -x /usr/sbin/pcscd ] || systemctl cat pcscd.socket >/dev/null 2>&1; then ok "PC/SC-Dienst installiert (Paket: pcscd)"; else fail "PC/SC-Dienst fehlt (Paket: pcscd)"; fi
+    if package_installed libpcsclite1; then ok "PC/SC-Laufzeitbibliothek vorhanden (Paket: libpcsclite1)"; else fail "PC/SC-Laufzeitbibliothek fehlt (Paket: libpcsclite1)"; fi
+    if package_installed libccid; then ok "USB-CCID-Treiber vorhanden (Paket: libccid)"; else fail "USB-CCID-Treiber fehlt (Paket: libccid)"; fi
+    if [ ! -d "$SOURCE_ROOT/wheelhouse" ]; then
+        warn "Kein Offline-Wheelpaket gefunden; lokale Python-Buildwerkzeuge werden benötigt"
+        if command -v pkg-config >/dev/null 2>&1; then ok "pkg-config vorhanden (Paket: pkg-config)"; else fail "pkg-config fehlt (Paket: pkg-config)"; fi
+        if command -v gcc >/dev/null 2>&1; then ok "C-Compiler vorhanden (Paket: build-essential)"; else fail "C-Compiler fehlt (Paket: build-essential)"; fi
+        if command -v swig >/dev/null 2>&1; then ok "SWIG vorhanden (Paket: swig)"; else fail "SWIG fehlt (Paket: swig)"; fi
+        if command -v pkg-config >/dev/null 2>&1 && pkg-config --exists libpcsclite 2>/dev/null; then ok "PC/SC-Entwicklungsbibliothek vorhanden (Paket: libpcsclite-dev)"; else fail "PC/SC-Entwicklungsbibliothek fehlt (Paket: libpcsclite-dev)"; fi
+    else
+        ok "Offline-Wheelpaket vorhanden"
+    fi
     if [ -d "$APP_ROOT" ]; then ok "Bestehendes Anwendungsverzeichnis gefunden"; else warn "$APP_ROOT wird bei einer Neuinstallation angelegt"; fi
-    if [ -e "$PYSIM_ROOT/pySim-shell.py" ]; then ok "pySim-Quellverzeichnis gefunden"; else warn "pySim muss vor dem ersten Kartenbetrieb separat bereitgestellt werden"; fi
+    if [ -f "$SOURCE_ROOT/pysim/pySim-shell.py" ] && [ -f "$SOURCE_ROOT/pysim/requirements.txt" ] && { [ ! -d "$SOURCE_ROOT/wheelhouse" ] || [ -f "$SOURCE_ROOT/pysim/requirements.offline.txt" ]; }; then
+        ok "Getesteter pySim-Stand im Release-Paket vorhanden ($(cat "$SOURCE_ROOT/PYSIM_REVISION" 2>/dev/null || printf 'Revision unbekannt'))"
+    else
+        fail "pySim fehlt im Release-Paket; bitte das signierte GitHub-Release-Asset verwenden"
+    fi
     if [ "$ERRORS" -gt 0 ]; then printf '\nPrüfung fehlgeschlagen: %s Voraussetzung(en) fehlen. Es wurden keine Änderungen vorgenommen.\n' "$ERRORS" >&2; return 1; fi
     printf '\nPrüfung erfolgreich. Es wurden keine Änderungen vorgenommen.\n'
 }
@@ -58,6 +74,8 @@ show_plan() {
     printf '\nInstallationsvorschau\n'
     plan "Systemkonto '$SERVICE_USER' bereitstellen"
     plan "Anwendung aus '$SOURCE_ROOT' nach '$APP_ROOT' kopieren"
+    plan "Getesteten pySim-Stand nach '$PYSIM_ROOT' installieren"
+    plan "Eigene pySim-Python-Umgebung unter '$PYSIM_VENV' einrichten"
     plan "Python-Umgebung und Abhängigkeiten installieren"
     plan "Geräteschlüssel, Zugangsdaten und selbstsigniertes TLS-Zertifikat erzeugen"
     plan "HTTPS-Dienst :8443 und Weiterleitung :8000 einrichten"
@@ -67,7 +85,13 @@ show_plan() {
 
 install_application() {
     if [ "$(id -u)" -ne 0 ]; then printf 'Die Installation muss mit Administratorrechten gestartet werden.\n' >&2; exit 1; fi
-    if [ -e "$APP_ROOT" ] || [ -e /etc/sim-admin.env ] || [ -e /etc/systemd/system/sim-admin.service ]; then
+    for TARGET_PATH in "$APP_ROOT" "$PYSIM_ROOT" "$PYSIM_VENV"; do
+        case "$TARGET_PATH" in
+            "$INSTALL_ROOT"/*) ;;
+            *) printf 'Unsicherer Installationspfad außerhalb von %s: %s\n' "$INSTALL_ROOT" "$TARGET_PATH" >&2; exit 1 ;;
+        esac
+    done
+    if [ -e "$APP_ROOT" ] || [ -e "$PYSIM_ROOT" ] || [ -e "$PYSIM_VENV" ] || [ -e /etc/sim-admin.env ] || [ -e /etc/sim-admin/credentials.json ] || [ -e /etc/sim-admin/tls/server.key ] || [ -e /etc/sim-admin/tls/server.crt ] || [ -e /etc/systemd/system/sim-admin.service ] || [ -e /etc/systemd/system/sim-admin-redirect.service ]; then
         printf 'Eine bestehende Installation wurde erkannt. Das Installationsskript überschreibt sie nicht.\n' >&2; exit 1
     fi
     printf 'Neues Anmeldepasswort für %s: ' "$LOGIN_USER" >&2
@@ -77,11 +101,30 @@ install_application() {
     [ "$PASSWORD" = "$PASSWORD_REPEAT" ] || { printf 'Die Passwörter stimmen nicht überein.\n' >&2; exit 1; }
     [ "${#PASSWORD}" -ge 12 ] || { printf 'Das Passwort muss mindestens 12 Zeichen lang sein.\n' >&2; exit 1; }
 
+    cleanup_failed_install() {
+        STATUS=$?
+        trap - EXIT HUP INT TERM
+        if [ "$STATUS" -ne 0 ]; then
+            systemctl disable --now sim-admin.service sim-admin-redirect.service >/dev/null 2>&1 || true
+            rm -f /etc/systemd/system/sim-admin.service /etc/systemd/system/sim-admin-redirect.service /etc/sim-admin.env /etc/sim-admin/credentials.json
+            rm -rf -- "$APP_ROOT" "$PYSIM_ROOT" "$PYSIM_VENV"
+            rmdir /etc/sim-admin/tls /etc/sim-admin >/dev/null 2>&1 || true
+            systemctl daemon-reload >/dev/null 2>&1 || true
+            printf '\nInstallation fehlgeschlagen; unvollständige Installationsdateien wurden entfernt.\n' >&2
+        fi
+        exit "$STATUS"
+    }
+    trap cleanup_failed_install EXIT
+    trap 'exit 130' HUP INT TERM
+
     if ! id "$SERVICE_USER" >/dev/null 2>&1; then "$USERADD" --system --home-dir "$INSTALL_ROOT" --shell /usr/sbin/nologin "$SERVICE_USER"; fi
     SERVICE_GROUP=$(id -gn "$SERVICE_USER")
     install -d -m 0750 -o "$SERVICE_USER" -g "$SERVICE_GROUP" "$APP_ROOT" "$APP_ROOT/config" "$APP_ROOT/data/database" "$APP_ROOT/data/backups" "$APP_ROOT/data/imports" "$APP_ROOT/data/exports"
-    (cd "$SOURCE_ROOT" && tar --exclude=.git --exclude=.venv --exclude=work --exclude=outputs --exclude='data/database/*' --exclude='config/*.key' -cf - .) | (cd "$APP_ROOT" && tar -xf -)
+    (cd "$SOURCE_ROOT" && tar --exclude=.git --exclude=.venv --exclude=pysim --exclude=work --exclude=outputs --exclude='data/database/*' --exclude='config/*.key' -cf - .) | (cd "$APP_ROOT" && tar -xf -)
+    install -d -m 0750 -o "$SERVICE_USER" -g "$SERVICE_GROUP" "$PYSIM_ROOT"
+    (cd "$SOURCE_ROOT/pysim" && tar --exclude=.git --exclude='__pycache__' -cf - .) | (cd "$PYSIM_ROOT" && tar -xf -)
     chown -R "$SERVICE_USER:$SERVICE_GROUP" "$APP_ROOT"
+    chown -R "$SERVICE_USER:$SERVICE_GROUP" "$PYSIM_ROOT"
     python3 -m venv "$APP_ROOT/.venv"
     if [ -d "$APP_ROOT/wheelhouse" ]; then
         "$APP_ROOT/.venv/bin/python" -m pip install --no-index --find-links="$APP_ROOT/wheelhouse" -r "$APP_ROOT/requirements.txt"
@@ -90,6 +133,14 @@ install_application() {
         "$APP_ROOT/.venv/bin/python" -m pip install --upgrade pip
         "$APP_ROOT/.venv/bin/python" -m pip install -r "$APP_ROOT/requirements.txt"
     fi
+    python3 -m venv "$PYSIM_VENV"
+    if [ -d "$APP_ROOT/wheelhouse" ]; then
+        "$PYSIM_VENV/bin/python" -m pip install --no-index --find-links="$APP_ROOT/wheelhouse" -r "$PYSIM_ROOT/requirements.offline.txt"
+    else
+        "$PYSIM_VENV/bin/python" -m pip install --upgrade pip
+        "$PYSIM_VENV/bin/python" -m pip install -r "$PYSIM_ROOT/requirements.txt"
+    fi
+    PYTHONPATH="$PYSIM_ROOT" "$PYSIM_VENV/bin/python" -c 'import pySim.app; import pySim.transport.pcsc; import smartcard'
 
     install -d -m 0750 -o root -g "$SERVICE_GROUP" /etc/sim-admin/tls
     CREDENTIAL_FILE=/etc/sim-admin/credentials.json
@@ -105,7 +156,7 @@ SIM_ADMIN_CREDENTIAL_FILE=$CREDENTIAL_FILE
 SIM_ADMIN_SECURE_COOKIE=true
 SIM_ADMIN_PROFILE_DB=$APP_ROOT/data/database/profiles.db
 SIM_ADMIN_PROFILE_KEY=$APP_ROOT/config/profile.key
-SIM_ADMIN_PYSIM_PYTHON=$INSTALL_ROOT/venv/bin/python
+SIM_ADMIN_PYSIM_PYTHON=$PYSIM_VENV/bin/python
 SIM_ADMIN_PYSIM_SOURCE=$PYSIM_ROOT
 SIM_ADMIN_HTTPS_PORT=8443
 EOF
@@ -148,6 +199,7 @@ EOF
     "$RUNUSER" -u "$SERVICE_USER" -- "$APP_ROOT/.venv/bin/python" -m pytest -q "$APP_ROOT/tests"
     systemctl daemon-reload
     systemctl enable --now pcscd.socket sim-admin.service sim-admin-redirect.service
+    trap - EXIT HUP INT TERM
     printf '\nInstallation erfolgreich. SIM-Admin ist per HTTPS auf Port 8443 erreichbar.\n'
 }
 

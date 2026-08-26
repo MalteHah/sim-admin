@@ -23,3 +23,33 @@ jobs:
         run: python -m pip install --upgrade pip && python -m pip install -r requirements.txt
       - name: Tests ausführen
         run: python -m pytest -q
+
+  pysim-offline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: PC/SC-Buildabhängigkeiten installieren
+        run: sudo apt-get update && sudo apt-get install -y libpcsclite-dev swig
+      - name: Getesteten pySim-Stand auschecken
+        run: |
+          git clone --no-checkout https://github.com/osmocom/pysim.git "$RUNNER_TEMP/pysim"
+          git -C "$RUNNER_TEMP/pysim" checkout "$(cat PYSIM_REVISION)"
+          test "$(git -C "$RUNNER_TEMP/pysim" rev-parse HEAD)" = "$(cat PYSIM_REVISION)"
+      - name: pySim-Wheels und Offline-Anforderungsliste bauen
+        run: |
+          python -m venv "$RUNNER_TEMP/pysim-build-venv"
+          "$RUNNER_TEMP/pysim-build-venv/bin/python" -m pip install --upgrade pip
+          "$RUNNER_TEMP/pysim-build-venv/bin/python" -m pip wheel --wheel-dir "$RUNNER_TEMP/wheelhouse" -r "$RUNNER_TEMP/pysim/requirements.txt"
+          "$RUNNER_TEMP/pysim-build-venv/bin/python" -m pip install -r "$RUNNER_TEMP/pysim/requirements.txt"
+          "$RUNNER_TEMP/pysim-build-venv/bin/python" -m pip list --format=freeze \
+            | grep -Ev '^(pip|setuptools)==' > "$RUNNER_TEMP/pysim/requirements.offline.txt"
+      - name: pySim vollständig offline installieren und importieren
+        run: |
+          python -m venv "$RUNNER_TEMP/pysim-offline-venv"
+          "$RUNNER_TEMP/pysim-offline-venv/bin/python" -m pip install --no-index \
+            --find-links="$RUNNER_TEMP/wheelhouse" -r "$RUNNER_TEMP/pysim/requirements.offline.txt"
+          PYTHONPATH="$RUNNER_TEMP/pysim" "$RUNNER_TEMP/pysim-offline-venv/bin/python" \
+            -c 'import pySim.app; import pySim.transport.pcsc; import smartcard'

@@ -23,6 +23,17 @@ def git_files() -> list[Path]:
     return sorted(Path(item) for item in output.split("\0") if item)
 
 
+def external_files(source_root: Path, archive_root: Path) -> list[tuple[Path, Path]]:
+    """Return regular files from a bundled external source without VCS metadata."""
+    return [
+        (archive_root / path.relative_to(source_root), path)
+        for path in sorted(source_root.rglob("*"))
+        if path.is_file()
+        and ".git" not in path.relative_to(source_root).parts
+        and "__pycache__" not in path.relative_to(source_root).parts
+    ]
+
+
 def sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -38,6 +49,7 @@ def main() -> None:
     parser.add_argument("--signing-key", type=Path)
     parser.add_argument("--signing-key-password-file", type=Path)
     parser.add_argument("--wheelhouse", type=Path)
+    parser.add_argument("--pysim-source", type=Path)
     args = parser.parse_args()
 
     version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
@@ -57,6 +69,11 @@ def main() -> None:
         if not wheels:
             raise SystemExit("Das angegebene Wheel-Verzeichnis enthält keine .whl-Dateien")
         files.extend((Path("wheelhouse") / wheel.name, wheel) for wheel in wheels)
+    if args.pysim_source:
+        pysim_source = args.pysim_source.resolve()
+        if not (pysim_source / "pySim-shell.py").is_file():
+            raise SystemExit("Das angegebene pySim-Verzeichnis ist unvollständig")
+        files.extend(external_files(pysim_source, Path("pysim")))
     manifest = {
         "application": "sim-admin",
         "format": 1,
